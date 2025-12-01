@@ -6,6 +6,7 @@ const TRAIN_BUTTON = document.getElementById('train');
 const MOBILE_NET_INPUT_WIDTH = 224;
 const MOBILE_NET_INPUT_HEIGHT = 224;
 const STOP_DATA_GATHER = -1;
+const GESTURE_OVERLAY = document.getElementById('gestureOverlay');
 
 const mobileStepButtons = document.querySelectorAll('[data-step-target]');
 const bodyEl = document.body;
@@ -13,6 +14,9 @@ const supportsPointer = 'onpointerdown' in window;
 const addClassButton = document.getElementById('add-class');
 const classesColumn = document.querySelector('.classes-column');
 const probabilityList = document.getElementById('probabilityList');
+const menuButton = document.querySelector('.icon-button');
+const modeMenu = document.getElementById('modeMenu');
+const modeLabel = document.getElementById('modeLabel');
 
 const CLASS_NAMES = [];
 const openWebcamButtons = [];
@@ -37,6 +41,12 @@ let predict = false;
 let model;
 let preferredFacingMode = 'user';
 let lastPrediction = [];
+let currentMode = 'image';
+let gestureRecognizer;
+let gestureInitPromise;
+let gestureBusy = false;
+let drawingUtils;
+let gestureConnections;
 
 const BAR_COLORS = [
   ['#f07818', '#ffd8ba'],
@@ -46,6 +56,44 @@ const BAR_COLORS = [
   ['#f2b134', '#ffe7bd'],
   ['#8e54e9', '#e3d6ff'],
 ];
+const GESTURE_LABELS = [
+  'None',
+  'Closed_Fist',
+  'Open_Palm',
+  'Pointing_Up',
+  'Thumb_Down',
+  'Thumb_Up',
+  'Victory',
+  'ILoveYou',
+];
+const HAND_CONNECTIONS = [
+  [0, 1],
+  [1, 2],
+  [2, 3],
+  [3, 4],
+  [0, 5],
+  [5, 6],
+  [6, 7],
+  [7, 8],
+  [5, 9],
+  [9, 10],
+  [10, 11],
+  [11, 12],
+  [9, 13],
+  [13, 14],
+  [14, 15],
+  [15, 16],
+  [13, 17],
+  [0, 17],
+  [17, 18],
+  [18, 19],
+  [19, 20],
+  [5, 17],
+];
+const MODE_NAMES = {
+  image: 'Bildklassifikation',
+  gesture: 'Gesture Recognition',
+};
 
 TRAIN_BUTTON.addEventListener('click', trainAndPredict);
 RESET_BUTTON.addEventListener('click', reset);
@@ -67,6 +115,27 @@ if (addClassButton) {
   });
 }
 
+if (menuButton) {
+  menuButton.addEventListener('click', toggleModeMenu);
+}
+
+if (modeMenu) {
+  modeMenu.addEventListener('click', (event) => {
+    const mode = event.target.getAttribute('data-mode');
+    if (mode) {
+      setMode(mode);
+      closeModeMenu();
+    }
+  });
+}
+
+document.addEventListener('click', (event) => {
+  if (!modeMenu || !menuButton) return;
+  if (!modeMenu.contains(event.target) && !menuButton.contains(event.target)) {
+    closeModeMenu();
+  }
+});
+
 function initializeExistingClasses() {
   const existingCards = document.querySelectorAll('.class-card');
   existingCards.forEach((card, idx) => {
@@ -75,6 +144,7 @@ function initializeExistingClasses() {
   rebuildModel();
   updateExampleCounts(true);
   renderProbabilities();
+  setMode('image');
 }
 
 function setupClassCard(card, idx) {
@@ -353,7 +423,13 @@ function showPreview() {
 function predictLoop() {
   if (!predict) return;
 
-  if (previewReady) {
+  if (currentMode === 'gesture') {
+    runGestureStep();
+    window.requestAnimationFrame(predictLoop);
+    return;
+  }
+
+  if (previewReady && trainingCompleted) {
     tf.tidy(function () {
       const videoFrameAsTensor = tf.browser.fromPixels(PREVIEW_VIDEO).div(255);
       const resizedTensorFrame = tf.image.resizeBilinear(
@@ -372,17 +448,17 @@ function predictLoop() {
               0
             )
           : 0;
-      renderProbabilities(predictionArray, highestIndex);
+      renderProbabilities(predictionArray, highestIndex, CLASS_NAMES);
     });
   }
 
   window.requestAnimationFrame(predictLoop);
 }
 
-function renderProbabilities(probArray = lastPrediction, bestIndex = -1) {
+function renderProbabilities(probArray = lastPrediction, bestIndex = -1, names = CLASS_NAMES) {
   if (!probabilityList) return;
 
-  const safeValues = CLASS_NAMES.map((_, idx) => {
+  const safeValues = names.map((_, idx) => {
     if (probArray && probArray[idx] !== undefined) return probArray[idx];
     return 0;
   });
@@ -390,7 +466,7 @@ function renderProbabilities(probArray = lastPrediction, bestIndex = -1) {
 
   probabilityList.innerHTML = '';
 
-  CLASS_NAMES.forEach((name, idx) => {
+  names.forEach((name, idx) => {
     const value = safeValues[idx] || 0;
     const percent = Math.round(Math.max(0, Math.min(1, value)) * 100);
     const row = document.createElement('div');
@@ -430,6 +506,203 @@ function renderProbabilities(probArray = lastPrediction, bestIndex = -1) {
 function getBarColors(idx) {
   const palette = BAR_COLORS[idx % BAR_COLORS.length];
   return { start: palette[0], end: palette[1] };
+}
+
+function toggleModeMenu() {
+  if (!modeMenu) return;
+  modeMenu.classList.toggle('hidden');
+  updateModeMenuActive();
+}
+
+function closeModeMenu() {
+  if (!modeMenu) return;
+  modeMenu.classList.add('hidden');
+}
+
+function updateModeMenuActive() {
+  if (!modeMenu) return;
+  Array.from(modeMenu.querySelectorAll('[data-mode]')).forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-mode') === currentMode);
+  });
+}
+
+function setMode(newMode) {
+  if (newMode !== 'image' && newMode !== 'gesture') return;
+  if (newMode === currentMode) {
+    updateModeMenuActive();
+    return;
+  }
+  currentMode = newMode;
+  if (modeLabel) {
+    modeLabel.textContent = MODE_NAMES[newMode] || newMode;
+  }
+  bodyEl.setAttribute('data-mode', newMode);
+
+  if (newMode === 'gesture') {
+    predict = true;
+    previewReady = false;
+    trainingCompleted = false;
+    STATUS.innerText = 'Gesture Recognition wird geladen...';
+    setMobileStep('preview');
+    showPreview();
+    enableCam();
+    renderProbabilities([], -1, GESTURE_LABELS);
+    if (GESTURE_OVERLAY) {
+      GESTURE_OVERLAY.classList.remove('hidden');
+      clearOverlay();
+    }
+    window.requestAnimationFrame(predictLoop);
+  } else {
+    predict = false;
+    previewReady = false;
+    trainingCompleted = false;
+    STATUS.innerText = 'Bildklassifikation aktiv. Sammle Daten und trainiere.';
+    PREVIEW_VIDEO.classList.add('hidden');
+    lastPrediction = [];
+    renderProbabilities([], -1, CLASS_NAMES);
+    clearOverlay();
+    if (GESTURE_OVERLAY) {
+      GESTURE_OVERLAY.classList.add('hidden');
+    }
+    setMobileStep('collect');
+  }
+
+  updateModeMenuActive();
+}
+
+async function ensureGestureRecognizer() {
+  if (gestureRecognizer) return gestureRecognizer;
+  if (gestureInitPromise) return gestureInitPromise;
+
+  gestureInitPromise = (async () => {
+    try {
+      const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0');
+      const fileset = await vision.FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
+      );
+      gestureRecognizer = await vision.GestureRecognizer.createFromOptions(fileset, {
+        baseOptions: {
+          modelAssetPath:
+            'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+        },
+        runningMode: 'VIDEO',
+        numHands: 1,
+      });
+      if (GESTURE_OVERLAY) {
+        const ctx = GESTURE_OVERLAY.getContext('2d');
+        drawingUtils = new vision.DrawingUtils(ctx);
+      }
+      gestureConnections = vision.GestureRecognizer.HAND_CONNECTIONS || HAND_CONNECTIONS;
+      STATUS.innerText = 'Gesture Recognition bereit.';
+      return gestureRecognizer;
+    } catch (err) {
+      console.error(err);
+      STATUS.innerText = 'Gesture Recognition konnte nicht geladen werden.';
+      gestureRecognizer = null;
+      return null;
+    }
+  })();
+
+  return gestureInitPromise;
+}
+
+async function runGestureStep() {
+  if (gestureBusy) return;
+  if (!previewReady) return;
+  if (!GESTURE_OVERLAY) return;
+  gestureBusy = true;
+  try {
+    const recognizer = await ensureGestureRecognizer();
+    if (!recognizer) return;
+    const nowInMs = performance.now();
+    const result = recognizer.recognizeForVideo(PREVIEW_VIDEO, nowInMs);
+    if (!result || !result.gestures || !result.gestures.length) {
+      renderProbabilities([], -1, GESTURE_LABELS);
+      clearOverlay();
+      return;
+    }
+    const categories = result.gestures[0] || [];
+    const probs = GESTURE_LABELS.map((name) => {
+      const match = categories.find((c) => c.categoryName === name);
+      return match ? match.score : 0;
+    });
+    const topIndex =
+      probs.length > 0
+        ? probs.reduce((best, val, idx, arr) => (val > arr[best] ? idx : best), 0)
+        : -1;
+    renderProbabilities(probs, topIndex, GESTURE_LABELS);
+
+    if (result.landmarks && result.landmarks.length) {
+      drawHandOverlay(result.landmarks[0]);
+    } else {
+      clearOverlay();
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    gestureBusy = false;
+  }
+}
+
+function clearOverlay() {
+  if (!GESTURE_OVERLAY) return;
+  const ctx = GESTURE_OVERLAY.getContext('2d');
+  if (!ctx) return;
+  ctx.clearRect(0, 0, GESTURE_OVERLAY.width, GESTURE_OVERLAY.height);
+}
+
+function resizeOverlay() {
+  if (!GESTURE_OVERLAY || !PREVIEW_VIDEO) return;
+  const w = PREVIEW_VIDEO.videoWidth;
+  const h = PREVIEW_VIDEO.videoHeight;
+  if (!w || !h) return;
+  if (GESTURE_OVERLAY.width !== w || GESTURE_OVERLAY.height !== h) {
+    GESTURE_OVERLAY.width = w;
+    GESTURE_OVERLAY.height = h;
+  }
+}
+
+function drawHandOverlay(landmarks = []) {
+  if (!GESTURE_OVERLAY || !PREVIEW_VIDEO) return;
+  resizeOverlay();
+  const ctx = GESTURE_OVERLAY.getContext('2d');
+  if (!ctx) return;
+  ctx.clearRect(0, 0, GESTURE_OVERLAY.width, GESTURE_OVERLAY.height);
+
+  const connections = gestureConnections || HAND_CONNECTIONS;
+
+  if (drawingUtils && connections) {
+    drawingUtils.drawConnectors(landmarks, connections, { color: '#28b88a', lineWidth: 3 });
+    drawingUtils.drawLandmarks(landmarks, { color: '#ff3366', lineWidth: 2, radius: 4 });
+    return;
+  }
+
+  const w = GESTURE_OVERLAY.width;
+  const h = GESTURE_OVERLAY.height;
+
+  ctx.strokeStyle = '#28b88a';
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  connections.forEach(([a, b]) => {
+    if (!landmarks[a] || !landmarks[b]) return;
+    ctx.beginPath();
+    ctx.moveTo(landmarks[a].x * w, landmarks[a].y * h);
+    ctx.lineTo(landmarks[b].x * w, landmarks[b].y * h);
+    ctx.stroke();
+  });
+
+  ctx.fillStyle = '#ff3366';
+  landmarks.forEach((point) => {
+    if (!point) return;
+    ctx.beginPath();
+    ctx.arc(point.x * w, point.y * h, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
 }
 
 function gatherDataForClass() {
@@ -495,7 +768,7 @@ function reset() {
   rebuildModel();
   updateExampleCounts(true);
   lastPrediction = [];
-  renderProbabilities([]);
+  renderProbabilities([], -1, CLASS_NAMES);
   setMobileStep('collect');
 
   console.log('Tensors in memory: ' + tf.memory().numTensors);

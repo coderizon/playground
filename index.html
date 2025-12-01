@@ -17,6 +17,13 @@
         <span class="brand-title">Teachable Machine</span>
         <span class="brand-subtitle">Bildklassifikation</span>
       </div>
+      <div class="mode-picker">
+        <span id="modeLabel" class="mode-label">Bildklassifikation</span>
+        <div id="modeMenu" class="mode-menu hidden" role="menu" aria-label="Modus wählen">
+          <button data-mode="image" role="menuitem">Bildklassifikation</button>
+          <button data-mode="gesture" role="menuitem">Gesture Recognition</button>
+        </div>
+      </div>
     </header>
 
     <div class="mobile-nav">
@@ -103,6 +110,7 @@
           <div class="preview-body">
             <div class="video-shell">
               <video id="previewCam" autoplay muted playsinline class="hidden"></video>
+              <canvas id="gestureOverlay" class="overlay-canvas hidden"></canvas>
             </div>
             <div class="preview-output">
               <div class="preview-output-header">
