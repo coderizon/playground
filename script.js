@@ -672,8 +672,8 @@ function drawHandOverlay(landmarks = []) {
   const connections = gestureConnections || HAND_CONNECTIONS;
 
   if (drawingUtils && connections) {
-    drawingUtils.drawConnectors(landmarks, connections, { color: '#28b88a', lineWidth: 3 });
-    drawingUtils.drawLandmarks(landmarks, { color: '#ff3366', lineWidth: 2, radius: 4 });
+    drawingUtils.drawConnectors(landmarks, connections, { color: '#28b88a', lineWidth: 5 });
+    drawingUtils.drawLandmarks(landmarks, { color: '#ff3366', lineWidth: 3, radius: 6 });
     return;
   }
 
@@ -681,7 +681,7 @@ function drawHandOverlay(landmarks = []) {
   const h = GESTURE_OVERLAY.height;
 
   ctx.strokeStyle = '#28b88a';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
@@ -697,10 +697,10 @@ function drawHandOverlay(landmarks = []) {
   landmarks.forEach((point) => {
     if (!point) return;
     ctx.beginPath();
-    ctx.arc(point.x * w, point.y * h, 5, 0, Math.PI * 2);
+    ctx.arc(point.x * w, point.y * h, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.stroke();
   });
 }
