@@ -15,7 +15,7 @@
 
 body {
   margin: 0;
-  padding: 0;
+  padding: 0 0 90px;
   font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -83,7 +83,7 @@ body {
 }
 
 .mobile-nav {
-  display: none;
+  display: flex;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -111,11 +111,21 @@ body {
 
 .layout {
   display: grid;
-  grid-template-columns: 2fr 1.05fr 1.1fr;
-  gap: 32px;
-  padding: 36px 30px 50px;
-  max-width: 1400px;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px 16px 32px;
+  max-width: 900px;
   margin: 0 auto;
+}
+
+.layout section {
+  display: none;
+}
+
+body[data-step="collect"] .classes-column,
+body[data-step="train"] .training-column,
+body[data-step="preview"] .preview-column {
+  display: flex;
 }
 
 .classes-column {
@@ -290,6 +300,8 @@ button:disabled {
 .block {
   width: 100%;
   text-align: center;
+  position: sticky;
+  bottom: 12px;
 }
 
 .icon-close {
@@ -435,30 +447,6 @@ video {
 }
 
 @media (max-width: 720px) {
-  body {
-    padding-bottom: 90px;
-  }
-
-  .layout {
-    grid-template-columns: 1fr;
-    padding: 16px 16px 32px;
-    gap: 16px;
-  }
-
-  .mobile-nav {
-    display: flex;
-  }
-
-  .layout section {
-    display: none;
-  }
-
-  body[data-step="collect"] .classes-column,
-  body[data-step="train"] .training-column,
-  body[data-step="preview"] .preview-column {
-    display: flex;
-  }
-
   .column-header {
     flex-direction: column;
     align-items: flex-start;
@@ -484,10 +472,5 @@ video {
 
   .preview-card .preview-body {
     grid-template-columns: 1fr;
-  }
-
-  .block {
-    position: sticky;
-    bottom: 12px;
   }
 }
