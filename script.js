@@ -6,23 +6,132 @@ const TRAIN_BUTTON = document.getElementById('train');
 const MOBILE_NET_INPUT_WIDTH = 224;
 const MOBILE_NET_INPUT_HEIGHT = 224;
 const STOP_DATA_GATHER = -1;
-const CLASS_NAMES = ['Class 1', 'Class 2'];
 
-const openWebcamButtons = document.querySelectorAll('.open-webcam');
-const webcamPanels = document.querySelectorAll('.webcam-panel');
-const closePanelButtons = document.querySelectorAll('.icon-close');
-const classNameInputs = document.querySelectorAll('.class-name-input');
-const captureSlots = document.querySelectorAll('.capture-slot');
-const countChips = document.querySelectorAll('[data-count-for]');
 const mobileStepButtons = document.querySelectorAll('[data-step-target]');
 const bodyEl = document.body;
 const supportsPointer = 'onpointerdown' in window;
+const addClassButton = document.getElementById('add-class');
+const classesColumn = document.querySelector('.classes-column');
+
+const CLASS_NAMES = [];
+const openWebcamButtons = [];
+const webcamPanels = [];
+const classNameInputs = [];
+const captureSlots = [];
+const dataCollectorButtons = [];
+const countChips = [];
+
+let currentStream;
+let activeClassIndex = 0;
+let previewReady = false;
+let trainingCompleted = false;
+let mobilenet = undefined;
+let gatherDataState = STOP_DATA_GATHER;
+let videoPlaying = false;
+let trainingDataInputs = [];
+let trainingDataOutputs = [];
+let examplesCount = [];
+let predict = false;
+let model;
 
 TRAIN_BUTTON.addEventListener('click', trainAndPredict);
 RESET_BUTTON.addEventListener('click', reset);
 
-const dataCollectorButtons = document.querySelectorAll('button.dataCollector');
-dataCollectorButtons.forEach((btn) => {
+mobileStepButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    setMobileStep(btn.getAttribute('data-step-target'));
+  });
+});
+
+initializeExistingClasses();
+if (addClassButton) {
+  addClassButton.addEventListener('click', addNewClassCard);
+  addClassButton.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      addNewClassCard();
+    }
+  });
+}
+
+function initializeExistingClasses() {
+  const existingCards = document.querySelectorAll('.class-card');
+  existingCards.forEach((card, idx) => {
+    setupClassCard(card, idx);
+  });
+  rebuildModel();
+  updateExampleCounts(true);
+}
+
+function setupClassCard(card, idx) {
+  const nameInput = card.querySelector('.class-name-input');
+  const openBtn = card.querySelector('.open-webcam');
+  const panel = card.querySelector('.webcam-panel');
+  const closeBtn = panel.querySelector('.icon-close');
+  const slot = card.querySelector('.capture-slot');
+  const collectorBtn = card.querySelector('.dataCollector');
+  const countChip = card.querySelector('.count-chip');
+
+  if (!nameInput || !openBtn || !panel || !slot || !collectorBtn || !countChip) return;
+
+  nameInput.setAttribute('data-class-index', idx);
+  openBtn.setAttribute('data-class-index', idx);
+  panel.setAttribute('data-class-panel', idx);
+  slot.setAttribute('data-class-slot', idx);
+  collectorBtn.setAttribute('data-1hot', idx);
+  countChip.setAttribute('data-count-for', idx);
+
+  const classLabel = nameInput.value || `Class ${idx + 1}`;
+  CLASS_NAMES[idx] = classLabel;
+  collectorBtn.setAttribute('data-name', classLabel);
+
+  classNameInputs[idx] = nameInput;
+  openWebcamButtons[idx] = openBtn;
+  webcamPanels[idx] = panel;
+  captureSlots[idx] = slot;
+  dataCollectorButtons[idx] = collectorBtn;
+  countChips[idx] = countChip;
+
+  attachNameInputListener(nameInput, idx, collectorBtn);
+  attachOpenButtonListener(openBtn, idx);
+  attachCollectorButtonListeners(collectorBtn);
+
+  if (closeBtn) {
+    closeBtn.setAttribute('data-close-panel', idx);
+    closeBtn.addEventListener('click', () => hideWebcamPanel(idx));
+  }
+}
+
+function buildClassCardElement(idx) {
+  const card = document.createElement('div');
+  card.className = 'card class-card';
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="title-group editable">
+        <input class="class-name-input" data-class-index="${idx}" value="Class ${idx + 1}" aria-label="Klassenname eingeben">
+      </div>
+      <span class="dots">⋮</span>
+    </div>
+    <p class="section-label">Bildbeispiele hinzufügen:</p>
+    <div class="action-row">
+      <button class="open-webcam ghost" data-class-index="${idx}">Webcam</button>
+    </div>
+    <div class="webcam-panel" data-class-panel="${idx}">
+      <div class="panel-top">
+        <span>Webcam</span>
+        <button class="icon-close" data-close-panel="${idx}" aria-label="Panel schließen">×</button>
+      </div>
+      <div class="count-row">
+        <span class="count-chip" data-count-for="${idx}">0 Bildbeispiele</span>
+      </div>
+      <div class="capture-slot" data-class-slot="${idx}"></div>
+      <button class="dataCollector primary block" data-1hot="${idx}" data-name="Class ${idx + 1}">Zum Aufnehmen halten</button>
+    </div>
+  `;
+  return card;
+}
+
+function attachCollectorButtonListeners(btn) {
   if (supportsPointer) {
     btn.addEventListener('pointerdown', handleCollectStart, { passive: false });
     btn.addEventListener('pointerup', handleCollectEnd);
@@ -33,42 +142,38 @@ dataCollectorButtons.forEach((btn) => {
     btn.addEventListener('touchstart', handleCollectStart, { passive: false });
     btn.addEventListener('touchend', handleCollectEnd);
   }
-});
+}
 
-openWebcamButtons.forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const idx = parseInt(btn.getAttribute('data-class-index'));
-    openWebcamForClass(idx);
-  });
-});
+function attachOpenButtonListener(btn, idx) {
+  btn.addEventListener('click', () => openWebcamForClass(idx));
+}
 
-closePanelButtons.forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const idx = parseInt(btn.getAttribute('data-close-panel'));
-    hideWebcamPanel(idx);
-  });
-});
-
-classNameInputs.forEach((input, idx) => {
-  CLASS_NAMES[idx] = input.value;
+function attachNameInputListener(input, idx, collectorBtn) {
   input.addEventListener('input', () => {
     CLASS_NAMES[idx] = input.value || `Class ${idx + 1}`;
-    const collector = dataCollectorButtons[idx];
-    if (collector) collector.setAttribute('data-name', CLASS_NAMES[idx]);
+    collectorBtn.setAttribute('data-name', CLASS_NAMES[idx]);
     STATUS.innerText = `Klasse ${idx + 1} benannt als ${CLASS_NAMES[idx]}.`;
   });
-});
+}
 
-mobileStepButtons.forEach((btn) => {
-  btn.addEventListener('click', () => {
-    setMobileStep(btn.getAttribute('data-step-target'));
-  });
-});
-
-let currentStream;
-let activeClassIndex = 0;
-let previewReady = false;
-let trainingCompleted = false;
+function addNewClassCard() {
+  const newIndex = CLASS_NAMES.length;
+  const newCard = buildClassCardElement(newIndex);
+  if (classesColumn && addClassButton) {
+    classesColumn.insertBefore(newCard, addClassButton);
+  } else if (classesColumn) {
+    classesColumn.appendChild(newCard);
+  }
+  setupClassCard(newCard, newIndex);
+  examplesCount[newIndex] = 0;
+  updateExampleCounts();
+  trainingCompleted = false;
+  predict = false;
+  previewReady = false;
+  PREVIEW_VIDEO.classList.add('hidden');
+  rebuildModel();
+  STATUS.innerText = `Neue Klasse ${CLASS_NAMES[newIndex]} hinzugefügt.`;
+}
 
 function hasGetUserMedia() {
   return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -116,9 +221,7 @@ function openWebcamForClass(idx) {
 }
 
 function moveCaptureToSlot(idx) {
-  const slot = Array.from(captureSlots).find(
-    (s) => parseInt(s.getAttribute('data-class-slot')) === idx
-  );
+  const slot = captureSlots.find((s) => parseInt(s.getAttribute('data-class-slot')) === idx);
   if (slot && CAPTURE_VIDEO.parentElement !== slot) {
     slot.innerHTML = '';
     slot.appendChild(CAPTURE_VIDEO);
@@ -129,9 +232,7 @@ function hideWebcamPanel(idx) {
   if (gatherDataState !== STOP_DATA_GATHER) {
     gatherDataState = STOP_DATA_GATHER;
   }
-  const panel = Array.from(webcamPanels).find(
-    (p) => parseInt(p.getAttribute('data-class-panel')) === idx
-  );
+  const panel = webcamPanels.find((p) => parseInt(p.getAttribute('data-class-panel')) === idx);
   if (panel) {
     panel.classList.remove('visible');
   }
@@ -262,6 +363,7 @@ function reset() {
   predict = false;
   previewReady = false;
   trainingCompleted = false;
+  gatherDataState = STOP_DATA_GATHER;
   examplesCount.length = 0;
   for (let i = 0; i < trainingDataInputs.length; i++) {
     trainingDataInputs[i].dispose();
@@ -271,19 +373,12 @@ function reset() {
   STATUS.innerText = 'No data collected';
   PREVIEW_VIDEO.classList.add('hidden');
   unlockCapturePanels();
+  rebuildModel();
   updateExampleCounts(true);
   setMobileStep('collect');
 
   console.log('Tensors in memory: ' + tf.memory().numTensors);
 }
-
-let mobilenet = undefined;
-let gatherDataState = STOP_DATA_GATHER;
-let videoPlaying = false;
-let trainingDataInputs = [];
-let trainingDataOutputs = [];
-let examplesCount = [];
-let predict = false;
 
 async function loadMobileNetFeatureModel() {
   const URL =
@@ -300,17 +395,25 @@ async function loadMobileNetFeatureModel() {
 
 loadMobileNetFeatureModel();
 
-let model = tf.sequential();
-model.add(tf.layers.dense({ inputShape: [1024], units: 128, activation: 'relu' }));
-model.add(tf.layers.dense({ units: CLASS_NAMES.length, activation: 'softmax' }));
+function rebuildModel() {
+  const outputUnits = Math.max(CLASS_NAMES.length, 1);
 
-model.summary();
+  if (model) {
+    model.dispose();
+  }
 
-model.compile({
-  optimizer: 'adam',
-  loss: CLASS_NAMES.length === 2 ? 'binaryCrossentropy' : 'categoricalCrossentropy',
-  metrics: ['accuracy'],
-});
+  model = tf.sequential();
+  model.add(tf.layers.dense({ inputShape: [1024], units: 128, activation: 'relu' }));
+  model.add(tf.layers.dense({ units: outputUnits, activation: 'softmax' }));
+
+  model.compile({
+    optimizer: 'adam',
+    loss: 'categoricalCrossentropy',
+    metrics: ['accuracy'],
+  });
+
+  model.summary();
+}
 
 function lockCapturePanels() {
   webcamPanels.forEach((panel) => panel.classList.remove('visible'));

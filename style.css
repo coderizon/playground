@@ -418,6 +418,15 @@ button:disabled {
   padding: 16px 0;
 }
 
+#add-class {
+  cursor: pointer;
+}
+
+#add-class:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(63, 115, 255, 0.2);
+}
+
 .hidden {
   display: none;
 }
