@@ -209,6 +209,12 @@ body[data-step="preview"] .preview-column {
   margin-bottom: 12px;
 }
 
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .title-group h2,
 .card-header h3 {
   margin: 0;

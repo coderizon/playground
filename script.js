@@ -1,3 +1,5 @@
+import { connectArduino, sendToArduino, setArduinoConnectionListener, isArduinoConnected } from './bluetooth/arduino.js';
+
 const STATUS = document.getElementById('status');
 const CAPTURE_VIDEO = document.getElementById('captureCam');
 const PREVIEW_VIDEO = document.getElementById('previewCam');
@@ -17,6 +19,7 @@ const probabilityList = document.getElementById('probabilityList');
 const menuButton = document.querySelector('.icon-button');
 const modeMenu = document.getElementById('modeMenu');
 const modeLabel = document.getElementById('modeLabel');
+const connectArduinoButton = document.getElementById('connectArduino');
 
 const CLASS_NAMES = [];
 const openWebcamButtons = [];
@@ -47,6 +50,12 @@ let gestureInitPromise;
 let gestureBusy = false;
 let drawingUtils;
 let gestureConnections;
+let arduinoConnected = false;
+let lastSentLabel = null;
+let lastSentAt = 0;
+
+const ARDUINO_SEND_THRESHOLD = 0.6;
+const ARDUINO_SEND_COOLDOWN_MS = 500;
 
 const BAR_COLORS = [
   ['#f07818', '#ffd8ba'],
@@ -117,6 +126,35 @@ if (addClassButton) {
 
 if (menuButton) {
   menuButton.addEventListener('click', toggleModeMenu);
+}
+
+if (connectArduinoButton) {
+  setArduinoConnectionListener((connected) => {
+    arduinoConnected = connected;
+    connectArduinoButton.disabled = false;
+    connectArduinoButton.textContent = connected ? 'Arduino verbunden' : 'Arduino verbinden';
+    connectArduinoButton.classList.toggle('primary', connected);
+    connectArduinoButton.classList.toggle('ghost', !connected);
+  });
+
+  connectArduinoButton.addEventListener('click', async () => {
+    if (arduinoConnected || isArduinoConnected()) {
+      alert('Arduino ist bereits verbunden.');
+      return;
+    }
+    connectArduinoButton.disabled = true;
+    connectArduinoButton.textContent = 'Verbinde...';
+    try {
+      await connectArduino();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      if (!arduinoConnected) {
+        connectArduinoButton.disabled = false;
+        connectArduinoButton.textContent = 'Arduino verbinden';
+      }
+    }
+  });
 }
 
 if (modeMenu) {
@@ -456,13 +494,17 @@ function predictLoop() {
 }
 
 function renderProbabilities(probArray = lastPrediction, bestIndex = -1, names = CLASS_NAMES) {
-  if (!probabilityList) return;
-
   const safeValues = names.map((_, idx) => {
     if (probArray && probArray[idx] !== undefined) return probArray[idx];
     return 0;
   });
   lastPrediction = safeValues;
+
+  if (predict && bestIndex >= 0) {
+    maybeSendArduinoPrediction(safeValues, bestIndex, names);
+  }
+
+  if (!probabilityList) return;
 
   probabilityList.innerHTML = '';
 
@@ -501,6 +543,22 @@ function renderProbabilities(probArray = lastPrediction, bestIndex = -1, names =
 
     probabilityList.appendChild(row);
   });
+}
+
+function maybeSendArduinoPrediction(probArray, bestIndex, names) {
+  if (!arduinoConnected || !isArduinoConnected() || currentMode !== 'image') return;
+  if (!Array.isArray(probArray) || bestIndex < 0) return;
+
+  const probability = probArray[bestIndex] || 0;
+  if (probability < ARDUINO_SEND_THRESHOLD) return;
+
+  const label = names[bestIndex] || `Class ${bestIndex + 1}`;
+  const now = Date.now();
+  if (label === lastSentLabel && now - lastSentAt < ARDUINO_SEND_COOLDOWN_MS) return;
+
+  lastSentLabel = label;
+  lastSentAt = now;
+  sendToArduino(`${label}:${Math.round(probability * 100)}`);
 }
 
 function getBarColors(idx) {
