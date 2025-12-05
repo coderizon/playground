@@ -3,43 +3,160 @@ import {
   MOBILE_NET_INPUT_WIDTH,
   STOP_DATA_GATHER,
 } from '../constants.js';
-import { CAPTURE_VIDEO, PREVIEW_VIDEO, STATUS } from '../domRefs.js';
+import {
+  CAPTURE_VIDEO,
+  PREVIEW_VIDEO,
+  STATUS,
+  TRAIN_BUTTON,
+  trainingProgress,
+  trainingProgressFill,
+  trainingProgressLabel,
+  trainingProgressValue,
+} from '../domRefs.js';
 import { state } from '../state.js';
 import { lockCapturePanels, updateExampleCounts } from '../ui/classes.js';
 import { renderProbabilities } from '../ui/probabilities.js';
 import { setMobileStep } from '../ui/steps.js';
 import { runGestureStep } from './gesture.js';
 
+const defaultTrainLabel = TRAIN_BUTTON ? TRAIN_BUTTON.textContent : 'Modell trainieren';
+
 export async function trainAndPredict() {
-  if (state.trainingCompleted) return;
-  state.predict = false;
-  tf.util.shuffleCombo(state.trainingDataInputs, state.trainingDataOutputs);
-  const outputsAsTensor = tf.tensor1d(state.trainingDataOutputs, 'int32');
-  const oneHotOutputs = tf.oneHot(outputsAsTensor, state.classNames.length);
-  const inputsAsTensor = tf.stack(state.trainingDataInputs);
+  if (state.trainingCompleted || state.trainingInProgress) return;
+  if (!state.trainingDataInputs.length) {
+    if (STATUS) {
+      STATUS.innerText = 'Bitte sammle zuerst Bildbeispiele.';
+    }
+    return;
+  }
 
   const { batchSize, epochs } = getTrainingHyperparams();
+  state.predict = false;
+  state.trainingInProgress = true;
+  setTrainingButtonState(true);
+  startTrainingUi(epochs);
 
-  await state.model.fit(inputsAsTensor, oneHotOutputs, {
-    shuffle: true,
-    batchSize,
-    epochs,
-    callbacks: { onEpochEnd: logProgress },
-  });
+  let outputsAsTensor;
+  let oneHotOutputs;
+  let inputsAsTensor;
 
-  outputsAsTensor.dispose();
-  oneHotOutputs.dispose();
-  inputsAsTensor.dispose();
-  state.predict = true;
-  state.trainingCompleted = true;
-  lockCapturePanels();
-  showPreview();
-  setMobileStep('preview');
-  predictLoop();
+  try {
+    tf.util.shuffleCombo(state.trainingDataInputs, state.trainingDataOutputs);
+    outputsAsTensor = tf.tensor1d(state.trainingDataOutputs, 'int32');
+    oneHotOutputs = tf.oneHot(outputsAsTensor, state.classNames.length);
+    inputsAsTensor = tf.stack(state.trainingDataInputs);
+
+    await state.model.fit(inputsAsTensor, oneHotOutputs, {
+      shuffle: true,
+      batchSize,
+      epochs,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => updateTrainingProgressUi(epoch + 1, epochs, logs),
+      },
+    });
+
+    state.predict = true;
+    state.trainingCompleted = true;
+    completeTrainingUi(epochs);
+    lockCapturePanels();
+    showPreview();
+    setMobileStep('preview');
+    predictLoop();
+  } catch (error) {
+    handleTrainingError(error);
+  } finally {
+    outputsAsTensor?.dispose();
+    oneHotOutputs?.dispose();
+    inputsAsTensor?.dispose();
+    state.trainingInProgress = false;
+    setTrainingButtonState(false);
+  }
 }
 
-function logProgress(epoch, logs) {
-  console.log('Data for epoch ' + epoch, logs);
+export function resetTrainingProgress() {
+  resetTrainingUi();
+}
+
+function setTrainingButtonState(isTraining) {
+  if (!TRAIN_BUTTON) return;
+  TRAIN_BUTTON.disabled = isTraining;
+  TRAIN_BUTTON.textContent = isTraining ? 'Trainiert...' : defaultTrainLabel;
+}
+
+function startTrainingUi(totalEpochs) {
+  if (trainingProgress) {
+    trainingProgress.classList.remove('hidden');
+  }
+  if (trainingProgressLabel) {
+    trainingProgressLabel.textContent = `Training wird vorbereitet (${totalEpochs} Epochen)...`;
+  }
+  if (trainingProgressValue) {
+    trainingProgressValue.textContent = '0%';
+  }
+  if (trainingProgressFill) {
+    trainingProgressFill.style.width = '0%';
+  }
+  if (STATUS) {
+    STATUS.innerText = `Training wird vorbereitet (${totalEpochs} Epochen)...`;
+  }
+}
+
+function updateTrainingProgressUi(currentEpoch, totalEpochs, logs) {
+  const percent = Math.min(100, Math.round((currentEpoch / totalEpochs) * 100));
+  const acc = logs?.acc ?? logs?.accuracy;
+  const accValue = typeof acc === 'number' && Number.isFinite(acc) ? (acc * 100).toFixed(1) : null;
+  const accText = accValue ? ` · acc ${accValue}%` : '';
+  const accStatus = accValue ? ` Accuracy: ${accValue}%.` : '';
+
+  if (trainingProgressFill) {
+    trainingProgressFill.style.width = `${percent}%`;
+  }
+  if (trainingProgressValue) {
+    trainingProgressValue.textContent = `${percent}%`;
+  }
+  if (trainingProgressLabel) {
+    trainingProgressLabel.textContent = `Training läuft (${currentEpoch}/${totalEpochs})${accText}`;
+  }
+  if (STATUS) {
+    STATUS.innerText = `Training läuft. Epoche ${currentEpoch} von ${totalEpochs}.${accStatus}`;
+  }
+}
+
+function completeTrainingUi(totalEpochs) {
+  updateTrainingProgressUi(totalEpochs, totalEpochs);
+  if (trainingProgressLabel) {
+    trainingProgressLabel.textContent = 'Training abgeschlossen';
+  }
+  if (STATUS) {
+    STATUS.innerText = 'Training abgeschlossen.';
+  }
+}
+
+function handleTrainingError(error) {
+  console.error(error);
+  if (trainingProgressLabel) {
+    trainingProgressLabel.textContent = 'Training fehlgeschlagen';
+  }
+  if (STATUS) {
+    STATUS.innerText = 'Training fehlgeschlagen. Details in der Konsole.';
+  }
+}
+
+function resetTrainingUi() {
+  state.trainingInProgress = false;
+  if (trainingProgress) {
+    trainingProgress.classList.add('hidden');
+  }
+  if (trainingProgressLabel) {
+    trainingProgressLabel.textContent = 'Bereit zum Trainieren';
+  }
+  if (trainingProgressValue) {
+    trainingProgressValue.textContent = '0%';
+  }
+  if (trainingProgressFill) {
+    trainingProgressFill.style.width = '0%';
+  }
+  setTrainingButtonState(false);
 }
 
 function getTrainingHyperparams() {

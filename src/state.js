@@ -5,6 +5,7 @@ export const state = {
   activeClassIndex: 0,
   previewReady: false,
   trainingCompleted: false,
+  trainingInProgress: false,
   mobilenet: undefined,
   gatherDataState: STOP_DATA_GATHER,
   videoPlaying: false,

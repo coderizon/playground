@@ -43,6 +43,7 @@ import {
   handleCollectStart,
   predictLoop,
   showPreview,
+  resetTrainingProgress,
   trainAndPredict,
 } from './ml/training.js';
 import { state, disposeTrainingData } from './state.js';
@@ -239,6 +240,7 @@ function addClassAndReset() {
   state.trainingCompleted = false;
   state.predict = false;
   state.previewReady = false;
+  resetTrainingProgress();
   PREVIEW_VIDEO.classList.add('hidden');
   rebuildModel();
   renderProbabilities([], -1, state.classNames);
@@ -302,6 +304,7 @@ function resetApp() {
   state.trainingCompleted = false;
   state.gatherDataState = STOP_DATA_GATHER;
   state.examplesCount.length = 0;
+  resetTrainingProgress();
   disposeTrainingData();
   if (STATUS) {
     STATUS.innerText = 'No data collected';
