@@ -795,6 +795,38 @@ body.landing-active {
     border: none;
     margin: 0;
     padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    width: 100vw;
+    max-width: none;
+    background: transparent;
+    gap: 12px;
+  }
+
+  .landing-shell > *:not(.model-marquee) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .landing-shell::before,
+  .landing-shell::after {
+    display: none;
+  }
+
+  #landing-page {
+    display: block;
+    padding: 0;
+    justify-items: stretch;
+    align-items: stretch;
+    width: 100vw;
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  .model-marquee {
+    width: 100vw;
+    margin: 0;
+    padding: 0;
   }
 }
 
@@ -1059,7 +1091,7 @@ body.landing-active {
 
 @media (max-width: 900px) {
   .landing-shell {
-    padding: 22px 18px 28px;
+    padding: 22px 0px 28px;
     gap: 14px;
   }
 
@@ -1079,7 +1111,7 @@ body.landing-active {
 
 @media (max-width: 640px) {
   #landing-page {
-    padding: 16px 12px 28px;
+    padding: 0px;
   }
 
   .landing-identity {
