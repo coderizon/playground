@@ -804,8 +804,8 @@ body.landing-active {
   }
 
   .landing-shell > *:not(.model-marquee) {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 11;
+    padding-right: 11;
   }
 
   .landing-shell::before,
@@ -973,7 +973,7 @@ body.landing-active {
 }
 
 .search-pill {
-  width: 100%;
+  width: 50%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -987,6 +987,7 @@ body.landing-active {
   color: #0f172a;
   text-align: left;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  margin: 0 auto;
 }
 
 .search-pill:hover {
@@ -1027,7 +1028,7 @@ body.landing-active {
 
 .model-track {
   display: flex;
-  gap: 0;
+  gap: 14px;
   width: max-content;
 }
 
@@ -1203,7 +1204,9 @@ body.landing-active {
   }
 
   .search-pill {
+    width: 100%;
     font-size: 16px;
+    margin: 0 auto;
   }
 
   .model-card {
