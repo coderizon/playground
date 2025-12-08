@@ -1218,34 +1218,23 @@ body.landing-active {
 
   .model-track {
     display: grid;
-    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, 1fr);
+    grid-auto-columns: minmax(260px, 72vw);
     gap: 12px;
-    width: 100%;
+    width: max-content;
   }
 
   .marquee-group {
     display: contents;
   }
 
-  .marquee-group:nth-of-type(n+2) {
-    display: none;
-  }
-
   .model-card {
     width: 100%;
     min-width: 260px;
     max-width: 360px;
-    animation-duration: 10s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-  }
-
-  .model-card:nth-child(-n+2) {
-    animation-name: mobile-drift-left;
-  }
-
-  .model-card:nth-child(n+3) {
-    animation-name: mobile-drift-right;
+    animation: none;
+    transform: none;
   }
 
   .model-card-hero {

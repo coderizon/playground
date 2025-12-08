@@ -71,12 +71,9 @@ function initMarqueeScroller() {
   const track = marquee?.querySelector('.model-track');
   if (!marquee || !track) return;
 
-  // Disable marquee scroll on small screens; layout stacks in CSS.
-  if (window.matchMedia('(max-width: 640px)').matches) {
-    return;
-  }
-
-  const AUTO_SPEED = 0.02; // px per ms, deutlich langsamer
+  const isMobileMarquee = window.matchMedia('(max-width: 640px)').matches;
+  const AUTO_SPEED = isMobileMarquee ? 0.01 : 0.02; // px per ms, auf Mobile extra langsam
+  const SCROLL_DIRECTION = isMobileMarquee ? -1 : 1; // Mobile bewegt sich sichtbar nach rechts
   let isDragging = false;
   let startX = 0;
   let startScroll = 0;
@@ -100,7 +97,7 @@ function initMarqueeScroller() {
     if (lastTime === null) lastTime = timestamp;
     const delta = timestamp - lastTime;
     if (autoScroll && !isDragging) {
-      marquee.scrollLeft += delta * AUTO_SPEED;
+      marquee.scrollLeft += delta * AUTO_SPEED * SCROLL_DIRECTION;
       ensureLoop();
     }
     lastTime = timestamp;
