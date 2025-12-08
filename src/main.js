@@ -319,3 +319,5 @@ function resetApp() {
 
   console.log('Tensors in memory: ' + tf.memory().numTensors);
 }
+
+window.setAppMode = setMode;
