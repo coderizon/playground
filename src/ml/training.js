@@ -184,20 +184,28 @@ export function showPreview() {
     STATUS.innerText = '';
   }
   PREVIEW_VIDEO.classList.remove('hidden');
-  if (PREVIEW_VIDEO.readyState >= 2) {
+  const hasFrame = () =>
+    PREVIEW_VIDEO.readyState >= 2 &&
+    PREVIEW_VIDEO.videoWidth > 0 &&
+    PREVIEW_VIDEO.videoHeight > 0;
+
+  const markPreviewReady = () => {
+    if (!hasFrame()) return;
     state.previewReady = true;
     renderProbabilities(state.lastPrediction);
-    return;
+    PREVIEW_VIDEO.removeEventListener('loadeddata', markPreviewReady);
+    PREVIEW_VIDEO.removeEventListener('canplay', markPreviewReady);
+    PREVIEW_VIDEO.removeEventListener('playing', markPreviewReady);
+  };
+
+  if (hasFrame()) {
+    markPreviewReady();
   }
-  PREVIEW_VIDEO.addEventListener(
-    'loadeddata',
-    function onPreviewReady() {
-      state.previewReady = true;
-      renderProbabilities(state.lastPrediction);
-      PREVIEW_VIDEO.removeEventListener('loadeddata', onPreviewReady);
-    },
-    { once: true }
-  );
+  if (!state.previewReady) {
+    PREVIEW_VIDEO.addEventListener('loadeddata', markPreviewReady);
+    PREVIEW_VIDEO.addEventListener('canplay', markPreviewReady);
+    PREVIEW_VIDEO.addEventListener('playing', markPreviewReady);
+  }
 }
 
 export function predictLoop() {
@@ -267,6 +275,14 @@ async function dataGatherLoop() {
 
 async function collectGestureExample() {
   try {
+    if (
+      !CAPTURE_VIDEO ||
+      CAPTURE_VIDEO.readyState < 2 ||
+      !CAPTURE_VIDEO.videoWidth ||
+      !CAPTURE_VIDEO.videoHeight
+    ) {
+      return;
+    }
     const recognizer = await ensureGestureRecognizer();
     if (!recognizer) return;
 

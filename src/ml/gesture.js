@@ -19,6 +19,7 @@ export async function ensureGestureRecognizer() {
         baseOptions: {
           modelAssetPath:
             'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+          delegate: 'CPU',
         },
         runningMode: 'VIDEO',
         numHands: 1,
@@ -77,6 +78,14 @@ export function normalizeGestureLandmarks(landmarks = []) {
 }
 
 export async function runGestureStep() {
+  if (
+    !PREVIEW_VIDEO ||
+    PREVIEW_VIDEO.readyState < 2 ||
+    !PREVIEW_VIDEO.videoWidth ||
+    !PREVIEW_VIDEO.videoHeight
+  ) {
+    return;
+  }
   if (state.gestureBusy) return;
   if (!state.previewReady) return;
   if (!GESTURE_OVERLAY) return;

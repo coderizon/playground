@@ -38,7 +38,14 @@ export async function enableCam(allowFallback = true) {
 
   const facingConstraint =
     state.preferredFacingMode === 'environment' ? { exact: 'environment' } : 'user';
-  const constraints = { video: { width: 640, height: 480, facingMode: facingConstraint } };
+  const constraints = {
+    video: {
+      width: 640,
+      height: 480,
+      aspectRatio: { ideal: 4 / 3 },
+      facingMode: facingConstraint,
+    },
+  };
 
   if (state.currentStream) {
     attachStreamToVideos(state.currentStream);

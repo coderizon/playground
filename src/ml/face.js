@@ -96,7 +96,7 @@ export async function ensureFaceLandmarker() {
         baseOptions: {
           modelAssetPath:
             'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
-          delegate: 'GPU',
+          delegate: 'CPU',
         },
         runningMode: 'VIDEO',
         outputFaceBlendshapes: true,
@@ -129,6 +129,14 @@ export async function runFaceStep() {
   if (state.faceBusy) return;
   if (!state.previewReady) return;
   if (!GESTURE_OVERLAY) return;
+  if (
+    !PREVIEW_VIDEO ||
+    PREVIEW_VIDEO.readyState < 2 ||
+    !PREVIEW_VIDEO.videoWidth ||
+    !PREVIEW_VIDEO.videoHeight
+  ) {
+    return;
+  }
   state.faceBusy = true;
   try {
     const landmarker = await ensureFaceLandmarker();
