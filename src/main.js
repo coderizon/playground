@@ -36,6 +36,7 @@ import {
   mobileStepButtons,
 } from './domRefs.js';
 import { clearOverlay } from './ml/overlay.js';
+import { ensureHandLandmarker } from './ml/gesture.js';
 import { loadMobileNetFeatureModel, rebuildModel } from './ml/model.js';
 import {
   handleCollectEnd,
@@ -109,8 +110,9 @@ if (modeLabel) {
 
 if (modeMenu) {
   modeMenu.addEventListener('click', (event) => {
-    const mode = event.target.getAttribute('data-mode');
-    if (mode && mode !== 'gesture') {
+    const target = event.target.closest('[data-mode]');
+    const mode = target?.getAttribute('data-mode');
+    if (mode) {
       setMode(mode);
       closeModeMenu();
     }
@@ -261,7 +263,12 @@ function addClassAndReset() {
   state.previewReady = false;
   resetTrainingProgress();
   PREVIEW_VIDEO.classList.add('hidden');
-  rebuildModel();
+  if (state.currentMode === 'image') {
+    rebuildModel();
+  } else if (state.currentMode === 'gesture' && state.model) {
+    state.model.dispose();
+    state.model = null;
+  }
   renderProbabilities([], -1, state.classNames);
   if (STATUS) {
     STATUS.innerText = `Neue Klasse ${state.classNames[state.classNames.length - 1]} hinzugefügt.`;
@@ -270,7 +277,8 @@ function addClassAndReset() {
 }
 
 function setMode(newMode) {
-  if (newMode !== 'image' && newMode !== 'face') return;
+  const supportedModes = ['image', 'gesture', 'face'];
+  if (!supportedModes.includes(newMode)) return;
   if (newMode === state.currentMode) {
     updateModeMenuActive();
     return;
@@ -312,7 +320,26 @@ function setMode(newMode) {
     toggleCaptureControls(false);
     setTrainButtonState(false, 'Nur Inferenz');
     state.predict = true;
+    if (state.model) {
+      state.model.dispose();
+      state.model = null;
+    }
     window.requestAnimationFrame(predictLoop);
+  } else if (newMode === 'gesture') {
+    if (GESTURE_OVERLAY) {
+      GESTURE_OVERLAY.classList.remove('hidden');
+      clearOverlay();
+    }
+    setMobileStep('collect');
+    enableCam();
+    ensureHandLandmarker();
+    if (STATUS) {
+      STATUS.innerText = 'Gestenerkennung aktiv. Sammle Daten und trainiere.';
+    }
+    if (state.model) {
+      state.model.dispose();
+      state.model = null;
+    }
   } else {
     if (STATUS) {
       STATUS.innerText = 'Bildklassifikation aktiv. Sammle Daten und trainiere.';
@@ -321,13 +348,7 @@ function setMode(newMode) {
       GESTURE_OVERLAY.classList.add('hidden');
     }
     setMobileStep('collect');
-  }
-
-  if (newMode !== 'face') {
     rebuildModel();
-  } else if (state.model) {
-    state.model.dispose();
-    state.model = null;
   }
 
   updateModeMenuActive();
@@ -346,10 +367,24 @@ function resetApp() {
   }
   PREVIEW_VIDEO.classList.add('hidden');
   unlockCapturePanels();
-  if (state.currentMode !== 'face') {
+  if (state.currentMode === 'image') {
     rebuildModel();
     setTrainButtonState(true);
     toggleCaptureControls(true);
+    if (GESTURE_OVERLAY) {
+      GESTURE_OVERLAY.classList.add('hidden');
+    }
+  } else if (state.currentMode === 'gesture') {
+    if (state.model) {
+      state.model.dispose();
+      state.model = null;
+    }
+    setTrainButtonState(true);
+    toggleCaptureControls(true);
+    if (GESTURE_OVERLAY) {
+      GESTURE_OVERLAY.classList.remove('hidden');
+      clearOverlay();
+    }
   } else {
     setTrainButtonState(false, 'Nur Inferenz');
     toggleCaptureControls(false);

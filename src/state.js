@@ -22,6 +22,13 @@ export const state = {
   faceBusy: false,
   faceDrawingUtils: null,
   faceVision: null,
+  handLandmarker: null,
+  handInitPromise: null,
+  handBusy: false,
+  handDrawingUtils: null,
+  handVision: null,
+  gestureSamples: [],
+  gestureLastSampleTs: 0,
   arduinoConnected: false,
   microbitConnected: false,
   calliopeConnected: false,
@@ -42,8 +49,13 @@ export const state = {
 
 export function disposeTrainingData() {
   for (let i = 0; i < state.trainingDataInputs.length; i++) {
-    state.trainingDataInputs[i].dispose();
+    const input = state.trainingDataInputs[i];
+    if (input && typeof input.dispose === 'function') {
+      input.dispose();
+    }
   }
   state.trainingDataInputs.length = 0;
   state.trainingDataOutputs.length = 0;
+  state.gestureSamples.length = 0;
+  state.gestureLastSampleTs = 0;
 }

@@ -34,10 +34,6 @@ if (landingPage) {
     button.addEventListener('click', (event) => {
       event.stopPropagation();
       const mode = button.getAttribute('data-mode');
-      if (mode === 'gesture') {
-        event.preventDefault();
-        return;
-      }
       const availabilityNode = button.closest('[data-available]');
       const isAvailable = !availabilityNode || availabilityNode.getAttribute('data-available') !== 'false';
 
