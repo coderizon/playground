@@ -1,4 +1,4 @@
-import { GESTURE_FEATURE_LENGTH, MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH } from '../constants.js';
+import { MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH } from '../constants.js';
 import { STATUS } from '../domRefs.js';
 import { state } from '../state.js';
 
@@ -22,9 +22,8 @@ export async function loadMobileNetFeatureModel() {
 export function rebuildModel(inputSize) {
   const outputUnits = Math.max(state.classNames.length, 1);
   const lr = sanitizeLearningRate(state.trainingLearningRate);
-  const defaultInputSize = state.currentMode === 'gesture' ? GESTURE_FEATURE_LENGTH : 1024;
   const featureSize =
-    typeof inputSize === 'number' && inputSize > 0 ? inputSize : defaultInputSize;
+    typeof inputSize === 'number' && inputSize > 0 ? inputSize : 1024;
 
   if (state.model) {
     state.model.dispose();

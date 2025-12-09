@@ -1,6 +1,6 @@
 import { GESTURE_OVERLAY, PREVIEW_VIDEO, STATUS } from '../domRefs.js';
 import { state } from '../state.js';
-import { clearOverlay, resizeOverlay } from './gesture.js';
+import { clearOverlay, resizeOverlay } from './overlay.js';
 import { renderProbabilities } from '../ui/probabilities.js';
 
 const BLENDSHAPE_LABELS_DE = {

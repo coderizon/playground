@@ -35,7 +35,7 @@ import {
   modeMenu,
   mobileStepButtons,
 } from './domRefs.js';
-import { clearOverlay } from './ml/gesture.js';
+import { clearOverlay } from './ml/overlay.js';
 import { loadMobileNetFeatureModel, rebuildModel } from './ml/model.js';
 import {
   handleCollectEnd,
@@ -110,7 +110,7 @@ if (modeLabel) {
 if (modeMenu) {
   modeMenu.addEventListener('click', (event) => {
     const mode = event.target.getAttribute('data-mode');
-    if (mode) {
+    if (mode && mode !== 'gesture') {
       setMode(mode);
       closeModeMenu();
     }
@@ -270,7 +270,7 @@ function addClassAndReset() {
 }
 
 function setMode(newMode) {
-  if (newMode !== 'image' && newMode !== 'gesture' && newMode !== 'face') return;
+  if (newMode !== 'image' && newMode !== 'face') return;
   if (newMode === state.currentMode) {
     updateModeMenuActive();
     return;
@@ -297,20 +297,7 @@ function setMode(newMode) {
   toggleCaptureControls(true);
   setTrainButtonState(true);
 
-  if (newMode === 'gesture') {
-    if (GESTURE_OVERLAY) {
-      GESTURE_OVERLAY.classList.remove('hidden');
-      clearOverlay();
-    }
-    setMobileStep('collect');
-    showPreview();
-    enableCam();
-    if (STATUS) {
-      STATUS.innerText = 'Gestenmodus aktiv. Sammle Gestenbeispiele und trainiere.';
-    }
-    state.predict = true;
-    window.requestAnimationFrame(predictLoop);
-  } else if (newMode === 'face') {
+  if (newMode === 'face') {
     renderProbabilities([], -1, []);
     if (GESTURE_OVERLAY) {
       GESTURE_OVERLAY.classList.remove('hidden');

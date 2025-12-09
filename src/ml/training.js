@@ -2,7 +2,6 @@ import {
   MOBILE_NET_INPUT_HEIGHT,
   MOBILE_NET_INPUT_WIDTH,
   STOP_DATA_GATHER,
-  GESTURE_FEATURE_LENGTH,
 } from '../constants.js';
 import {
   CAPTURE_VIDEO,
@@ -18,11 +17,6 @@ import { state } from '../state.js';
 import { lockCapturePanels, updateExampleCounts } from '../ui/classes.js';
 import { renderProbabilities } from '../ui/probabilities.js';
 import { setMobileStep } from '../ui/steps.js';
-import {
-  detectGestureLandmarks,
-  normalizeGestureLandmarks,
-  runGestureStep,
-} from './gesture.js';
 import { runFaceStep } from './face.js';
 
 const defaultTrainLabel = TRAIN_BUTTON ? TRAIN_BUTTON.textContent : 'Modell trainieren';
@@ -215,11 +209,6 @@ export function showPreview() {
 export function predictLoop() {
   if (!state.predict) return;
 
-  if (state.currentMode === 'gesture') {
-    runGestureStep();
-    window.requestAnimationFrame(predictLoop);
-    return;
-  }
   if (state.currentMode === 'face') {
     runFaceStep();
     window.requestAnimationFrame(predictLoop);
@@ -253,6 +242,7 @@ export function predictLoop() {
 }
 
 export function handleCollectStart(event) {
+  console.log('[Debug] handleCollectStart triggered.');
   if (state.currentMode === 'face') return;
   event.preventDefault();
   const classNumber = parseInt(event.currentTarget.getAttribute('data-1hot'), 10);
@@ -261,52 +251,20 @@ export function handleCollectStart(event) {
 }
 
 export function handleCollectEnd(event) {
+  console.log('[Debug] handleCollectEnd triggered.');
   event.preventDefault();
   state.gatherDataState = STOP_DATA_GATHER;
 }
 
 async function dataGatherLoop() {
+  console.log('[Debug] dataGatherLoop frame. State:', state.gatherDataState);
   if (state.currentMode === 'face') return;
   if (!state.videoPlaying && CAPTURE_VIDEO?.readyState >= 2) {
     state.videoPlaying = true;
   }
   if (state.videoPlaying && state.gatherDataState !== STOP_DATA_GATHER) {
-    if (state.currentMode === 'gesture') {
-      await collectGestureExample();
-    } else {
-      collectImageExample();
-    }
+    collectImageExample();
     window.requestAnimationFrame(dataGatherLoop);
-  }
-}
-
-async function collectGestureExample() {
-  try {
-    if (
-      !CAPTURE_VIDEO ||
-      CAPTURE_VIDEO.readyState < 2 ||
-      !CAPTURE_VIDEO.videoWidth ||
-      !CAPTURE_VIDEO.videoHeight
-    ) {
-      return;
-    }
-    const landmarks = await detectGestureLandmarks(CAPTURE_VIDEO);
-    if (!landmarks) {
-      if (STATUS) {
-        STATUS.innerText = 'Keine Hand erkannt. Halte die Hand näher vor die Kamera.';
-      }
-      return;
-    }
-
-    const featureVector = normalizeGestureLandmarks(landmarks);
-    if (!featureVector || featureVector.length !== GESTURE_FEATURE_LENGTH) return;
-
-    const featuresTensor = tf.tensor1d(featureVector);
-    state.trainingDataInputs.push(featuresTensor);
-    state.trainingDataOutputs.push(state.gatherDataState);
-    handleExampleBookkeeping();
-  } catch (error) {
-    console.error(error);
   }
 }
 
