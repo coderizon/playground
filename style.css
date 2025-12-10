@@ -1275,6 +1275,24 @@ body.landing-active {
   object-fit: cover;
 }
 
+.model-card-hero.face-placeholder {
+  background: radial-gradient(circle at 20% 20%, rgba(63, 115, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(255, 152, 67, 0.12), transparent 40%),
+    linear-gradient(135deg, #f8faff, #eef2ff);
+  color: #0f172a;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.model-card-placeholder-text {
+  max-width: 260px;
+  line-height: 1.4;
+}
+
 .model-card.no-hero .model-card-hero {
   display: none;
 }
