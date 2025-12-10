@@ -152,6 +152,25 @@ export function updateExampleCounts(reset = false) {
   });
 }
 
+export function resetClassCards(handlers = {}) {
+  if (classesColumn) {
+    classesColumn.querySelectorAll('.class-card').forEach((card) => card.remove());
+  }
+
+  state.classNames.length = 0;
+  state.examplesCount.length = 0;
+  state.classNameInputs.length = 0;
+  state.openWebcamButtons.length = 0;
+  state.webcamPanels.length = 0;
+  state.captureSlots.length = 0;
+  state.dataCollectorButtons.length = 0;
+  state.countChips.length = 0;
+  state.switchCameraButtons.length = 0;
+
+  addNewClassCard(handlers);
+  updateExampleCounts(true);
+}
+
 export function lockCapturePanels() {
   state.webcamPanels.forEach((panel) => panel.classList.remove('visible'));
   CAPTURE_VIDEO.classList.add('hidden');

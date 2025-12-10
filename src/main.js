@@ -56,7 +56,13 @@ import {
   updateSwitchButtonsLabel,
 } from './camera/webcam.js';
 import { renderProbabilities } from './ui/probabilities.js';
-import { initializeExistingClasses, addNewClassCard, updateExampleCounts, unlockCapturePanels } from './ui/classes.js';
+import {
+  initializeExistingClasses,
+  addNewClassCard,
+  updateExampleCounts,
+  unlockCapturePanels,
+  resetClassCards,
+} from './ui/classes.js';
 import { toggleModeMenu, closeModeMenu, updateModeMenuActive } from './ui/menu.js';
 import { setMobileStep } from './ui/steps.js';
 
@@ -301,6 +307,7 @@ async function setMode(newMode) {
   state.examplesCount.length = 0;
   resetTrainingProgress();
   updateExampleCounts(true);
+  resetClassCards(classCardHandlers);
   unlockCapturePanels();
   const clearedNames = newMode === 'face' ? [] : state.classNames;
   renderProbabilities([], -1, clearedNames);
