@@ -343,16 +343,6 @@ body[data-step="preview"] .preview-column {
   position: relative;
 }
 
-#audioVisualizer {
-  width: 100%;
-  height: auto;
-  min-height: 180px;
-  display: block;
-  background: radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.12), transparent 40%),
-    radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.12), transparent 40%),
-    linear-gradient(135deg, #0f172a, #0b1020);
-}
-
 button {
   border: none;
   border-radius: 10px;

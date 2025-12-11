@@ -21,14 +21,6 @@ import { renderProbabilities } from '../ui/probabilities.js';
 import { setMobileStep } from '../ui/steps.js';
 import { predictGesture, trainGestureModel } from './gesture.js';
 import { predictPose, trainPoseModel } from './pose.js';
-import {
-  attachAudioVisualizer,
-  startAudioCollection,
-  startAudioPreview,
-  stopAudioCollection,
-  stopAudioPreview,
-  trainAudioModel,
-} from './audio.js';
 
 const defaultTrainLabel = TRAIN_BUTTON ? TRAIN_BUTTON.textContent : 'Modell trainieren';
 const state = getState();
@@ -47,9 +39,6 @@ export async function trainAndPredict() {
       return;
     case 'pose':
       await trainPoseWorkflow();
-      return;
-    case 'audio':
-      await trainAudioWorkflow();
       return;
     default:
       await trainImageWorkflow();
@@ -117,37 +106,6 @@ async function trainPoseWorkflow() {
     showPreview();
     setMobileStep('preview');
     predictLoop();
-  } catch (error) {
-    handleTrainingError(error);
-  } finally {
-    setTrainingFlags({ trainingInProgress: false });
-    setTrainingButtonState(false);
-  }
-}
-
-async function trainAudioWorkflow() {
-  const { batchSize, epochs } = getTrainingHyperparams();
-  setTrainingFlags({ predict: false, trainingInProgress: true });
-  setTrainingButtonState(true);
-  startTrainingUi(epochs);
-
-  try {
-    await trainAudioModel({
-      batchSize,
-      epochs,
-      onEpochEnd: (epoch, logs) => updateTrainingProgressUi(epoch + 1, epochs, logs),
-    });
-
-    setTrainingFlags({ predict: true, trainingCompleted: true });
-    completeTrainingUi(epochs);
-    lockCapturePanels();
-    setMobileStep('preview');
-    await startAudioPreview((probs, bestIndex, labels) => {
-      renderProbabilities(probs, bestIndex, labels);
-    });
-    if (STATUS) {
-      STATUS.innerText = 'Audio-Modell trainiert. Live-Vorhersage läuft.';
-    }
   } catch (error) {
     handleTrainingError(error);
   } finally {
@@ -310,9 +268,7 @@ export function showPreview() {
   if (STATUS) {
     STATUS.innerText = '';
   }
-  if (state.currentMode !== 'audio') {
-    PREVIEW_VIDEO.classList.remove('hidden');
-  }
+  PREVIEW_VIDEO.classList.remove('hidden');
   const hasFrame = () =>
     PREVIEW_VIDEO.readyState >= 2 &&
     PREVIEW_VIDEO.videoWidth > 0 &&
@@ -338,12 +294,7 @@ export function showPreview() {
 }
 
 export async function predictLoop() {
-  if (!state.predict) {
-    if (state.currentMode === 'audio') {
-      stopAudioPreview();
-    }
-    return;
-  }
+  if (!state.predict) return;
 
   if (state.currentMode === 'face') {
     return;
@@ -383,13 +334,6 @@ export async function predictLoop() {
     return;
   }
 
-  if (state.currentMode === 'audio') {
-    await startAudioPreview((probs, bestIndex, labels) => {
-      renderProbabilities(probs, bestIndex, labels);
-    });
-    return;
-  }
-
   if (state.previewReady && state.trainingCompleted) {
     tf.tidy(function () {
       const videoFrameAsTensor = tf.browser.fromPixels(PREVIEW_VIDEO).div(255);
@@ -421,22 +365,12 @@ export function handleCollectStart(event) {
   const classNumber = parseInt(event.currentTarget.getAttribute('data-1hot'), 10);
   if (Number.isNaN(classNumber)) return;
 
-  if (state.currentMode === 'audio') {
-    attachVisualizerForClass(classNumber);
-    startAudioCollection(classNumber);
-    return;
-  }
-
   setState({ gatherDataState: classNumber });
   dataGatherLoop();
 }
 
 export function handleCollectEnd(event) {
   event.preventDefault();
-  if (state.currentMode === 'audio') {
-    stopAudioCollection();
-    return;
-  }
   setState({ gatherDataState: STOP_DATA_GATHER });
 }
 
@@ -492,13 +426,4 @@ function vibrateFeedback() {
 
 function setTrainingFlags(flags) {
   setState(flags);
-}
-
-function attachVisualizerForClass(idx) {
-  const slot = state.captureSlots.find(
-    (s) => parseInt(s.getAttribute('data-class-slot'), 10) === idx
-  );
-  if (slot) {
-    attachAudioVisualizer(slot);
-  }
 }

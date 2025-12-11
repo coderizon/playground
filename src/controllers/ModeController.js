@@ -1,14 +1,4 @@
-import {
-  AUDIO_CAPTURE_LABEL,
-  AUDIO_COLLECT_LABEL,
-  AUDIO_OPEN_BUTTON_LABEL,
-  DEFAULT_CAPTURE_LABEL,
-  DEFAULT_COLLECT_LABEL,
-  MODE_NAMES,
-  POSE_CAPTURE_LABEL,
-  STOP_DATA_GATHER,
-  SUPPORTED_MODES,
-} from '../constants.js';
+import { DEFAULT_CAPTURE_LABEL, DEFAULT_COLLECT_LABEL, MODE_NAMES, POSE_CAPTURE_LABEL, STOP_DATA_GATHER, SUPPORTED_MODES } from '../constants.js';
 import {
   CAPTURE_VIDEO,
   GESTURE_OVERLAY,
@@ -36,18 +26,10 @@ import {
   enableCam,
   hideWebcamPanel,
   moveCaptureToSlot,
-  stopCurrentStream,
   toggleCameraFacing,
   updateSwitchButtonsLabel,
 } from '../camera/webcam.js';
 import { resetTrainingProgress } from '../ml/training.js';
-import {
-  attachAudioVisualizer,
-  clearAudioExamples,
-  resetAudioState,
-  stopAudioCollection,
-  stopAudioPreview,
-} from '../ml/audio.js';
 import { ensurePoseLandmarker, resetPoseSamples, runPoseLoop, stopPoseLoop } from '../ml/pose.js';
 
 const state = getState();
@@ -91,8 +73,6 @@ export async function setMode(newMode) {
     await activateGestureMode();
   } else if (newMode === 'face') {
     await activateFaceMode();
-  } else if (newMode === 'audio') {
-    activateAudioMode();
   } else if (newMode === 'pose') {
     await activatePoseMode();
   } else {
@@ -107,8 +87,6 @@ export function resetApp() {
   stopGestureLoop();
   stopFaceLoop();
   stopPoseLoop();
-  stopAudioPreview();
-  stopAudioCollection();
   setState({
     predict: false,
     previewReady: false,
@@ -120,8 +98,6 @@ export function resetApp() {
   disposeTrainingData();
   resetGestureSamples();
   resetPoseSamples();
-  resetAudioState();
-  clearAudioExamples();
   mutateState((draft) => {
     draft.examplesCount.length = 0;
   });
@@ -157,8 +133,6 @@ export function resetApp() {
       clearOverlay();
     }
     setTrainButtonEnabled(true);
-  } else if (state.currentMode === 'audio') {
-    setTrainButtonEnabled(true);
   } else if (state.currentMode === 'face') {
     if (GESTURE_OVERLAY) {
       GESTURE_OVERLAY.classList.remove('hidden');
@@ -193,7 +167,7 @@ export function addClassAndReset() {
   PREVIEW_VIDEO.classList.add('hidden');
   if (state.currentMode === 'image') {
     rebuildModel();
-  } else if (state.currentMode !== 'audio' && state.model) {
+  } else if (state.model) {
     state.model.dispose();
     setState({ model: null });
   }
@@ -215,19 +189,6 @@ export function openCaptureForClass(idx) {
     );
   });
 
-  if (state.currentMode === 'audio') {
-    const slot = state.captureSlots.find(
-      (s) => parseInt(s.getAttribute('data-class-slot'), 10) === idx
-    );
-    if (slot) {
-      attachAudioVisualizer(slot);
-    }
-    if (STATUS) {
-      STATUS.innerText = `Audioaufnahme für ${state.classNames[idx]} geöffnet.`;
-    }
-    return;
-  }
-
   moveCaptureToSlot(idx);
   enableCam();
   if (STATUS) {
@@ -236,7 +197,6 @@ export function openCaptureForClass(idx) {
 }
 
 export function closeCapturePanel(idx) {
-  stopAudioCollection();
   setState({ gatherDataState: STOP_DATA_GATHER });
   hideWebcamPanel(idx);
 }
@@ -260,8 +220,6 @@ function resetSharedState() {
   disposeTrainingData();
   resetGestureSamples();
   resetPoseSamples();
-  resetAudioState();
-  clearAudioExamples();
   mutateState((draft) => {
     draft.examplesCount.length = 0;
   });
@@ -277,8 +235,6 @@ async function teardownCurrentMode() {
   stopGestureLoop();
   stopFaceLoop();
   stopPoseLoop();
-  stopAudioPreview();
-  stopAudioCollection();
 }
 
 async function activateGestureMode() {
@@ -343,20 +299,6 @@ async function activateFaceMode() {
   updateClassCopyForMode('face');
 }
 
-function activateAudioMode() {
-  stopCurrentStream();
-  if (GESTURE_OVERLAY) {
-    GESTURE_OVERLAY.classList.add('hidden');
-  }
-  CAPTURE_VIDEO.classList.add('hidden');
-  PREVIEW_VIDEO.classList.add('hidden');
-  setMobileStep('collect');
-  updateClassCopyForMode('audio');
-  if (STATUS) {
-    STATUS.innerText = 'Audioerkennung aktiv. Halte, um ein Sample aufzunehmen.';
-  }
-}
-
 async function activateImageMode() {
   if (GESTURE_OVERLAY) {
     GESTURE_OVERLAY.classList.add('hidden');
@@ -373,14 +315,6 @@ async function activateImageMode() {
 }
 
 function updateClassCopyForMode(mode) {
-  if (mode === 'audio') {
-    updateClassCardCopy({
-      openButtonLabel: AUDIO_OPEN_BUTTON_LABEL,
-      panelLabel: AUDIO_CAPTURE_LABEL,
-      collectorLabel: AUDIO_COLLECT_LABEL,
-    });
-    return;
-  }
   const panelLabel = mode === 'pose' ? POSE_CAPTURE_LABEL : DEFAULT_CAPTURE_LABEL;
   updateClassCardCopy({
     openButtonLabel: DEFAULT_CAPTURE_LABEL,
