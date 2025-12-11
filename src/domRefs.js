@@ -16,6 +16,7 @@ export const probabilityList = document.getElementById('probabilityList');
 export const modeMenu = document.getElementById('modeMenu');
 export const modeLabel = document.getElementById('modeLabel');
 export const bleConnectButton = document.getElementById('bleConnect');
+export const previewSwitchBtn = document.getElementById('previewSwitchBtn');
 export const bleModal = document.getElementById('bleModal');
 export const bleModalBackdrop = document.getElementById('bleModalBackdrop');
 export const bleModalClose = document.getElementById('bleModalClose');

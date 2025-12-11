@@ -8,6 +8,7 @@ import {
   epochsInput,
   batchSizeInput,
   learningRateInput,
+  previewSwitchBtn,
 } from '../domRefs.js';
 import { getState, setState } from '../state.js';
 import { renderProbabilities } from '../ui/probabilities.js';
@@ -105,6 +106,10 @@ function bindCoreEvents() {
       closeModeMenu();
     }
   });
+
+  if (previewSwitchBtn) {
+    previewSwitchBtn.addEventListener('click', handleSwitchCamera);
+  }
 }
 
 function buildClassCardHandlers() {

@@ -1,6 +1,6 @@
 import { STOP_DATA_GATHER } from '../constants.js';
 import { getState, mutateState, setState } from '../state.js';
-import { CAPTURE_VIDEO, PREVIEW_VIDEO, STATUS } from '../domRefs.js';
+import { CAPTURE_VIDEO, PREVIEW_VIDEO, STATUS, previewSwitchBtn } from '../domRefs.js';
 
 export const captureCanvas = document.createElement('canvas');
 captureCanvas.className = 'overlay-canvas';
@@ -37,6 +37,9 @@ export function updateSwitchButtonsLabel() {
   switchCameraButtons.forEach((btn) => {
     if (btn) btn.textContent = targetLabel;
   });
+  if (previewSwitchBtn) {
+    previewSwitchBtn.textContent = targetLabel;
+  }
 }
 
 export async function enableCam(allowFallback = true) {
