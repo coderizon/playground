@@ -396,6 +396,18 @@ body[data-mode="face"] .preview-column {
   background: #f9fbff;
 }
 
+.field-error {
+  color: #b91c1c;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.guard-hint {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .train-page {
   display: flex;
   flex-direction: column;

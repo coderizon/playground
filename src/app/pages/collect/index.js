@@ -1,5 +1,4 @@
-import { sessionStore, STEP } from '../../store/sessionStore.js';
-import { renderClassList } from '../../components/class/classList.js';
+import { sessionStore, STEP, DATASET_STATUS } from '../../store/sessionStore.js';
 import { canGoToCollect, canGoToTraining } from '../../guards/navigation.js';
 
 export function renderCollectPage(root, state = sessionStore.getState()) {
@@ -10,6 +9,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
   }
 
   const classes = state.classes || [];
+  const trainingHint = trainingGateHint(state);
   root.innerHTML = `
     <section class="collect-page">
       <header class="collect-header">
@@ -25,24 +25,53 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
           <button type="button" class="secondary" data-go-train disabled>Weiter zu Training</button>
         </div>
       </header>
-      <section class="collect-body">
+      <section class="collect-body" x-data="classList()" x-init="init()">
         <div class="collect-toolbar">
-          <button type="button" class="primary" data-add-class>Klasse hinzufügen</button>
-          <span class="collect-count">${classes.length} Klassen angelegt</span>
+          <button type="button" class="primary" @click="addClass">Klasse hinzufügen</button>
+          <span class="collect-count" x-text="classes.length + ' Klassen angelegt'"></span>
         </div>
-        <div class="collect-class-list" data-class-list></div>
+        <div class="collect-class-list">
+          <template x-if="classes.length === 0">
+            <div class="collect-empty">
+              <h3>Noch keine Klassen</h3>
+              <p>Füge mindestens zwei Klassen hinzu, benenne sie und sammle Beispiele.</p>
+            </div>
+          </template>
+          <template x-for="(classItem, index) in classes" :key="classItem.id">
+            <article class="class-card-v2">
+              <header>
+                <input
+                  type="text"
+                  class="class-name-input"
+                  :value="classItem.name"
+                  maxlength="60"
+                  aria-label="Klassenname eingeben"
+                  @change="commitName(classItem.id, $event.target.value)"
+                  @blur="commitName(classItem.id, $event.target.value)"
+                />
+                <span :class="datasetChipClass(classItem.dataset.status)">
+                  <span x-text="datasetLabel(classItem.dataset.status)"></span>
+                </span>
+              </header>
+              <p class="dataset-summary">
+                <span x-text="classItem.dataset.recordedCount"></span>/<span x-text="classItem.dataset.expectedCount"></span>
+                Beispiele
+              </p>
+              <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
+              <div class="class-card-actions">
+                <button type="button" class="ghost" disabled>Recorder öffnen</button>
+                <button type="button" class="ghost" @click="confirmDelete(classItem)">Entfernen</button>
+              </div>
+            </article>
+          </template>
+        </div>
+        <p class="guard-hint">${trainingHint}</p>
       </section>
     </section>
   `;
 
-  const addBtn = root.querySelector('[data-add-class]');
   const backBtn = root.querySelector('[data-back-home]');
   const goTrainBtn = root.querySelector('[data-go-train]');
-  const classListEl = root.querySelector('[data-class-list]');
-
-  if (addBtn) {
-    addBtn.addEventListener('click', () => sessionStore.addClass());
-  }
   if (backBtn) {
     backBtn.addEventListener('click', () => sessionStore.setStep(STEP.HOME));
   }
@@ -55,7 +84,6 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
     });
   }
 
-  renderClassList(classListEl, classes);
 }
 
 function renderUnavailable(root) {
@@ -70,4 +98,18 @@ function renderUnavailable(root) {
   root.querySelector('[data-go-home]')?.addEventListener('click', () => {
     sessionStore.setStep(STEP.HOME);
   });
+}
+
+function trainingGateHint(state) {
+  const classes = state.classes || [];
+  if (classes.length < 2) {
+    return 'Mindestens zwei Klassen sind erforderlich, bevor du weiter trainieren kannst.';
+  }
+  const incomplete = classes.some(
+    (cls) => cls.dataset?.status !== DATASET_STATUS.READY
+  );
+  if (incomplete) {
+    return 'Jede Klasse benötigt einen vollständigen Datensatz (Status „Bereit“).';
+  }
+  return '';
 }

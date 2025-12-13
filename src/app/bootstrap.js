@@ -1,5 +1,7 @@
 import { startRouter } from './routes/router.js';
 import { sessionStore } from './store/sessionStore.js';
+import { ensureAlpineStarted } from './setupAlpine.js';
+import { registerAppComponents } from './components/registerComponents.js';
 
 const LEGACY_ROOT_IDS = ['landing-page', 'app-shell'];
 
@@ -23,5 +25,6 @@ export async function bootstrapNewApp({ targetSelector = '#new-app-root' } = {})
 
   root.removeAttribute('hidden');
   root.classList.add('new-app-root-active');
+  ensureAlpineStarted([registerAppComponents]);
   startRouter(root);
 }

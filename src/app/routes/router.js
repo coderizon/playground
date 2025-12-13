@@ -20,6 +20,9 @@ export function startRouter(root) {
     const state = sessionStore.getState();
     const handler = routeHandlers[state.step] || renderFallback;
     handler(root, state);
+    if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+      window.Alpine.initTree(root);
+    }
   };
 
   sessionStore.subscribe(render);
