@@ -42,7 +42,7 @@
    - Add connection state persistence, edge error dialogs, and integrate BLE modal parity from the legacy UI.
 5. **Guards & routing**
    - Flesh out `app/routes/` and `app/guards/` with unit-tested helpers (e.g., `canDiscardClass`, `canStartInference`).
-   - Introduce route transitions (e.g., `router.go(step)`) so navigation is centralized rather than page-local.
+   - Increase coverage of step transitions by centralizing navigation calls (`navigationController`, `stepTransitions`) and adding tests.
 6. **Quality bar**
    - Accessibility pass: focus traps for modals, keyboard shortcuts for recording, ARIA live regions for status text.
    - Pin external dependencies (tf.js, mediapipe) as described in the vision (self-host or lock versions).

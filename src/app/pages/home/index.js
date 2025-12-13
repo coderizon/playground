@@ -1,5 +1,6 @@
 import { sessionStore, STEP } from '../../store/sessionStore.js';
 import { getAvailableTaskModels } from '../../data/taskModels.js';
+import { goHome } from '../../routes/navigationController.js';
 
 export function renderHomePage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -90,9 +91,7 @@ export function renderHomePage(root, state = sessionStore.getState()) {
     }
   });
 
-  goHomeBtn.addEventListener('click', () => {
-    sessionStore.setStep(STEP.HOME);
-  });
+  goHomeBtn.addEventListener('click', goHome);
 
   if (!state?.selectedTaskModel) {
     stateEl.textContent = 'Keine Session gestartet. Wähle eine Karte.';

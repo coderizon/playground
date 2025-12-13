@@ -1,5 +1,6 @@
 import { sessionStore, STEP, DATASET_STATUS } from '../../store/sessionStore.js';
 import { canGoToCollect, canGoToTraining } from '../../guards/navigation.js';
+import { goHome, goTrain } from '../../routes/navigationController.js';
 
 export function renderCollectPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -178,9 +179,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
     </div>
   `;
 
-  root.querySelector('[data-back-home]')?.addEventListener('click', () => {
-    sessionStore.setStep(STEP.HOME);
-  });
+  root.querySelector('[data-back-home]')?.addEventListener('click', goHome);
   const goTrainBtn = root.querySelector('[data-go-train]');
   const updateTrainButton = () => {
     const nextState = sessionStore.getState();
@@ -190,7 +189,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
     goTrainBtn.disabled = !canGoToTraining(state);
     goTrainBtn.addEventListener('click', () => {
       if (canGoToTraining(sessionStore.getState())) {
-        sessionStore.setStep(STEP.TRAIN);
+        goTrain();
       }
     });
     const unsubscribe = sessionStore.subscribe(updateTrainButton);
