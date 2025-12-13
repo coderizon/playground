@@ -34,6 +34,17 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
         <p class="collect-lock-hint" x-show="trainingLocked">
           Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.
         </p>
+        <section class="collect-summary-panel" x-data="collectSummary()" x-init="init()">
+          <div class="summary-item">
+            <p class="eyebrow">Klassen bereit</p>
+            <strong x-text="readyClasses + '/' + totalClasses"></strong>
+          </div>
+          <div class="summary-item">
+            <p class="eyebrow">Samples</p>
+            <strong x-text="totalSamples"></strong>
+          </div>
+          <p class="summary-message" x-text="message"></p>
+        </section>
         <div class="collect-class-list">
           <template x-if="classes.length === 0">
             <div class="collect-empty">
