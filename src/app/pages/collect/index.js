@@ -28,9 +28,12 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
       <section class="collect-body" x-data="classList()" x-init="init()">
         ${trainingHint ? `<div class="notice notice--info">${trainingHint}</div>` : ''}
         <div class="collect-toolbar">
-          <button type="button" class="primary" @click="addClass">Klasse hinzufügen</button>
+          <button type="button" class="primary" @click="addClass" :disabled="trainingLocked">Klasse hinzufügen</button>
           <span class="collect-count" x-text="classes.length + ' Klassen angelegt'"></span>
         </div>
+        <p class="collect-lock-hint" x-show="trainingLocked">
+          Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.
+        </p>
         <div class="collect-class-list">
           <template x-if="classes.length === 0">
             <div class="collect-empty">
@@ -77,7 +80,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 <p class="dataset-hint" x-text="statusHint()"></p>
               </section>
               <div class="class-card-actions">
-                <button type="button" class="ghost" @click="confirmDelete(classItem)">Klasse entfernen</button>
+                <button type="button" class="ghost" @click="confirmDelete(classItem)" :disabled="trainingLocked">Klasse entfernen</button>
               </div>
             </article>
           </template>

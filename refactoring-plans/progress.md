@@ -7,6 +7,7 @@
 - **Alpine component layer**:
   - `classList` now focuses on class creation, naming, and dataset status messaging.
   - `datasetRecorder` components own camera permissions, sample loops, readiness hints, and destructive discards while piping embeddings into the TF.js bridge.
+  - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs.
   - Global confirm dialog + notice banners provide consistent messaging.
   - Edge panel component connects BLE devices, toggles streaming, and mirrors connection/streaming state on the inference page.
 - **Flow coverage**:
@@ -26,12 +27,12 @@
 1. **UX polish & structure**
    - Migrate the new SPA styling to Tailwind per the suggested structure (`src/styles`), replacing the ad-hoc CSS in `style.css`.
    - Build out the full `pages/collect|train|infer` directories (controllers + sub-components) instead of single files.
-   - Add Alpine components for Training Panel, Prediction Panel, etc., so logic moves out of page files.
+   - Add Alpine components for Prediction Panel, inference HUD, etc., so logic moves out of page files.
 2. **Recording experience**
    - Extend the dataset recorder to support audio tasks, richer permission failure prompts, and manual sample discard per sample.
    - Add a dedicated dataset summary panel (expected vs recorded counts, readiness reasons) so training blockers are self-explanatory.
 3. **Training/inference realism**
-   - Expose training abort, error handling, and dataset locking behaviors per vision §4.3.
+   - Harden dataset locking by preventing store-level class mutations when `training.status = running` and persisting readiness/error metadata for retries.
    - Add inference throttling, start requirements, and warnings when streaming is disabled.
 4. **Edge streaming completeness**
    - Implement streaming for Micro:bit and Calliope (currently TODO in `edgeService.js`).

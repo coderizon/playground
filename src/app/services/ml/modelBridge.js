@@ -11,6 +11,7 @@ let classifier = null;
 let recordedSamples = [];
 let currentSessionId = null;
 let lastPrediction = null;
+let trainingAbortRequested = false;
 
 sessionStore.subscribe((state) => {
   const sessionId = state?.session?.id;
@@ -56,6 +57,7 @@ export async function trainWithRecordedSamples() {
   }
 
   ensureClassifier(state.classes.length || 1, state.training.params.learningRate);
+  trainingAbortRequested = false;
   sessionStore.setTrainingStatus(TRAINING_STATUS.RUNNING, { progress: 0, error: null });
   const labels = recordedSamples.map((sample) => sample.classIndex);
   const xs = tf.stack(recordedSamples.map((sample) => sample.tensor));
@@ -69,6 +71,10 @@ export async function trainWithRecordedSamples() {
       shuffle: true,
       callbacks: {
         onEpochEnd: (epoch, logs) => {
+          if (trainingAbortRequested) {
+            classifier.stopTraining = true;
+            return;
+          }
           const percent = Math.round(((epoch + 1) / epochs) * 100);
           sessionStore.setTrainingStatus(TRAINING_STATUS.RUNNING, {
             progress: percent,
@@ -77,8 +83,12 @@ export async function trainWithRecordedSamples() {
         },
       },
     });
-    sessionStore.setTrainingStatus(TRAINING_STATUS.DONE, { progress: 100 });
-    sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
+    if (trainingAbortRequested || sessionStore.getState().training.status === TRAINING_STATUS.ABORTED) {
+      sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
+    } else {
+      sessionStore.setTrainingStatus(TRAINING_STATUS.DONE, { progress: 100 });
+      sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
+    }
   } catch (error) {
     console.error(error);
     sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, { error: error.message });
@@ -86,6 +96,7 @@ export async function trainWithRecordedSamples() {
     xs.dispose();
     ys.dispose();
     resetSamples();
+    trainingAbortRequested = false;
   }
 }
 
@@ -193,4 +204,17 @@ function validateLearningRate(value) {
   const lr = Number(value);
   if (!Number.isFinite(lr) || lr <= 0) return 0.001;
   return lr;
+}
+
+export function abortTraining() {
+  const state = sessionStore.getState();
+  if (state.training.status !== TRAINING_STATUS.RUNNING) return;
+  trainingAbortRequested = true;
+  sessionStore.setTrainingStatus(TRAINING_STATUS.ABORTED, {
+    progress: state.training.progress || 0,
+    error: null,
+  });
+  if (classifier) {
+    classifier.stopTraining = true;
+  }
 }
