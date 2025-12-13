@@ -169,6 +169,11 @@ export function createSessionStore(initial = createInitialSessionState()) {
           recordedCount >= classState.dataset.expectedCount
             ? DATASET_STATUS.READY
             : DATASET_STATUS.RECORDING;
+        const readinessReason = describeReadiness({
+          ...classState.dataset,
+          recordedCount,
+          status,
+        });
         return freezeState({
           ...classState,
           dataset: {
@@ -176,6 +181,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
             samples,
             recordedCount,
             status,
+            readinessReason,
           },
         });
       }),
@@ -226,6 +232,13 @@ export function createSessionStore(initial = createInitialSessionState()) {
         ...classState.dataset,
         status: validateDatasetStatus(status) || classState.dataset.status,
         ...patch,
+        readinessReason:
+          patch.readinessReason ||
+          describeReadiness({
+            ...classState.dataset,
+            status: validateDatasetStatus(status) || classState.dataset.status,
+            ...patch,
+          }),
       },
     }));
   };
@@ -239,6 +252,13 @@ export function createSessionStore(initial = createInitialSessionState()) {
         recordedCount: 0,
         status: DATASET_STATUS.EMPTY,
         error: null,
+        readinessReason: describeReadiness({
+          ...classState.dataset,
+          samples: [],
+          recordedCount: 0,
+          status: DATASET_STATUS.EMPTY,
+          error: null,
+        }),
       },
     }));
   };
@@ -333,20 +353,22 @@ function createClassState(options = {}) {
   const id = options.id || createId();
   const defaultName = options.name?.trim() || `Class ${id.slice(-4)}`;
   const samples = options.dataset?.samples ? [...options.dataset.samples] : [];
+  const dataset = {
+    status: validateDatasetStatus(options.dataset?.status) || DATASET_STATUS.EMPTY,
+    samples,
+    recordedCount:
+      typeof options.dataset?.recordedCount === 'number'
+        ? options.dataset.recordedCount
+        : samples.length,
+    expectedCount: options.dataset?.expectedCount ?? 20,
+    error: options.dataset?.error ?? null,
+    source: options.dataset?.source ?? null,
+  };
+  const readinessReason = describeReadiness(dataset);
   return freezeState({
     id,
     name: defaultName,
-    dataset: {
-      status: validateDatasetStatus(options.dataset?.status) || DATASET_STATUS.EMPTY,
-      samples,
-      recordedCount:
-        typeof options.dataset?.recordedCount === 'number'
-          ? options.dataset.recordedCount
-          : samples.length,
-      expectedCount: options.dataset?.expectedCount ?? 20,
-      error: options.dataset?.error ?? null,
-      source: options.dataset?.source ?? null,
-    },
+    dataset: { ...dataset, readinessReason },
     recording: {
       isOpen: options.recording?.isOpen ?? false,
       isRecording: options.recording?.isRecording ?? false,
@@ -400,4 +422,19 @@ function enrichSample(sample) {
     capturedAt: Date.now(),
     ...sample,
   };
+}
+
+function describeReadiness(dataset = {}) {
+  if (!dataset) return '';
+  if (dataset.status === DATASET_STATUS.ERROR) {
+    return dataset.error || 'Aufnahme fehlgeschlagen.';
+  }
+  if (dataset.status === DATASET_STATUS.READY) {
+    return 'Bereit für Training.';
+  }
+  const missing = Math.max((dataset.expectedCount || 0) - (dataset.recordedCount || 0), 0);
+  if (missing > 0) {
+    return `Noch ${missing} Beispiel${missing === 1 ? '' : 'e'} erforderlich.`;
+  }
+  return 'Datensatz unvollständig.';
 }

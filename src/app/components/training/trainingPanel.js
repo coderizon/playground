@@ -2,7 +2,7 @@ import {
   sessionStore,
   TRAINING_STATUS,
 } from '../../store/sessionStore.js';
-import { isTrainingReady, getTrainingSummary } from '../../store/selectors.js';
+import { isTrainingReady, getTrainingSummary, getDatasetReadinessIssues } from '../../store/selectors.js';
 import {
   trainWithRecordedSamples,
   abortTraining,
@@ -14,6 +14,7 @@ export function registerTrainingComponents(Alpine) {
     summary: getTrainingSummary(sessionStore.getState()),
     ready: isTrainingReady(sessionStore.getState()),
     step: sessionStore.getState().step,
+    issues: getDatasetReadinessIssues(sessionStore.getState()),
     unsubscribe: null,
 
     init() {
@@ -22,6 +23,7 @@ export function registerTrainingComponents(Alpine) {
         this.summary = getTrainingSummary(state);
         this.ready = isTrainingReady(state);
         this.step = state.step;
+        this.issues = getDatasetReadinessIssues(state);
       });
     },
 

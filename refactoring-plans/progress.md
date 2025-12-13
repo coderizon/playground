@@ -13,8 +13,8 @@
   - Edge panel component connects BLE devices, toggles streaming, and mirrors connection/streaming state on the inference page.
 - **Flow coverage**:
   - **Home**: task/model grid wired to the store, session discard/back-to-home controls.
-  - **Collect**: classes + recording previews, dataset readiness gating, training progression guard.
-  - **Train**: MobileNet feature extraction + real classifier training via `modelBridge.js`, progress bar, guard-driven navigation.
+  - **Collect**: classes + recording previews, dataset readiness gating, summary panel with per-class blockers, training progression guard.
+  - **Train**: MobileNet feature extraction + real classifier training via `modelBridge.js`, progress bar, guard-driven navigation, blocker list fed by dataset readiness metadata.
   - **Infer**: Live camera inference loop, FPS-aware start/stop guard via `inferenceControls` (with before-unload protection + confirmations), throttled prediction display, explicit streaming toggle/notice.
 - **Services**:
   - `services/media/cameraService.js` centralizes camera stream handling.

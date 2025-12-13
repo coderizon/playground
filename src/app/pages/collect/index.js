@@ -44,6 +44,14 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
             <strong x-text="totalSamples"></strong>
           </div>
           <p class="summary-message" x-text="message"></p>
+          <ul class="summary-issues" x-show="!trainingReady && issues.length">
+            <template x-for="issue in issues" :key="issue.id">
+              <li>
+                <strong x-text="issue.name"></strong>
+                <span x-text="issue.reason"></span>
+              </li>
+            </template>
+          </ul>
         </section>
         <div class="collect-class-list">
           <template x-if="classes.length === 0">

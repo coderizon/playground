@@ -38,3 +38,15 @@ export function getInferencePredictions(state) {
     isBest: index === prediction?.bestIndex,
   }));
 }
+
+export function getDatasetReadinessIssues(state) {
+  const classes = state?.classes || [];
+  return classes
+    .filter((cls) => cls.dataset?.status !== DATASET_STATUS.READY)
+    .map((cls, index) => ({
+      id: cls.id,
+      name: cls.name || `Class ${index + 1}`,
+      reason: cls.dataset?.readinessReason || 'Datensatz unvollständig.',
+      status: cls.dataset?.status || DATASET_STATUS.EMPTY,
+    }));
+}
