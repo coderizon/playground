@@ -45,7 +45,6 @@ const state = {
   connecting: false,
   error: null,
   streaming: false,
-  lastKnownDevices: {},
 };
 
 Object.entries(devices).forEach(([key, device]) => {
@@ -60,7 +59,6 @@ Object.entries(devices).forEach(([key, device]) => {
     state.connecting = false;
     if (!connected) {
       state.streaming = false;
-      state.lastKnownDevices[key] = false;
     }
   });
 });
