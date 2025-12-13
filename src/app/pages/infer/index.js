@@ -52,7 +52,7 @@ export function renderInferPage(root, state = sessionStore.getState()) {
               Aktualisiert um <span x-text="readableTimestamp()"></span>
             </p>
           </div>
-            <div class="edge-panel" x-data="edgePanel()" x-init="init()">
+            <div class="edge-panel" x-data="edgePanel()" x-init="init()" @open-edge-modal.window="openModal()">
               <p>Edge-Verbindung</p>
               <p class="edge-status" x-text="edgeStatusCopy()"></p>
               <p class="edge-error" x-show="edgeStatus.status === 'error'" x-text="edgeStatus.error"></p>

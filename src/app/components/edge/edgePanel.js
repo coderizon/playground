@@ -18,6 +18,7 @@ export function registerEdgeComponents(Alpine) {
     edgeStatus: sessionStore.getState().edge,
     connecting: getEdgeState().connecting,
     streaming: getEdgeState().streaming,
+    modalOpen: false,
 
     init() {
       this.unsubscribe = sessionStore.subscribe((state) => {
@@ -81,6 +82,16 @@ export function registerEdgeComponents(Alpine) {
 
     showErrorToast(error) {
       console.error('[edgePanel] connection error', error);
+    },
+
+    openModal() {
+      this.modalOpen = true;
+      document.body.classList.add('modal-open');
+    },
+
+    closeModal() {
+      this.modalOpen = false;
+      document.body.classList.remove('modal-open');
     },
   }));
 }
