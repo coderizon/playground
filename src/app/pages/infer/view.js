@@ -51,7 +51,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
               Aktualisiert um <span x-text="readableTimestamp()"></span>
             </p>
           </div>
-          <div class="edge-panel" x-data="edgePanel()" x-init="init()" @open-edge-modal.window="openModal()">
+          <div class="edge-panel" x-data="edgePanel()" x-init="init()" @open-edge-modal.window="modalOpen = true">
             <p>Edge-Verbindung</p>
             <p class="edge-status" x-text="edgeStatusCopy()"></p>
             <p class="edge-error" x-show="edgeStatus.status === 'error'" x-text="edgeStatus.error"></p>
@@ -70,6 +70,28 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                 Trennen
               </button>
             </div>
+            <div class="ble-modal-backdrop" x-show="modalOpen" @click="modalOpen = false" x-transition.opacity></div>
+            <section class="ble-modal" x-show="modalOpen" x-transition>
+              <div class="ble-modal-shell">
+                <div class="ble-modal-header">
+                  <h3>Verbinde ein Gerät</h3>
+                  <button type="button" class="icon-close" @click="modalOpen = false">×</button>
+                </div>
+                <div class="ble-device-list">
+                  <template x-for="device in devices" :key="device.id">
+                    <button type="button" class="ble-device" @click="connect(device.id)" :disabled="connecting">
+                      <div class="ble-device-info">
+                        <span class="ble-device-name" x-text="device.name"></span>
+                        <span class="ble-device-status">
+                          <template x-if="edgeStatus.deviceInfo?.id === device.id">Verbunden</template>
+                          <template x-if="edgeStatus.deviceInfo?.id !== device.id">Bereit</template>
+                        </span>
+                      </div>
+                    </button>
+                  </template>
+                </div>
+              </div>
+            </section>
           </div>
         </article>
       </section>

@@ -86,12 +86,10 @@ export function registerEdgeComponents(Alpine) {
 
     openModal() {
       this.modalOpen = true;
-      document.body.classList.add('modal-open');
     },
 
     closeModal() {
       this.modalOpen = false;
-      document.body.classList.remove('modal-open');
     },
   }));
 }
