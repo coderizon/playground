@@ -3,6 +3,7 @@ import { canAccessInference } from '../../guards/navigation.js';
 import { stopLiveInference } from '../../services/ml/liveInference.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
 import { openConfirmDialog } from '../../components/common/confirmDialog.js';
+import { goTrain } from '../../routes/navigationController.js';
 
 export function renderInferPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -53,40 +54,23 @@ export function renderInferPage(root, state = sessionStore.getState()) {
           </div>
             <div class="edge-panel" x-data="edgePanel()" x-init="init()">
               <p>Edge-Verbindung</p>
-              <p class="edge-status" x-text="statusLabel()"></p>
-              <p class="edge-error" x-show="hasError()" x-text="edgeStatus.error"></p>
-              <label class="stream-toggle">
-                <input type="checkbox" @change="toggleStreaming()" :checked="streamingEnabled()" :disabled="edgeStatus.status !== 'connected'"/>
-                <span>Vorhersagen streamen</span>
-              </label>
-              <div class="edge-buttons">
-                <template x-for="device in devices" :key="device.id">
-                  <button
-                    type="button"
-                    class="ghost"
-                  :disabled="edgeStatus.status === 'connected' || connecting"
-                  @click="connect(device.id)"
+              <p class="edge-status" x-text="edgeStatusCopy()"></p>
+              <p class="edge-error" x-show="edgeStatus.status === 'error'" x-text="edgeStatus.error"></p>
+              <div class="edge-inline-controls">
+                <button type="button" class="ghost" @click="$dispatch('open-edge-modal')">Gerät wählen</button>
+                <label class="stream-toggle">
+                  <input type="checkbox" @change="toggleStreaming()" :checked="streamingEnabled()" :disabled="edgeStatus.status !== 'connected'"/>
+                  <span>Vorhersagen streamen</span>
+                </label>
+                <button
+                  type="button"
+                  class="ghost"
+                  :disabled="edgeStatus.status !== 'connected'"
+                  @click="disconnect()"
                 >
-                  <span x-text="device.name"></span>
+                  Trennen
                 </button>
-              </template>
-              <button
-                type="button"
-                class="ghost"
-                :disabled="edgeStatus.status !== 'connected'"
-                @click="disconnect()"
-              >
-                Trennen
-              </button>
-              <button
-                type="button"
-                class="ghost"
-                x-show="hasError()"
-                @click="retryLastDevice()"
-                :disabled="connecting"
-              >
-                Erneut verbinden
-              </button>
+              </div>
             </div>
           </div>
         </article>
