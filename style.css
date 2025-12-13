@@ -159,6 +159,149 @@ body[data-mode="face"] .preview-column {
   gap: 8px;
 }
 
+/* --- New App Shell Styles --- */
+.new-app-root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 32px 120px;
+  font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.new-app-home__header {
+  max-width: 640px;
+  margin-bottom: 32px;
+}
+
+.new-app-home .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.new-app-home h1 {
+  margin: 0 0 12px;
+  font-size: 40px;
+}
+
+.new-app-home .subline {
+  margin: 0;
+  color: var(--muted);
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.task-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  text-align: left;
+  background: var(--card);
+  box-shadow: 0 18px 30px rgba(17, 34, 68, 0.08);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.task-card:not(:disabled):hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 40px rgba(17, 34, 68, 0.16);
+}
+
+.task-card__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.task-card__body h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.task-card__body p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.task-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.task-summary dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.task-summary dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.task-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.task-tag {
+  padding: 4px 10px;
+  background: #eef2ff;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.task-card__status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.session-state {
+  margin-top: 40px;
+  padding: 20px;
+  background: #f9fbff;
+  border-radius: 18px;
+  border: 1px dashed var(--border);
+}
+
+.session-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.session-controls button {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+}
+
+.session-controls button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .mobile-step {
   flex: 1;
   border: 1px solid var(--border);
