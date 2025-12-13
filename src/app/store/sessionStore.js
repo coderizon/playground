@@ -226,6 +226,19 @@ export function createSessionStore(initial = createInitialSessionState()) {
     }));
   };
 
+  const resetDataset = (classId) => {
+    if (!classId) return;
+    updateClass(classId, (classState) => ({
+      dataset: {
+        ...classState.dataset,
+        samples: [],
+        recordedCount: 0,
+        status: DATASET_STATUS.EMPTY,
+        error: null,
+      },
+    }));
+  };
+
   const setTrainingStatus = (status, patch = {}) => {
     setState((current) => ({
       ...current,
@@ -277,6 +290,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
     addDatasetSample,
     updateClass,
     updateDatasetStatus,
+    resetDataset,
     setTrainingStatus,
     setInferenceStatus,
     setEdgeStatus,

@@ -109,6 +109,19 @@ function pruneSamples(state) {
   recordedSamples = remaining;
 }
 
+export function clearSamplesForClass(classId) {
+  if (!classId) return;
+  const remaining = [];
+  recordedSamples.forEach((sample) => {
+    if (sample.classId === classId) {
+      sample.tensor.dispose();
+    } else {
+      remaining.push(sample);
+    }
+  });
+  recordedSamples = remaining;
+}
+
 function ensureClassifier(classCount, learningRate = 0.001) {
   const outputUnits = Math.max(classCount, 1);
   if (classifier && classifier.outputShape?.[1] === outputUnits) {

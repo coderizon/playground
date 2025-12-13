@@ -39,7 +39,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
             </div>
           </template>
           <template x-for="(classItem, index) in classes" :key="classItem.id">
-            <article class="class-card-v2" :class="{'is-active': isRecording(classItem.id)}">
+            <article class="class-card-v2">
               <header>
                 <input
                   type="text"
@@ -59,23 +59,25 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 Beispiele
               </p>
               <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
-              <div class="dataset-preview">
-                <template x-if="isRecording(classItem.id)">
-                  <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
-                </template>
-                <template x-if="!isRecording(classItem.id)">
-                  <div class="preview-placeholder">Recorder bereit</div>
-                </template>
-              </div>
-              <p class="field-error" x-show="recordingError" x-text="recordingError"></p>
+              <section class="dataset-recorder" x-data="datasetRecorder(classItem.id)" x-init="init()">
+                <div class="dataset-preview">
+                  <template x-if="recording">
+                    <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
+                  </template>
+                  <template x-if="!recording">
+                    <div class="preview-placeholder" x-text="previewLabel()"></div>
+                  </template>
+                </div>
+                <p class="field-error" x-show="error" x-text="error"></p>
+                <div class="class-card-actions">
+                  <button type="button" class="ghost" @click="startRecording()" :disabled="!canStart">Aufnahme starten</button>
+                  <button type="button" class="ghost" @click="stopRecording()" :disabled="!canStop">Stoppen</button>
+                  <button type="button" class="ghost" @click="discardDataset()" :disabled="!canDiscard">Datensatz verwerfen</button>
+                </div>
+                <p class="dataset-hint" x-text="statusHint()"></p>
+              </section>
               <div class="class-card-actions">
-                <template x-if="!isRecording(classItem.id)">
-                  <button type="button" class="ghost" @click="startRecording(classItem)">Recorder öffnen</button>
-                </template>
-                <template x-if="isRecording(classItem.id)">
-                  <button type="button" class="primary" @click="stopRecording(classItem)">Aufnahme stoppen</button>
-                </template>
-                <button type="button" class="ghost" @click="confirmDelete(classItem)">Entfernen</button>
+                <button type="button" class="ghost" @click="confirmDelete(classItem)">Klasse entfernen</button>
               </div>
             </article>
           </template>

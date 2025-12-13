@@ -1,16 +1,11 @@
 import { sessionStore, DATASET_STATUS } from '../../store/sessionStore.js';
 import { openConfirmDialog } from '../common/confirmDialog.js';
-import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
-import { recordSampleFrame } from '../../services/ml/modelBridge.js';
 
 export function registerClassComponents(Alpine) {
   Alpine.data('classList', () => ({
     classes: [],
     validationErrors: {},
     unsubscribe: null,
-    recordingClassId: null,
-    recordingError: null,
-    sampleInterval: null,
 
     init() {
       this.sync(sessionStore.getState());
@@ -19,77 +14,7 @@ export function registerClassComponents(Alpine) {
       });
     },
 
-    isRecording(id) {
-      return this.recordingClassId === id;
-    },
-
-    async startRecording(classItem) {
-      if (!classItem || this.recordingClassId) return;
-      try {
-        const stream = await requestCameraStream();
-        this.recordingClassId = classItem.id;
-        this.attachPreview(stream);
-        sessionStore.updateDatasetStatus(classItem.id, DATASET_STATUS.RECORDING);
-        this.beginSampleLoop(classItem.id);
-      } catch (error) {
-        console.error(error);
-        this.recordingError = 'Kamera konnte nicht gestartet werden.';
-      }
-    },
-
-    stopRecording(classItem) {
-      if (!classItem || this.recordingClassId !== classItem.id) return;
-      stopCameraStream();
-      this.detachPreview();
-      this.endSampleLoop();
-      this.recordingClassId = null;
-      sessionStore.updateDatasetStatus(classItem.id, DATASET_STATUS.READY, {
-        recordedCount: classItem.dataset.expectedCount,
-      });
-    },
-
-    attachPreview(stream) {
-      const video = this.$refs[`preview-${this.recordingClassId}`];
-      if (video) {
-        video.srcObject = stream;
-      }
-    },
-
-    detachPreview() {
-      const video = this.$refs[`preview-${this.recordingClassId}`];
-      if (video) {
-        video.srcObject = null;
-      }
-    },
-
-    beginSampleLoop(classId) {
-      this.endSampleLoop();
-      this.sampleInterval = window.setInterval(() => {
-        const state = sessionStore.getState();
-        const classState = state.classes.find((cls) => cls.id === classId);
-        if (!classState) return;
-        const video = this.$refs[`preview-${classId}`];
-        const classIndex = state.classes.findIndex((cls) => cls.id === classId);
-        recordSampleFrame(video, classId, classIndex, state.classes.length).catch((error) => {
-          console.error(error);
-          this.recordingError = 'Feature konnte nicht aufgezeichnet werden.';
-        });
-        sessionStore.addDatasetSample(classId, { source: 'camera' });
-        if (classState.dataset.recordedCount >= classState.dataset.expectedCount) {
-          this.stopRecording(classState);
-        }
-      }, 1200);
-    },
-
-    endSampleLoop() {
-      if (this.sampleInterval) {
-        window.clearInterval(this.sampleInterval);
-        this.sampleInterval = null;
-      }
-    },
-
     destroy() {
-      this.endSampleLoop();
       this.unsubscribe?.();
     },
 
@@ -129,7 +54,7 @@ export function registerClassComponents(Alpine) {
         case DATASET_STATUS.READY:
           return 'Bereit';
         case DATASET_STATUS.RECORDING:
-          return 'Aufnahme läuft';
+          return 'In Arbeit';
         case DATASET_STATUS.ERROR:
           return 'Fehler';
         default:

@@ -5,7 +5,8 @@
 - **Architecture switcher**: `index.html` now loads `/src/bootstrap.js`, which flips between the legacy prototype and the new SPA via `VITE_PLAYGROUND_APP`. `src/app/bootstrap.js` hides the old DOM, boots Alpine, and mounts the router (`src/app/routes/router.js`).
 - **Session store & selectors**: `src/app/store/sessionStore.js` holds the full session model (classes, training, inference, edge state). Derived helpers live in `src/app/store/selectors.js`. Guards (`src/app/guards/navigation.js`) enforce the journey invariants and pages subscribe to the store to enable/disable controls in real time.
 - **Alpine component layer**:
-  - `classList` renders classes, validates names, captures samples via webcam, and pipes features into the TF.js bridge.
+  - `classList` now focuses on class creation, naming, and dataset status messaging.
+  - `datasetRecorder` components own camera permissions, sample loops, readiness hints, and destructive discards while piping embeddings into the TF.js bridge.
   - Global confirm dialog + notice banners provide consistent messaging.
   - Edge panel component connects BLE devices, toggles streaming, and mirrors connection/streaming state on the inference page.
 - **Flow coverage**:
@@ -25,10 +26,10 @@
 1. **UX polish & structure**
    - Migrate the new SPA styling to Tailwind per the suggested structure (`src/styles`), replacing the ad-hoc CSS in `style.css`.
    - Build out the full `pages/collect|train|infer` directories (controllers + sub-components) instead of single files.
-   - Add Alpine components for Dataset Recorder, Training Panel, Prediction Panel, etc., so logic moves out of page files.
+   - Add Alpine components for Training Panel, Prediction Panel, etc., so logic moves out of page files.
 2. **Recording experience**
-   - Replace the mock sample loop with actual capture controls (start/stop intervals, discard dataset, expected sample counts).
-   - Surface dataset status chips (empty/recording/ready/error) per the spec, including discard flows.
+   - Extend the dataset recorder to support audio tasks, richer permission failure prompts, and manual sample discard per sample.
+   - Add a dedicated dataset summary panel (expected vs recorded counts, readiness reasons) so training blockers are self-explanatory.
 3. **Training/inference realism**
    - Expose training abort, error handling, and dataset locking behaviors per vision §4.3.
    - Add inference throttling, start requirements, and warnings when streaming is disabled.
