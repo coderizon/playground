@@ -131,6 +131,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                       </li>
                     </template>
                   </ul>
+                  <template x-if="audioStats()">
+                    <p class="sample-analytics">
+                      Durchschnittliche Clip-Länge:
+                      <strong x-text="(audioStats().average / 1000).toFixed(1) + 's'"></strong>
+                      <span x-show="audioStats().shortClip" class="warning-chip">Einige Clips sind kürzer als 1,5s</span>
+                    </p>
+                  </template>
                 </div>
               </section>
               <div class="class-card-actions">

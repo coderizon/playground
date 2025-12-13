@@ -116,6 +116,22 @@ export function registerDatasetComponents(Alpine) {
       }));
     },
 
+    audioStats() {
+      const samples = this.dataset.samples || [];
+      const audioSamples = samples.filter((sample) => sample.source === 'microphone');
+      if (!audioSamples.length) return null;
+      const totalDuration = audioSamples.reduce(
+        (sum, sample) => sum + (sample.durationMs || 0),
+        0
+      );
+      const average = Math.round(totalDuration / audioSamples.length);
+      const shortClip = audioSamples.some((sample) => (sample.durationMs || 0) < 1500);
+      return {
+        average,
+        shortClip,
+      };
+    },
+
     previewLabel() {
       if (this.isReady) return 'Datensatz bereit';
       if (this.recordedCount > 0) {

@@ -31,7 +31,7 @@
    - Extract inference HUD/edge panel into dedicated page controllers (beyond current Alpine data on the page) so routes stay declarative.
 2. **Recording experience**
    - Add richer permission failure prompts (toasts, retry buttons) and manual sample discard per sample.
-   - Add per-class dataset analytics (e.g., average clip duration, capture device warnings) so users understand quality, not only counts.
+   - Extend analytics to include per-class capture device warnings and camera-specific guidance (current audio averages cover only mic tasks).
    - Introduce modality-specific guidance (e.g., audio progress bars / background-noise instructions inspired by `ml-speech`) so users know how long to speak or record.
 3. **Training/inference realism**
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
