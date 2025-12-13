@@ -29,8 +29,7 @@
 
 1. **UX polish & structure**
    - Gradually replace legacy utility classes with Tailwind utility/`@apply` patterns now that `src/styles/main.css` is the source of truth.
-   - Build out the full `pages/collect|train|infer` directories (controllers + sub-components) instead of single files.
-   - Extract inference HUD/edge panel into dedicated page controllers (beyond current Alpine data on the page) so routes stay declarative.
+   - Extract collect/train/infer logic into dedicated controllers + sub-components (e.g., `pages/infer/view.js` now renders the full page).
 2. **Recording experience**
    - Add camera-specific analytics (per-sample thumbnails already exist; still need in-app preview thumbnails or sample replay) plus richer background-noise guidance for audio tasks.
    - Introduce optional background/noise capture presets inspired by `ml-speech` (long-duration recordings with visual progress) so users know when to relax or speak.
