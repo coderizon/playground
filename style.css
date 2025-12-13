@@ -671,6 +671,16 @@ body[data-mode="face"] .preview-column {
   margin-bottom: 8px;
 }
 
+.edge-error {
+  color: #b91c1c;
+  font-size: 13px;
+  margin-bottom: 8px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
 .stream-toggle {
   display: flex;
   align-items: center;

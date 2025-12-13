@@ -17,11 +17,13 @@ export function registerEdgeComponents(Alpine) {
     devices: DEVICE_OPTIONS,
     edgeStatus: sessionStore.getState().edge,
     connecting: getEdgeState().connecting,
+    streaming: getEdgeState().streaming,
 
     init() {
       this.unsubscribe = sessionStore.subscribe((state) => {
         this.edgeStatus = state.edge;
         this.connecting = getEdgeState().connecting;
+        this.streaming = getEdgeState().streaming;
       });
     },
 
@@ -35,6 +37,7 @@ export function registerEdgeComponents(Alpine) {
         await connectDevice(id);
       } catch (error) {
         console.error(error);
+        this.showErrorToast(error);
       } finally {
         this.connecting = false;
       }
@@ -64,6 +67,20 @@ export function registerEdgeComponents(Alpine) {
     toggleStreaming() {
       const next = !getEdgeState().streaming;
       setStreaming(next);
+    },
+
+    hasError() {
+      return this.edgeStatus.status === 'error' && Boolean(this.edgeStatus.error);
+    },
+
+    async retryLastDevice() {
+      const lastId = getEdgeState().selectedDevice || this.edgeStatus.deviceInfo?.id;
+      if (!lastId) return;
+      await this.connect(lastId);
+    },
+
+    showErrorToast(error) {
+      console.error('[edgePanel] connection error', error);
     },
   }));
 }

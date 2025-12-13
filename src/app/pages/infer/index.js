@@ -54,8 +54,9 @@ export function renderInferPage(root, state = sessionStore.getState()) {
             <div class="edge-panel" x-data="edgePanel()" x-init="init()">
               <p>Edge-Verbindung</p>
               <p class="edge-status" x-text="statusLabel()"></p>
+              <p class="edge-error" x-show="hasError()" x-text="edgeStatus.error"></p>
               <label class="stream-toggle">
-                <input type="checkbox" @change="toggleStreaming()" :checked="streamingEnabled()" />
+                <input type="checkbox" @change="toggleStreaming()" :checked="streamingEnabled()" :disabled="edgeStatus.status !== 'connected'"/>
                 <span>Vorhersagen streamen</span>
               </label>
               <div class="edge-buttons">
@@ -76,6 +77,15 @@ export function renderInferPage(root, state = sessionStore.getState()) {
                 @click="disconnect()"
               >
                 Trennen
+              </button>
+              <button
+                type="button"
+                class="ghost"
+                x-show="hasError()"
+                @click="retryLastDevice()"
+                :disabled="connecting"
+              >
+                Erneut verbinden
               </button>
             </div>
           </div>
