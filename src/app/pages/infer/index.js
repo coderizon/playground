@@ -27,7 +27,7 @@ export function renderInferPage(root, state = sessionStore.getState()) {
         </div>
       </header>
       <section class="infer-body">
-        <article class="inference-panel">
+        <article class="inference-panel" x-data="edgePanel()" x-init="init()">
           <h2>Inference</h2>
           <p>Status: ${state.inference.status}${state.inference.error ? ` · ${state.inference.error}` : ''}</p>
           <div class="inference-video">
@@ -54,7 +54,27 @@ export function renderInferPage(root, state = sessionStore.getState()) {
           </div>
           <div class="edge-panel">
             <p>Edge-Verbindung</p>
-            <button type="button" class="ghost" disabled>Edge verbinden</button>
+            <p class="edge-status" x-text="statusLabel()"></p>
+            <div class="edge-buttons">
+              <template x-for="device in devices" :key="device.id">
+                <button
+                  type="button"
+                  class="ghost"
+                  :disabled="edgeStatus.status === 'connected' || connecting"
+                  @click="connect(device.id)"
+                >
+                  <span x-text="device.name"></span>
+                </button>
+              </template>
+              <button
+                type="button"
+                class="ghost"
+                :disabled="edgeStatus.status !== 'connected'"
+                @click="disconnect()"
+              >
+                Trennen
+              </button>
+            </div>
           </div>
         </article>
       </section>

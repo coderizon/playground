@@ -529,6 +529,17 @@ body[data-mode="face"] .preview-column {
   border-top: 1px solid var(--border);
 }
 
+.edge-status {
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.edge-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .prediction-output {
   margin: 16px 0;
 }
