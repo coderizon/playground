@@ -1,5 +1,6 @@
 import { sessionStore, STEP } from '../../store/sessionStore.js';
-import { canAccessTraining } from '../../guards/navigation.js';
+import { canAccessTraining, canAccessInference } from '../../guards/navigation.js';
+import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
 
 export function renderTrainPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -21,11 +22,12 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
         </div>
         <div class="train-header__actions">
           <button type="button" class="ghost" data-back-collect>Zurück zu Klassen</button>
-          <button type="button" class="secondary" data-go-infer disabled>Weiter zur Inferenz</button>
+          <button type="button" class="secondary" data-go-infer ${canAccessInference(state) ? '' : 'disabled'}>Weiter zur Inferenz</button>
         </div>
       </header>
 
       <section class="train-body">
+        <div id="trainNotice"></div>
         <article class="training-panel">
           <h2>Trainingsstatus</h2>
           <p>Status: <strong>${trainingState.status}</strong></p>
@@ -39,8 +41,19 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
     </section>
   `;
 
+  renderNoticeBanner(document.getElementById('trainNotice'), {
+    tone: 'warning',
+    title: 'Training kommt bald',
+    message: 'Dieser Schritt zeigt aktuell nur Platzhalter. Der Trainingsfluss wird als nächstes angebunden.',
+  });
+
   root.querySelector('[data-back-collect]')?.addEventListener('click', () => {
     sessionStore.setStep(STEP.COLLECT);
+  });
+  root.querySelector('[data-go-infer]')?.addEventListener('click', () => {
+    if (canAccessInference(sessionStore.getState())) {
+      sessionStore.setStep(STEP.INFER);
+    }
   });
 }
 

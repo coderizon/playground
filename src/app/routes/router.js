@@ -2,11 +2,13 @@ import { sessionStore, STEP } from '../store/sessionStore.js';
 import { renderHomePage } from '../pages/home/index.js';
 import { renderCollectPage } from '../pages/collect/index.js';
 import { renderTrainPage } from '../pages/train/index.js';
+import { renderInferPage } from '../pages/infer/index.js';
 
 const routeHandlers = {
   [STEP.HOME]: renderHomePage,
   [STEP.COLLECT]: renderCollectPage,
   [STEP.TRAIN]: renderTrainPage,
+  [STEP.INFER]: renderInferPage,
 };
 
 export function startRouter(root) {

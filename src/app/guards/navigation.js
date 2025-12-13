@@ -23,5 +23,5 @@ export function canAccessTraining(state) {
 export function canAccessInference(state) {
   if (!state) return false;
   if (!state.selectedTaskModel) return false;
-  return state.training?.status === 'done';
+  return state.training?.status === 'done' || state.selectedTaskModel.requiresTraining === false;
 }
