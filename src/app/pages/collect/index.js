@@ -60,7 +60,12 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
               </p>
               <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
               <div class="class-card-actions">
-                <button type="button" class="ghost" disabled>Recorder öffnen</button>
+                <template x-if="!isRecording(classItem.id)">
+                  <button type="button" class="ghost" @click="startRecording(classItem)">Recorder öffnen</button>
+                </template>
+                <template x-if="isRecording(classItem.id)">
+                  <button type="button" class="primary" @click="stopRecording(classItem)">Aufnahme stoppen</button>
+                </template>
                 <button type="button" class="ghost" @click="confirmDelete(classItem)">Entfernen</button>
               </div>
             </article>

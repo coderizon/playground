@@ -1,16 +1,44 @@
 import { sessionStore, DATASET_STATUS } from '../../store/sessionStore.js';
 import { openConfirmDialog } from '../common/confirmDialog.js';
+import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
 
 export function registerClassComponents(Alpine) {
   Alpine.data('classList', () => ({
     classes: [],
     validationErrors: {},
     unsubscribe: null,
+    recordingClassId: null,
+    recordingError: null,
 
     init() {
       this.sync(sessionStore.getState());
       this.unsubscribe = sessionStore.subscribe((state) => {
         this.sync(state);
+      });
+    },
+
+    isRecording(id) {
+      return this.recordingClassId === id;
+    },
+
+    async startRecording(classItem) {
+      if (!classItem || this.recordingClassId) return;
+      try {
+        await requestCameraStream();
+        this.recordingClassId = classItem.id;
+        sessionStore.updateDatasetStatus(classItem.id, DATASET_STATUS.RECORDING);
+      } catch (error) {
+        console.error(error);
+        this.recordingError = 'Kamera konnte nicht gestartet werden.';
+      }
+    },
+
+    stopRecording(classItem) {
+      if (!classItem || this.recordingClassId !== classItem.id) return;
+      stopCameraStream();
+      this.recordingClassId = null;
+      sessionStore.updateDatasetStatus(classItem.id, DATASET_STATUS.READY, {
+        recordedCount: classItem.dataset.expectedCount,
       });
     },
 
