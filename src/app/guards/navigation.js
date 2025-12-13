@@ -1,4 +1,4 @@
-import { STEP, DATASET_STATUS, TRAINING_STATUS } from '../store/sessionStore.js';
+import { STEP, DATASET_STATUS, TRAINING_STATUS, INFERENCE_STATUS } from '../store/sessionStore.js';
 
 /**
  * Guard helpers enforce session invariants defined in the vision document.
@@ -27,6 +27,17 @@ export function canAccessInference(state) {
   if (!state.selectedTaskModel) return false;
   if (state.selectedTaskModel.requiresTraining === false) return true;
   return state.training?.status === TRAINING_STATUS.DONE;
+}
+
+export function canDiscardClass(state) {
+  if (!state) return false;
+  if (state.training?.status === TRAINING_STATUS.RUNNING) return false;
+  return true;
+}
+
+export function canStartInference(state) {
+  if (!canAccessInference(state)) return false;
+  return state.inference?.status === INFERENCE_STATUS.STOPPED || state.inference?.status === INFERENCE_STATUS.IDLE;
 }
 
 function areClassesReady(state) {
