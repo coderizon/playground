@@ -94,11 +94,14 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
     </div>
   `;
 
-  const backBtn = root.querySelector('[data-back-home]');
+  root.querySelector('[data-back-home]')?.addEventListener('click', () => {
+    sessionStore.setStep(STEP.HOME);
+  });
   const goTrainBtn = root.querySelector('[data-go-train]');
-  if (backBtn) {
-    backBtn.addEventListener('click', () => sessionStore.setStep(STEP.HOME));
-  }
+  const updateTrainButton = () => {
+    const nextState = sessionStore.getState();
+    goTrainBtn.disabled = !canGoToTraining(nextState);
+  };
   if (goTrainBtn) {
     goTrainBtn.disabled = !canGoToTraining(state);
     goTrainBtn.addEventListener('click', () => {
@@ -106,6 +109,14 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
         sessionStore.setStep(STEP.TRAIN);
       }
     });
+    const unsubscribe = sessionStore.subscribe(updateTrainButton);
+    root.addEventListener(
+      'DOMNodeRemoved',
+      () => {
+        unsubscribe?.();
+      },
+      { once: true }
+    );
   }
 
 }

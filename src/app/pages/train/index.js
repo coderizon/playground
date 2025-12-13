@@ -64,11 +64,25 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
   root.querySelector('[data-back-collect]')?.addEventListener('click', () => {
     sessionStore.setStep(STEP.COLLECT);
   });
-  root.querySelector('[data-go-infer]')?.addEventListener('click', () => {
-    if (canAccessInference(sessionStore.getState())) {
-      sessionStore.setStep(STEP.INFER);
-    }
-  });
+  const goInferBtn = root.querySelector('[data-go-infer]');
+  const updateInferButton = () => {
+    goInferBtn.disabled = !canAccessInference(sessionStore.getState());
+  };
+  if (goInferBtn) {
+    goInferBtn.addEventListener('click', () => {
+      if (canAccessInference(sessionStore.getState())) {
+        sessionStore.setStep(STEP.INFER);
+      }
+    });
+    const unsubscribe = sessionStore.subscribe(updateInferButton);
+    root.addEventListener(
+      'DOMNodeRemoved',
+      () => {
+        unsubscribe?.();
+      },
+      { once: true }
+    );
+  }
   const startBtn = root.querySelector('[data-start-training]');
   startBtn?.addEventListener('click', () => {
     trainWithRecordedSamples();
