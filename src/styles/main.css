@@ -324,12 +324,10 @@ body[data-mode="face"] .preview-column {
   gap: 12px;
 }
 
-.collect-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
+@layer components {
+  .collect-toolbar {
+    @apply flex items-center gap-4 mb-5;
+  }
 
 .collect-class-list {
   display: grid;
