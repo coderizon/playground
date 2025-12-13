@@ -100,6 +100,9 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                       <div class="audio-guidance">
                         <p x-text="audioStatusLabel()"></p>
                         <small>Sprich zügig durch · 2s pro Sample</small>
+                        <div class="audio-progress-bar">
+                          <div class="audio-progress-fill" :style="{'width': audioProgress + '%'}"></div>
+                        </div>
                       </div>
                     </div>
                   </template>
@@ -126,9 +129,14 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   <ul>
                     <template x-for="sample in sampleList()" :key="sample.id">
                       <li>
-                        <div>
-                          <strong x-text="sample.label"></strong>
-                          <span x-text="sample.durationMs ? (sample.durationMs / 1000) + 's' : sample.source"></span>
+                        <div class="sample-meta">
+                          <template x-if="sample.thumbnail">
+                            <img :src="sample.thumbnail" alt="Sample Vorschau" class="sample-thumb">
+                          </template>
+                          <div>
+                            <strong x-text="sample.label"></strong>
+                            <span x-text="sample.durationMs ? (sample.durationMs / 1000) + 's' : sample.source"></span>
+                          </div>
                         </div>
                         <button type="button" class="ghost" @click="removeSample(sample)" :disabled="!sample.canDelete">Entfernen</button>
                       </li>

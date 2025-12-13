@@ -412,6 +412,76 @@ body[data-mode="face"] .preview-column {
   background: #000;
 }
 
+.dataset-preview.is-audio {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 18px;
+}
+
+.audio-preview {
+  width: 100%;
+}
+
+.audio-meter {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.audio-meter::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #f87171, #fbbf24, #34d399);
+  transition: width 0.3s ease;
+}
+
+.audio-meter.is-active::after {
+  width: 100%;
+  animation: meterPulse 1.4s infinite;
+}
+
+@keyframes meterPulse {
+  0% {
+    width: 10%;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 10%;
+  }
+}
+
+.audio-guidance small {
+  display: block;
+  margin-top: 6px;
+  color: rgba(248, 250, 252, 0.7);
+}
+
+.audio-progress-bar {
+  margin-top: 8px;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.audio-progress-fill {
+  height: 100%;
+  background: #38bdf8;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
 .preview-video {
   width: 100%;
   height: 100%;
@@ -427,6 +497,73 @@ body[data-mode="face"] .preview-column {
   color: #b91c1c;
   font-size: 13px;
   margin-top: 6px;
+}
+
+.permission-retry {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: #92400e;
+}
+
+.sample-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sample-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  gap: 12px;
+}
+
+.sample-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sample-thumb {
+  width: 48px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.sample-analytics {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.warning-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 

@@ -28,6 +28,9 @@ export function registerDatasetComponents(Alpine) {
     sampleInterval: null,
     audioStopRequested: false,
     modality: sessionStore.getState().selectedTaskModel?.inputModality || 'camera',
+    lastPermissionError: '',
+    audioProgress: 0,
+    audioProgressHandle: null,
     unsubscribe: null,
 
     init() {
@@ -42,6 +45,7 @@ export function registerDatasetComponents(Alpine) {
         this.teardownStreams();
         activeRecorderId = null;
       }
+      this.resetAudioProgress();
     },
 
     sync(state) {
@@ -173,6 +177,7 @@ export function registerDatasetComponents(Alpine) {
       try {
         const stream = await requestCameraStream();
         this.error = null;
+        this.lastPermissionError = '';
         this.attachPreview(stream);
         activeRecorderId = this.classId;
         this.recording = true;
@@ -240,13 +245,14 @@ export function registerDatasetComponents(Alpine) {
             this.stopRecording();
             return;
           }
+          const thumbnail = this.captureFrameSnapshot(video);
           await recordSampleFrame(
             video,
             this.classId,
             classIndex,
             state.classes.length || 1
           );
-          sessionStore.addDatasetSample(this.classId, { source: 'camera' });
+          sessionStore.addDatasetSample(this.classId, { source: 'camera', thumbnail });
           const updated = sessionStore
             .getState()
             .classes.find((cls) => cls.id === this.classId);
@@ -296,12 +302,15 @@ export function registerDatasetComponents(Alpine) {
       try {
         await requestMicrophoneStream();
         this.error = null;
+        this.lastPermissionError = '';
         activeRecorderId = this.classId;
         this.recording = true;
         this.audioStopRequested = false;
+        this.audioProgress = 0;
         sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.RECORDING, {
           error: null,
         });
+        this.animateAudioProgress(2000);
         this.captureAudioSample();
       } catch (error) {
         console.error(error);
@@ -321,10 +330,10 @@ export function registerDatasetComponents(Alpine) {
         return;
       }
       try {
-        await recordAudioSample(2000);
+        const result = await recordAudioSample(2000);
         sessionStore.addDatasetSample(this.classId, {
           source: 'microphone',
-          durationMs: 2000,
+          durationMs: result?.durationMs || 2000,
         });
         const updated = sessionStore
           .getState()
@@ -359,6 +368,9 @@ export function registerDatasetComponents(Alpine) {
           ? DATASET_STATUS.RECORDING
           : DATASET_STATUS.EMPTY;
       sessionStore.updateDatasetStatus(this.classId, status);
+      if (this.isAudioTask) {
+        this.resetAudioProgress();
+      }
     },
 
     teardownStreams() {
@@ -375,6 +387,45 @@ export function registerDatasetComponents(Alpine) {
         return `${this.recordedCount}/${this.expectedCount} Clips`;
       }
       return 'Recorder bereit';
+    },
+
+    captureFrameSnapshot(video) {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 160;
+        canvas.height = 120;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', 0.7);
+      } catch (error) {
+        console.warn('Snapshot konnte nicht erstellt werden.', error);
+        return null;
+      }
+    },
+
+    animateAudioProgress(durationMs) {
+      this.resetAudioProgress();
+      const start = performance.now();
+      const tick = (now) => {
+        if (!this.recording || this.audioStopRequested) {
+          this.audioProgress = 0;
+          return;
+        }
+        const elapsed = now - start;
+        this.audioProgress = Math.min(100, Math.round((elapsed / durationMs) * 100));
+        if (elapsed < durationMs) {
+          this.audioProgressHandle = requestAnimationFrame(tick);
+        }
+      };
+      this.audioProgressHandle = requestAnimationFrame(tick);
+    },
+
+    resetAudioProgress() {
+      if (this.audioProgressHandle) {
+        cancelAnimationFrame(this.audioProgressHandle);
+        this.audioProgressHandle = null;
+      }
+      this.audioProgress = 0;
     },
   }));
 }
