@@ -2,6 +2,7 @@ import {
   connectArduino,
   isArduinoConnected,
   setArduinoConnectionListener,
+  sendToArduino,
 } from '../../../bluetooth/arduino.js';
 import {
   connectMicrobit,
@@ -14,6 +15,7 @@ import {
   setCalliopeConnectionListener,
 } from '../../../bluetooth/calliope.js';
 import { sessionStore } from '../../store/sessionStore.js';
+import { isInferenceRunning, getInferencePredictions } from '../../store/selectors.js';
 
 const devices = {
   arduino: {
@@ -40,6 +42,7 @@ const state = {
   selectedDevice: null,
   connecting: false,
   error: null,
+  streaming: false,
 };
 
 Object.entries(devices).forEach(([key, device]) => {
@@ -82,4 +85,26 @@ export async function connectDevice(deviceId) {
 export function disconnectDevice() {
   state.selectedDevice = null;
   sessionStore.setEdgeStatus('disconnected', { deviceInfo: null });
+  state.streaming = false;
+}
+
+sessionStore.subscribe((sessionState) => {
+  if (state.streaming && sessionState.edge.status === 'connected' && isInferenceRunning(sessionState)) {
+    const predictions = getInferencePredictions(sessionState);
+    const top = predictions.find((row) => row.isBest);
+    if (top) {
+      sendPrediction(`${top.name}:${Math.round((top.value || 0) * 100)}%`);
+    }
+  }
+});
+
+export function setStreaming(enabled) {
+  state.streaming = enabled;
+}
+
+function sendPrediction(payload) {
+  if (state.selectedDevice === 'arduino') {
+    sendToArduino(payload);
+  }
+  // TODO: add implementations for microbit/calliope when available
 }

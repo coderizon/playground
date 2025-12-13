@@ -52,14 +52,18 @@ export function renderInferPage(root, state = sessionStore.getState()) {
                 .join('')}
             </ul>
           </div>
-          <div class="edge-panel">
-            <p>Edge-Verbindung</p>
-            <p class="edge-status" x-text="statusLabel()"></p>
-            <div class="edge-buttons">
-              <template x-for="device in devices" :key="device.id">
-                <button
-                  type="button"
-                  class="ghost"
+            <div class="edge-panel">
+              <p>Edge-Verbindung</p>
+              <p class="edge-status" x-text="statusLabel()"></p>
+              <label class="stream-toggle">
+                <input type="checkbox" @change="toggleStreaming()" :checked="streamingEnabled()" />
+                <span>Vorhersagen streamen</span>
+              </label>
+              <div class="edge-buttons">
+                <template x-for="device in devices" :key="device.id">
+                  <button
+                    type="button"
+                    class="ghost"
                   :disabled="edgeStatus.status === 'connected' || connecting"
                   @click="connect(device.id)"
                 >

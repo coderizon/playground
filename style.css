@@ -534,6 +534,19 @@ body[data-mode="face"] .preview-column {
   margin-bottom: 8px;
 }
 
+.stream-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.stream-toggle input {
+  width: 16px;
+  height: 16px;
+}
+
 .edge-buttons {
   display: flex;
   flex-wrap: wrap;

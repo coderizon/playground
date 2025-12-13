@@ -1,5 +1,10 @@
 import { sessionStore } from '../../store/sessionStore.js';
-import { connectDevice, disconnectDevice, getEdgeState } from '../../services/edge/edgeService.js';
+import {
+  connectDevice,
+  disconnectDevice,
+  getEdgeState,
+  setStreaming,
+} from '../../services/edge/edgeService.js';
 
 const DEVICE_OPTIONS = [
   { id: 'arduino', name: 'Arduino Uno R4' },
@@ -49,6 +54,15 @@ export function registerEdgeComponents(Alpine) {
         default:
           return 'Nicht verbunden';
       }
+    },
+
+    streamingEnabled() {
+      return getEdgeState().streaming;
+    },
+
+    toggleStreaming() {
+      const next = !getEdgeState().streaming;
+      setStreaming(next);
     },
   }));
 }
