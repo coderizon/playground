@@ -10,6 +10,7 @@ let featureExtractor = null;
 let classifier = null;
 let recordedSamples = [];
 let currentSessionId = null;
+let lastPrediction = null;
 
 sessionStore.subscribe((state) => {
   const sessionId = state?.session?.id;
@@ -91,6 +92,8 @@ export async function trainWithRecordedSamples() {
 function resetSamples() {
   recordedSamples.forEach((sample) => sample.tensor.dispose());
   recordedSamples = [];
+  lastPrediction?.dispose?.();
+  lastPrediction = null;
 }
 
 function pruneSamples(state) {
@@ -128,6 +131,40 @@ function ensureClassifier(classCount, learningRate = 0.001) {
     metrics: ['accuracy'],
   });
   return classifier;
+}
+
+export async function runInference(videoEl) {
+  if (!classifier) {
+    throw new Error('Kein trainiertes Modell verfügbar.');
+  }
+  if (!videoEl) {
+    throw new Error('Keine Videoquelle für Inferenz vorhanden.');
+  }
+  const extractor = await ensureFeatureExtractor();
+  const embedding = tf.tidy(() => {
+    const frame = tf.browser.fromPixels(videoEl);
+    const resized = tf.image.resizeBilinear(
+      frame,
+      [MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH],
+      true
+    );
+    const normalized = resized.div(255);
+    return extractor.predict(normalized.expandDims()).squeeze();
+  });
+  const result = tf.tidy(() => classifier.predict(embedding.expandDims()).squeeze());
+  const values = await result.array();
+  const bestIndex = values.reduce(
+    (best, value, idx, arr) => (value > arr[best] ? idx : best),
+    0
+  );
+  embedding.dispose();
+  result.dispose();
+  lastPrediction?.dispose?.();
+  lastPrediction = null;
+  sessionStore.setInferenceStatus(INFERENCE_STATUS.RUNNING, {
+    lastPrediction: { values, bestIndex },
+  });
+  return { values, bestIndex };
 }
 
 async function ensureFeatureExtractor() {

@@ -509,6 +509,20 @@ body[data-mode="face"] .preview-column {
   margin: 16px 0;
 }
 
+.inference-video {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  max-height: 260px;
+}
+
+.inference-video video {
+  width: 100%;
+  display: block;
+  background: #000;
+}
+
 .edge-panel {
   margin-top: 12px;
   padding-top: 12px;
