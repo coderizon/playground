@@ -94,11 +94,18 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   <template x-if="isAudioTask">
                     <div class="audio-preview">
                       <div class="audio-meter" :class="{'is-active': recording}"></div>
-                      <p x-text="audioStatusLabel()"></p>
+                      <div class="audio-guidance">
+                        <p x-text="audioStatusLabel()"></p>
+                        <small>Sprich zügig durch · 2s pro Sample</small>
+                      </div>
                     </div>
                   </template>
                 </div>
                 <p class="field-error" x-show="error" x-text="error"></p>
+                <div class="permission-retry" x-show="lastPermissionError">
+                  <p x-text="lastPermissionError"></p>
+                  <button type="button" class="ghost" @click="startRecording()" :disabled="!canStart">Erneut versuchen</button>
+                </div>
                 <div class="class-card-actions">
                   <button
                     type="button"

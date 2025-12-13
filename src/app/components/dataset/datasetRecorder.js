@@ -156,9 +156,10 @@ export function registerDatasetComponents(Alpine) {
       } catch (err) {
         console.error(err);
         this.error = 'Kamera konnte nicht gestartet werden.';
+        this.lastPermissionError = err?.message || 'Bitte erlaube den Zugriff und versuche es erneut.';
         showToast({
           title: 'Kamera blockiert',
-          message: err?.message || 'Bitte erlaube den Zugriff und versuche es erneut.',
+          message: this.lastPermissionError,
           tone: 'warning',
         });
       }
@@ -278,6 +279,7 @@ export function registerDatasetComponents(Alpine) {
       } catch (error) {
         console.error(error);
         this.error = error?.message || 'Mikrofon konnte nicht gestartet werden.';
+        this.lastPermissionError = this.error;
         showToast({
           title: 'Mikrofon blockiert',
           message: this.error,
