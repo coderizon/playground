@@ -1,6 +1,7 @@
 import { sessionStore, DATASET_STATUS } from '../../store/sessionStore.js';
 import { openConfirmDialog } from '../common/confirmDialog.js';
 import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
+import { recordSampleFrame } from '../../services/ml/modelBridge.js';
 
 export function registerClassComponents(Alpine) {
   Alpine.data('classList', () => ({
@@ -64,10 +65,16 @@ export function registerClassComponents(Alpine) {
     beginSampleLoop(classId) {
       this.endSampleLoop();
       this.sampleInterval = window.setInterval(() => {
-        sessionStore.addDatasetSample(classId, { source: 'camera' });
         const state = sessionStore.getState();
         const classState = state.classes.find((cls) => cls.id === classId);
         if (!classState) return;
+        const video = this.$refs[`preview-${classId}`];
+        const classIndex = state.classes.findIndex((cls) => cls.id === classId);
+        recordSampleFrame(video, classId, classIndex, state.classes.length).catch((error) => {
+          console.error(error);
+          this.recordingError = 'Feature konnte nicht aufgezeichnet werden.';
+        });
+        sessionStore.addDatasetSample(classId, { source: 'camera' });
         if (classState.dataset.recordedCount >= classState.dataset.expectedCount) {
           this.stopRecording(classState);
         }

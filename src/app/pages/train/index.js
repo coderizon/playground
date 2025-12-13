@@ -2,7 +2,7 @@ import { sessionStore, STEP, TRAINING_STATUS } from '../../store/sessionStore.js
 import { canAccessTraining, canAccessInference } from '../../guards/navigation.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
 import { isTrainingReady, getTrainingSummary } from '../../store/selectors.js';
-import { startMockTraining, abortMockTraining } from '../../services/ml/mockTraining.js';
+import { trainWithRecordedSamples } from '../../services/ml/modelBridge.js';
 
 export function renderTrainPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -71,11 +71,7 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
   });
   const startBtn = root.querySelector('[data-start-training]');
   startBtn?.addEventListener('click', () => {
-    startMockTraining();
-  });
-  const abortBtn = root.querySelector('[data-abort-training]');
-  abortBtn?.addEventListener('click', () => {
-    abortMockTraining();
+    trainWithRecordedSamples();
   });
 }
 
