@@ -32,6 +32,7 @@
 2. **Recording experience**
    - Add richer permission failure prompts (toasts, retry buttons) and manual sample discard per sample.
    - Add per-class dataset analytics (e.g., average clip duration, capture device warnings) so users understand quality, not only counts.
+   - Introduce modality-specific guidance (e.g., audio progress bars / background-noise instructions inspired by `ml-speech`) so users know how long to speak or record.
 3. **Training/inference realism**
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
