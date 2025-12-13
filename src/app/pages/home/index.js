@@ -1,7 +1,7 @@
-import { sessionStore, STEP } from '../store/sessionStore.js';
-import { getAvailableTaskModels } from '../data/taskModels.js';
+import { sessionStore, STEP } from '../../store/sessionStore.js';
+import { getAvailableTaskModels } from '../../data/taskModels.js';
 
-export function renderHomePage(root) {
+export function renderHomePage(root, state = sessionStore.getState()) {
   if (!root) return;
 
   root.innerHTML = `
@@ -94,23 +94,16 @@ export function renderHomePage(root) {
     sessionStore.setStep(STEP.HOME);
   });
 
-  const renderState = () => {
-    const state = sessionStore.getState();
-    const hasSession = Boolean(state.selectedTaskModel);
-    if (!state.selectedTaskModel) {
-      stateEl.textContent = 'Keine Session gestartet. Wähle eine Karte.';
-      discardBtn.disabled = true;
-      goHomeBtn.disabled = true;
-      return;
-    }
+  if (!state?.selectedTaskModel) {
+    stateEl.textContent = 'Keine Session gestartet. Wähle eine Karte.';
+    discardBtn.disabled = true;
+    goHomeBtn.disabled = true;
+  } else {
     const nextStepCopy = describeStep(state.step);
     stateEl.textContent = `Session aktiv für ${state.selectedTaskModel.name}. Nächster Schritt: ${nextStepCopy}.`;
     discardBtn.disabled = false;
     goHomeBtn.disabled = state.step === STEP.HOME;
-  };
-
-  sessionStore.subscribe(renderState);
-  renderState();
+  }
 }
 
 function describeStep(step) {

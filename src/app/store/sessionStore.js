@@ -155,6 +155,30 @@ export function createSessionStore(initial = createInitialSessionState()) {
     });
   };
 
+  const removeClass = (classId) => {
+    if (!classId) return;
+    setState((current) => ({
+      ...current,
+      classes: current.classes.filter((classState) => classState.id !== classId),
+    }));
+  };
+
+  const setClassName = (classId, name) => {
+    if (!classId) return;
+    setState((current) => ({
+      ...current,
+      classes: current.classes.map((classState, index) => {
+        if (classState.id !== classId) return classState;
+        const sanitized = sanitizeClassNameInput(name);
+        const fallback = `Klasse ${index + 1}`;
+        return freezeState({
+          ...classState,
+          name: sanitized || fallback,
+        });
+      }),
+    }));
+  };
+
   const updateClass = (classId, updater) => {
     if (!classId) return;
     setState((current) => ({
@@ -231,6 +255,8 @@ export function createSessionStore(initial = createInitialSessionState()) {
     setInferenceStatus,
     setEdgeStatus,
     setStep,
+    removeClass,
+    setClassName,
   };
 }
 
@@ -290,4 +316,9 @@ function validateInferenceStatus(status) {
 
 function validateEdgeStatus(status) {
   return Object.values(EDGE_STATUS).includes(status) ? status : null;
+}
+
+function sanitizeClassNameInput(name) {
+  if (typeof name !== 'string') return '';
+  return name.trim().slice(0, 60);
 }
