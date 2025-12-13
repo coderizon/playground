@@ -1,6 +1,6 @@
 import { sessionStore, STEP, INFERENCE_STATUS } from '../../store/sessionStore.js';
 import { canAccessInference } from '../../guards/navigation.js';
-import { getInferencePredictions, isInferenceRunning } from '../../store/selectors.js';
+import { isInferenceRunning } from '../../store/selectors.js';
 import { startLiveInference, stopLiveInference } from '../../services/ml/liveInference.js';
 import { requestCameraStream } from '../../services/media/cameraService.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
@@ -13,7 +13,6 @@ export function renderInferPage(root, state = sessionStore.getState()) {
     return;
   }
 
-  const predictions = getInferencePredictions(state);
   const running = isInferenceRunning(state);
   root.innerHTML = `
     <section class="infer-page">
@@ -40,20 +39,20 @@ export function renderInferPage(root, state = sessionStore.getState()) {
             <button type="button" class="primary" data-start-infer ${running ? 'disabled' : ''}>Inference starten</button>
             <button type="button" class="ghost" data-stop-infer ${running ? '' : 'disabled'}>Stoppen</button>
           </div>
-          <div class="prediction-output">
+          <div class="prediction-output" x-data="predictionPanel()" x-init="init()">
             <h3>Vorhersage</h3>
+            <p class="prediction-status" x-text="statusCopy()"></p>
             <ul>
-              ${predictions
-                .map(
-                  (row) => `
-                <li class="${row.isBest && running ? 'is-active' : ''}">
-                  <span>${row.name}</span>
-                  <strong>${Math.round(row.value * 100)}%</strong>
+              <template x-for="(row, index) in predictions" :key="row.name + index">
+                <li :class="{'is-active': row.isBest && isRunning}">
+                  <span x-text="row.name"></span>
+                  <strong x-text="formatPercent(row.value)"></strong>
                 </li>
-              `
-                )
-                .join('')}
+              </template>
             </ul>
+            <p class="prediction-updated" x-show="lastUpdatedAt">
+              Aktualisiert um <span x-text="readableTimestamp()"></span>
+            </p>
           </div>
             <div class="edge-panel">
               <p>Edge-Verbindung</p>
@@ -151,7 +150,10 @@ async function initInferencePreview(videoEl) {
 
 function inferNoticeMessage(state) {
   if (state.edge.status === 'connected') {
-    return 'Vorhersagen werden an das verbundene Gerät gesendet, wenn Streaming aktiviert ist.';
+    if (state.inference.streamToEdge) {
+      return 'Vorhersagen werden an das verbundene Gerät gesendet.';
+    }
+    return 'Gerät verbunden – aktiviere „Vorhersagen streamen“, um Daten zu senden.';
   }
   if (state.edge.status === 'error') {
     return state.edge.error || 'Streaming angehalten aufgrund eines Verbindungsfehlers.';

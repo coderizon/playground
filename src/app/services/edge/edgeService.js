@@ -100,6 +100,7 @@ sessionStore.subscribe((sessionState) => {
 
 export function setStreaming(enabled) {
   state.streaming = enabled;
+  sessionStore.setInferenceStreaming(enabled);
 }
 
 function sendPrediction(payload) {

@@ -12,6 +12,8 @@ let recordedSamples = [];
 let currentSessionId = null;
 let lastPrediction = null;
 let trainingAbortRequested = false;
+let lastPredictionTimestamp = 0;
+const MIN_PREDICTION_INTERVAL_MS = 200;
 
 sessionStore.subscribe((state) => {
   const sessionId = state?.session?.id;
@@ -185,9 +187,13 @@ export async function runInference(videoEl) {
   result.dispose();
   lastPrediction?.dispose?.();
   lastPrediction = null;
-  sessionStore.setInferenceStatus(INFERENCE_STATUS.RUNNING, {
-    lastPrediction: { values, bestIndex },
-  });
+  const now = Date.now();
+  if (now - lastPredictionTimestamp >= MIN_PREDICTION_INTERVAL_MS) {
+    lastPredictionTimestamp = now;
+    sessionStore.setInferenceStatus(INFERENCE_STATUS.RUNNING, {
+      lastPrediction: { values, bestIndex, updatedAt: now },
+    });
+  }
   return { values, bestIndex };
 }
 

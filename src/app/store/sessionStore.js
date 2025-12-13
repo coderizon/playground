@@ -261,6 +261,16 @@ export function createSessionStore(initial = createInitialSessionState()) {
     }));
   };
 
+  const setInferenceStreaming = (enabled) => {
+    setState((current) => ({
+      ...current,
+      inference: {
+        ...current.inference,
+        streamToEdge: Boolean(enabled),
+      },
+    }));
+  };
+
   const setEdgeStatus = (status, patch = {}) => {
     setState((current) => ({
       ...current,
@@ -294,6 +304,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
     setTrainingStatus,
     setInferenceStatus,
     setEdgeStatus,
+    setInferenceStreaming,
     setStep,
     removeClass,
     setClassName,
