@@ -1,3 +1,5 @@
+import { renderHomePage } from './pages/homePage.js';
+
 const LEGACY_ROOT_IDS = ['landing-page', 'app-shell'];
 
 function hideLegacyPrototypeShell() {
@@ -20,10 +22,5 @@ export async function bootstrapNewApp({ targetSelector = '#new-app-root' } = {})
 
   root.removeAttribute('hidden');
   root.classList.add('new-app-root-active');
-  root.innerHTML = `
-    <div class="new-app-coming-soon">
-      <p>Playground refactor shell mounted.</p>
-      <p>The session-driven UI will render here as slices ship.</p>
-    </div>
-  `;
+  renderHomePage(root);
 }
