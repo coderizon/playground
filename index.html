@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/style.css">
   </head>  
   <body data-step="collect" class="landing-active">
+    <div id="new-app-root" class="new-app-root" hidden aria-live="polite"></div>
     <div id="landing-page" role="dialog" aria-label="Landing">
       <div class="landing-shell">
         <header class="landing-header">
@@ -349,8 +350,7 @@
     <!-- Import TensorFlow.js library -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js" type="text/javascript"></script>
 
-    <!-- Import the page's JavaScript to do some stuff -->
-    <script type="module" src="/src/main.js"></script>
-    <script type="module" src="/src/landing.js"></script>
+    <!-- Import the bootstrapper that loads either the legacy prototype or the new app -->
+    <script type="module" src="/src/bootstrap.js"></script>
   </body>
 </html>
