@@ -1,8 +1,6 @@
-import { sessionStore, STEP, INFERENCE_STATUS } from '../../store/sessionStore.js';
+import { sessionStore, STEP } from '../../store/sessionStore.js';
 import { canAccessInference } from '../../guards/navigation.js';
-import { isInferenceRunning } from '../../store/selectors.js';
-import { startLiveInference, stopLiveInference } from '../../services/ml/liveInference.js';
-import { requestCameraStream } from '../../services/media/cameraService.js';
+import { stopLiveInference } from '../../services/ml/liveInference.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
 import { openConfirmDialog } from '../../components/common/confirmDialog.js';
 
@@ -13,7 +11,6 @@ export function renderInferPage(root, state = sessionStore.getState()) {
     return;
   }
 
-  const running = isInferenceRunning(state);
   root.innerHTML = `
     <section class="infer-page">
       <header class="infer-header">
@@ -29,15 +26,15 @@ export function renderInferPage(root, state = sessionStore.getState()) {
       </header>
       <section class="infer-body">
         <div id="inferNotice"></div>
-        <article class="inference-panel" x-data="edgePanel()" x-init="init()">
+        <article class="inference-panel" x-data="inferenceControls()" x-init="init()">
           <h2>Inference</h2>
-          <p>Status: ${state.inference.status}${state.inference.error ? ` · ${state.inference.error}` : ''}</p>
+          <p class="inference-status" x-text="statusCopy()"></p>
           <div class="inference-video">
-            <video id="inferPreview" autoplay muted playsinline class="${running ? 'is-active' : ''}"></video>
+            <video autoplay muted playsinline :class="{'is-active': running}" x-ref="preview"></video>
           </div>
           <div class="inference-actions">
-            <button type="button" class="primary" data-start-infer ${running ? 'disabled' : ''}>Inference starten</button>
-            <button type="button" class="ghost" data-stop-infer ${running ? '' : 'disabled'}>Stoppen</button>
+            <button type="button" class="primary" @click="startInference" :disabled="!previewReady || running">Inference starten</button>
+            <button type="button" class="ghost" @click="stopInference" :disabled="!running">Stoppen</button>
           </div>
           <div class="prediction-output" x-data="predictionPanel()" x-init="init()">
             <h3>Vorhersage</h3>
@@ -54,7 +51,7 @@ export function renderInferPage(root, state = sessionStore.getState()) {
               Aktualisiert um <span x-text="readableTimestamp()"></span>
             </p>
           </div>
-            <div class="edge-panel">
+            <div class="edge-panel" x-data="edgePanel()" x-init="init()">
               <p>Edge-Verbindung</p>
               <p class="edge-status" x-text="statusLabel()"></p>
               <label class="stream-toggle">
@@ -109,16 +106,6 @@ export function renderInferPage(root, state = sessionStore.getState()) {
       },
     });
   });
-  const previewVideo = root.querySelector('#inferPreview');
-  initInferencePreview(previewVideo);
-  root.querySelector('[data-start-infer]')?.addEventListener('click', () => {
-    if (previewVideo) {
-      startLiveInference(previewVideo);
-    }
-  });
-  root.querySelector('[data-stop-infer]')?.addEventListener('click', () => {
-    stopLiveInference();
-  });
 }
 
 function renderBlocked(root) {
@@ -133,19 +120,6 @@ function renderBlocked(root) {
   root.querySelector('[data-go-train]')?.addEventListener('click', () => {
     sessionStore.setStep(STEP.TRAIN);
   });
-}
-
-async function initInferencePreview(videoEl) {
-  if (!videoEl) return;
-  try {
-    const stream = await requestCameraStream();
-    videoEl.srcObject = stream;
-  } catch (error) {
-    console.error(error);
-    sessionStore.setInferenceStatus(INFERENCE_STATUS.ERROR, {
-      error: 'Kamera konnte nicht gestartet werden.',
-    });
-  }
 }
 
 function inferNoticeMessage(state) {

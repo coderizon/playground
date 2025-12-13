@@ -8,15 +8,14 @@
   - `classList` now focuses on class creation, naming, and dataset status messaging.
   - `datasetRecorder` components own camera permissions, sample loops, readiness hints, and destructive discards while piping embeddings into the TF.js bridge.
   - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs.
-  - `predictionPanel` subscribes to inference predictions, throttles updates, and communicates streaming status so users get clear feedback even on slower devices.
+  - `inferenceControls` manages camera permissions, start/stop intents, and navigation safety copy; `predictionPanel` subscribes to inference predictions, throttles updates, and communicates streaming status so users get clear feedback even on slower devices.
   - Global confirm dialog + notice banners provide consistent messaging.
   - Edge panel component connects BLE devices, toggles streaming, and mirrors connection/streaming state on the inference page.
 - **Flow coverage**:
   - **Home**: task/model grid wired to the store, session discard/back-to-home controls.
   - **Collect**: classes + recording previews, dataset readiness gating, training progression guard.
   - **Train**: MobileNet feature extraction + real classifier training via `modelBridge.js`, progress bar, guard-driven navigation.
-  - **Infer**: Live camera inference loop, probability display, start/stop controls, edge streaming toggle, device notice.
-    - Prediction list now flows through `predictionPanel`, which throttles TF.js updates and warns when streaming is disabled despite an active edge connection.
+  - **Infer**: Live camera inference loop, start/stop guard via `inferenceControls`, throttled prediction display, explicit streaming toggle/notice.
 - **Services**:
   - `services/media/cameraService.js` centralizes camera stream handling.
   - `services/ml/modelBridge.js` uses TF.js to capture embeddings, train, and infer.
@@ -29,13 +28,13 @@
 1. **UX polish & structure**
    - Migrate the new SPA styling to Tailwind per the suggested structure (`src/styles`), replacing the ad-hoc CSS in `style.css`.
    - Build out the full `pages/collect|train|infer` directories (controllers + sub-components) instead of single files.
-   - Add Alpine components for an inference HUD (preview controls, stream status) so logic moves out of page files.
+   - Extract inference HUD/edge panel into dedicated page controllers (beyond current Alpine data on the page) so routes stay declarative.
 2. **Recording experience**
    - Extend the dataset recorder to support audio tasks, richer permission failure prompts, and manual sample discard per sample.
    - Add a dedicated dataset summary panel (expected vs recorded counts, readiness reasons) so training blockers are self-explanatory.
 3. **Training/inference realism**
-   - Harden dataset locking by preventing store-level class mutations when `training.status = running` and persisting readiness/error metadata for retries.
-   - Add inference telemetry/guard rails (e.g., FPS indicator, explicit "stop before leaving" confirmations) and surface permission failures inside the inference panel.
+   - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
+   - Add inference telemetry/guard rails (FPS indicator, explicit "stop before leaving" confirmations) and capture permission errors in dedicated HUD copy.
 4. **Edge streaming completeness**
    - Implement streaming for Micro:bit and Calliope (currently TODO in `edgeService.js`).
    - Add connection state persistence, edge error dialogs, and integrate BLE modal parity from the legacy UI.

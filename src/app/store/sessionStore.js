@@ -146,6 +146,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
   };
 
   const addClass = (options = {}) => {
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
     setState((current) => {
       const nextClass = createClassState(options);
       return {
@@ -157,6 +158,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
 
   const addDatasetSample = (classId, sample = {}) => {
     if (!classId) return;
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
     setState((current) => ({
       ...current,
       classes: current.classes.map((classState) => {
@@ -182,6 +184,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
 
   const removeClass = (classId) => {
     if (!classId) return;
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
     setState((current) => ({
       ...current,
       classes: current.classes.filter((classState) => classState.id !== classId),
@@ -190,6 +193,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
 
   const setClassName = (classId, name) => {
     if (!classId) return;
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
     setState((current) => ({
       ...current,
       classes: current.classes.map((classState, index) => {
@@ -296,7 +300,11 @@ export function createSessionStore(initial = createInitialSessionState()) {
     subscribe,
     startSession,
     discardSession,
-    addClass,
+    addClass: (options) => {
+      const state = sessionStore.getState();
+      if (state.training?.status === TRAINING_STATUS.RUNNING) return;
+      addClass(options);
+    },
     addDatasetSample,
     updateClass,
     updateDatasetStatus,
@@ -306,8 +314,16 @@ export function createSessionStore(initial = createInitialSessionState()) {
     setEdgeStatus,
     setInferenceStreaming,
     setStep,
-    removeClass,
-    setClassName,
+    removeClass: (classId) => {
+      const state = sessionStore.getState();
+      if (state.training?.status === TRAINING_STATUS.RUNNING) return;
+      removeClass(classId);
+    },
+    setClassName: (classId, name) => {
+      const state = sessionStore.getState();
+      if (state.training?.status === TRAINING_STATUS.RUNNING) return;
+      setClassName(classId, name);
+    },
   };
 }
 
