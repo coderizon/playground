@@ -402,11 +402,6 @@ body[data-mode="face"] .preview-column {
   margin-top: 6px;
 }
 
-.guard-hint {
-  margin-top: 16px;
-  color: var(--muted);
-  font-size: 14px;
-}
 
 .train-page {
   display: flex;
@@ -481,6 +476,51 @@ body[data-mode="face"] .preview-column {
 .notice--warning {
   border-color: #facc15;
   background: #fef9c3;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.confirm-dialog {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 25px 45px rgba(15, 23, 42, 0.15);
+}
+
+.confirm-dialog h3 {
+  margin: 0 0 10px;
+}
+
+.confirm-dialog p {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.confirm-dialog .primary.danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
 }
 
 .mobile-step {

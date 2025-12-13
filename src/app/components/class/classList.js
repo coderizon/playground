@@ -1,4 +1,5 @@
 import { sessionStore, DATASET_STATUS } from '../../store/sessionStore.js';
+import { openConfirmDialog } from '../common/confirmDialog.js';
 
 export function registerClassComponents(Alpine) {
   Alpine.data('classList', () => ({
@@ -39,12 +40,13 @@ export function registerClassComponents(Alpine) {
 
     confirmDelete(classItem) {
       if (!classItem) return;
-      const confirmDelete = window.confirm(
-        `Klasse \"${classItem.name}\" löschen? Gesammelte Daten gehen verloren.`
-      );
-      if (confirmDelete) {
-        sessionStore.removeClass(classItem.id);
-      }
+      openConfirmDialog({
+        title: 'Klasse löschen?',
+        message: `Die Klasse \"${classItem.name}\" und ihre Daten werden entfernt.`,
+        confirmLabel: 'Löschen',
+        destructive: true,
+        onConfirm: () => sessionStore.removeClass(classItem.id),
+      });
     },
 
     datasetLabel(status) {

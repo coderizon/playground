@@ -26,6 +26,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
         </div>
       </header>
       <section class="collect-body" x-data="classList()" x-init="init()">
+        ${trainingHint ? `<div class="notice notice--info">${trainingHint}</div>` : ''}
         <div class="collect-toolbar">
           <button type="button" class="primary" @click="addClass">Klasse hinzufügen</button>
           <span class="collect-count" x-text="classes.length + ' Klassen angelegt'"></span>
@@ -65,9 +66,18 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
             </article>
           </template>
         </div>
-        <p class="guard-hint">${trainingHint}</p>
       </section>
     </section>
+    <div x-data="confirmDialog()" x-show="open" class="confirm-backdrop" x-cloak @click.self="close()">
+      <div class="confirm-dialog" :class="{'is-destructive': destructive}">
+        <h3 x-text="title"></h3>
+        <p x-text="message"></p>
+        <div class="confirm-actions">
+          <button type="button" class="ghost" @click="close()" x-text="cancelLabel"></button>
+          <button type="button" class="primary" :class="{'danger': destructive}" @click="confirm()" x-text="confirmLabel"></button>
+        </div>
+      </div>
+    </div>
   `;
 
   const backBtn = root.querySelector('[data-back-home]');
