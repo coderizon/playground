@@ -111,6 +111,20 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   <button type="button" class="ghost" @click="discardDataset()" :disabled="!canDiscard">Datensatz verwerfen</button>
                 </div>
                 <p class="dataset-hint" x-text="statusHint()"></p>
+                <div class="sample-list" x-show="sampleList().length">
+                  <p class="eyebrow">Samples</p>
+                  <ul>
+                    <template x-for="sample in sampleList()" :key="sample.id">
+                      <li>
+                        <div>
+                          <strong x-text="sample.label"></strong>
+                          <span x-text="sample.durationMs ? (sample.durationMs / 1000) + 's' : sample.source"></span>
+                        </div>
+                        <button type="button" class="ghost" @click="removeSample(sample)" :disabled="!sample.canDelete">Entfernen</button>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
               </section>
               <div class="class-card-actions">
                 <button type="button" class="ghost" @click="confirmDelete(classItem)" :disabled="trainingLocked">Klasse entfernen</button>

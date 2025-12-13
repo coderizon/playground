@@ -188,6 +188,41 @@ export function createSessionStore(initial = createInitialSessionState()) {
     }));
   };
 
+  const removeDatasetSample = (classId, sampleId) => {
+    if (!classId || !sampleId) return;
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
+    setState((current) => ({
+      ...current,
+      classes: current.classes.map((classState) => {
+        if (classState.id !== classId) return classState;
+        const samples = (classState.dataset.samples || []).filter((sample) => sample.id !== sampleId);
+        const recordedCount = samples.length;
+        const status =
+          recordedCount >= classState.dataset.expectedCount && recordedCount > 0
+            ? DATASET_STATUS.READY
+            : recordedCount > 0
+            ? DATASET_STATUS.RECORDING
+            : DATASET_STATUS.EMPTY;
+        const readinessReason = describeReadiness({
+          ...classState.dataset,
+          recordedCount,
+          samples,
+          status,
+        });
+        return freezeState({
+          ...classState,
+          dataset: {
+            ...classState.dataset,
+            samples,
+            recordedCount,
+            status,
+            readinessReason,
+          },
+        });
+      }),
+    }));
+  };
+
   const removeClass = (classId) => {
     if (!classId) return;
     if (state.training?.status === TRAINING_STATUS.RUNNING) return;
@@ -326,6 +361,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
       addClass(options);
     },
     addDatasetSample,
+    removeDatasetSample,
     updateClass,
     updateDatasetStatus,
     resetDataset,
