@@ -8,11 +8,13 @@ import {
   connectMicrobit,
   isMicrobitConnected,
   setMicrobitConnectionListener,
+  sendToMicrobit,
 } from '../../../bluetooth/microbit.js';
 import {
   connectCalliope,
   isCalliopeConnected,
   setCalliopeConnectionListener,
+  sendToCalliope,
 } from '../../../bluetooth/calliope.js';
 import { sessionStore } from '../../store/sessionStore.js';
 import { isInferenceRunning, getInferencePredictions } from '../../store/selectors.js';
@@ -52,8 +54,12 @@ Object.entries(devices).forEach(([key, device]) => {
     }
     sessionStore.setEdgeStatus(connected ? 'connected' : 'disconnected', {
       deviceInfo: connected ? { id: key, name: device.name } : null,
+      error: null,
     });
     state.connecting = false;
+    if (!connected) {
+      state.streaming = false;
+    }
   });
 });
 
@@ -86,6 +92,7 @@ export function disconnectDevice() {
   state.selectedDevice = null;
   sessionStore.setEdgeStatus('disconnected', { deviceInfo: null });
   state.streaming = false;
+  state.error = null;
 }
 
 sessionStore.subscribe((sessionState) => {
@@ -103,9 +110,34 @@ export function setStreaming(enabled) {
   sessionStore.setInferenceStreaming(enabled);
 }
 
-function sendPrediction(payload) {
-  if (state.selectedDevice === 'arduino') {
-    sendToArduino(payload);
+async function sendPrediction(payload) {
+  if (!state.selectedDevice) return;
+  try {
+    switch (state.selectedDevice) {
+      case 'arduino':
+        await sendToArduino(payload);
+        break;
+      case 'microbit':
+        await sendToMicrobit(payload);
+        break;
+      case 'calliope':
+        await sendToCalliope(payload);
+        break;
+      default:
+        break;
+    }
+  } catch (error) {
+    console.error('Streaming fehlgeschlagen', error);
+    handleStreamingError(error);
   }
-  // TODO: add implementations for microbit/calliope when available
+}
+
+function handleStreamingError(error) {
+  state.error = error?.message || 'Streaming fehlgeschlagen';
+  state.streaming = false;
+  sessionStore.setInferenceStreaming(false);
+  sessionStore.setEdgeStatus('error', {
+    error: state.error,
+    deviceInfo: state.selectedDevice ? { id: state.selectedDevice, name: devices[state.selectedDevice]?.name } : null,
+  });
 }

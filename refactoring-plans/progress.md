@@ -38,7 +38,7 @@
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
 4. **Edge streaming completeness**
-   - Implement streaming for Micro:bit and Calliope (currently TODO in `edgeService.js`).
+   - Edge service streams predictions to Arduino/Micro:bit/Calliope and surfaces send failures as edge errors that pause streaming.
    - Add connection state persistence, edge error dialogs, and integrate BLE modal parity from the legacy UI.
 5. **Guards & routing**
    - Flesh out `app/routes/` and `app/guards/` with unit-tested helpers (e.g., `canDiscardClass`, `canStartInference`).
