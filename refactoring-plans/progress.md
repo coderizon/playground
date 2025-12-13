@@ -41,8 +41,8 @@
    - Edge service streams predictions to Arduino/Micro:bit/Calliope and surfaces send failures as edge errors that pause streaming.
    - Add connection state persistence, edge error dialogs, and integrate BLE modal parity from the legacy UI.
 5. **Guards & routing**
-   - Flesh out `app/routes/` and `app/guards/` with unit-tested helpers (e.g., `canDiscardClass`, `canStartInference`).
-   - Increase coverage of step transitions by centralizing navigation calls (`navigationController`, `stepTransitions`) and adding tests.
+   - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js` with node-based unit tests under `tests/guards/navigation.test.mjs`.
+   - Increase coverage of step transitions by centralizing navigation calls (`navigationController`, `stepTransitions`) and adding richer routing tests.
 6. **Quality bar**
    - Accessibility pass: focus traps for modals, keyboard shortcuts for recording, ARIA live regions for status text.
    - Pin external dependencies (tf.js, mediapipe) as described in the vision (self-host or lock versions).

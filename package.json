@@ -1,9 +1,10 @@
 {
   "name": "ml-playground-gpt",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node tests/guards/navigation.test.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
