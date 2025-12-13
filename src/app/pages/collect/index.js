@@ -39,7 +39,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
             </div>
           </template>
           <template x-for="(classItem, index) in classes" :key="classItem.id">
-            <article class="class-card-v2">
+            <article class="class-card-v2" :class="{'is-active': isRecording(classItem.id)}">
               <header>
                 <input
                   type="text"
@@ -59,6 +59,15 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 Beispiele
               </p>
               <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
+              <div class="dataset-preview">
+                <template x-if="isRecording(classItem.id)">
+                  <video autoplay muted playsinline x-ref="preview" class="preview-video"></video>
+                </template>
+                <template x-if="!isRecording(classItem.id)">
+                  <div class="preview-placeholder">Recorder bereit</div>
+                </template>
+              </div>
+              <p class="field-error" x-show="recordingError" x-text="recordingError"></p>
               <div class="class-card-actions">
                 <template x-if="!isRecording(classItem.id)">
                   <button type="button" class="ghost" @click="startRecording(classItem)">Recorder öffnen</button>

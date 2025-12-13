@@ -9,6 +9,7 @@ export function registerClassComponents(Alpine) {
     unsubscribe: null,
     recordingClassId: null,
     recordingError: null,
+    sampleInterval: null,
 
     init() {
       this.sync(sessionStore.getState());
@@ -24,9 +25,11 @@ export function registerClassComponents(Alpine) {
     async startRecording(classItem) {
       if (!classItem || this.recordingClassId) return;
       try {
-        await requestCameraStream();
+        const stream = await requestCameraStream();
         this.recordingClassId = classItem.id;
+        this.attachPreview(stream);
         sessionStore.updateDatasetStatus(classItem.id, DATASET_STATUS.RECORDING);
+        this.beginSampleLoop(classItem.id);
       } catch (error) {
         console.error(error);
         this.recordingError = 'Kamera konnte nicht gestartet werden.';
@@ -36,13 +39,53 @@ export function registerClassComponents(Alpine) {
     stopRecording(classItem) {
       if (!classItem || this.recordingClassId !== classItem.id) return;
       stopCameraStream();
+      this.detachPreview();
+      this.endSampleLoop();
       this.recordingClassId = null;
       sessionStore.updateDatasetStatus(classItem.id, DATASET_STATUS.READY, {
         recordedCount: classItem.dataset.expectedCount,
       });
     },
 
+    attachPreview(stream) {
+      const video = this.$refs.preview;
+      if (video) {
+        video.srcObject = stream;
+      }
+    },
+
+    detachPreview() {
+      const video = this.$refs.preview;
+      if (video) {
+        video.srcObject = null;
+      }
+    },
+
+    beginSampleLoop(classId) {
+      this.endSampleLoop();
+      this.sampleInterval = window.setInterval(() => {
+        const state = sessionStore.getState();
+        const classState = state.classes.find((cls) => cls.id === classId);
+        if (!classState) return;
+        const nextCount = Math.min(
+          classState.dataset.recordedCount + 1,
+          classState.dataset.expectedCount
+        );
+        sessionStore.updateDatasetStatus(classId, DATASET_STATUS.RECORDING, {
+          recordedCount: nextCount,
+        });
+      }, 1200);
+    },
+
+    endSampleLoop() {
+      if (this.sampleInterval) {
+        window.clearInterval(this.sampleInterval);
+        this.sampleInterval = null;
+      }
+    },
+
     destroy() {
+      this.endSampleLoop();
       this.unsubscribe?.();
     },
 
