@@ -12,6 +12,7 @@
   - `collectSummary` surfaces overall readiness (classes, samples, blockers) directly on the Collect page; `inferenceControls` manages camera permissions, start/stop intents, and navigation safety copy; `predictionPanel` subscribes to inference predictions, throttles updates, and communicates streaming status so users get clear feedback even on slower devices.
   - Global confirm dialog + notice banners provide consistent messaging.
   - Edge panel component connects BLE devices, toggles streaming, and mirrors connection/streaming state on the inference page.
+- **Styling foundation**: Tailwind entry point lives in `src/styles/main.css` (with `@tailwind base/components/utilities`) replacing the old root `style.css`. Further utility extraction can now happen per component.
 - **Flow coverage**:
   - **Home**: task/model grid wired to the store, session discard/back-to-home controls.
   - **Collect**: classes + recording previews, dataset readiness gating, summary panel with per-class blockers, training progression guard.
@@ -27,7 +28,7 @@
 ## Remaining Work to Fulfill `vision.md`
 
 1. **UX polish & structure**
-   - Migrate the new SPA styling to Tailwind per the suggested structure (`src/styles`), replacing the ad-hoc CSS in `style.css`.
+   - Gradually replace legacy utility classes with Tailwind utility/`@apply` patterns now that `src/styles/main.css` is the source of truth.
    - Build out the full `pages/collect|train|infer` directories (controllers + sub-components) instead of single files.
    - Extract inference HUD/edge panel into dedicated page controllers (beyond current Alpine data on the page) so routes stay declarative.
 2. **Recording experience**
