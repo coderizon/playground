@@ -14,6 +14,7 @@ import {
   recordSampleFrame,
   clearSamplesForClass,
 } from '../../services/ml/modelBridge.js';
+import { showToast } from '../common/toast.js';
 
 let activeRecorderId = null;
 
@@ -147,6 +148,11 @@ export function registerDatasetComponents(Alpine) {
       } catch (err) {
         console.error(err);
         this.error = 'Kamera konnte nicht gestartet werden.';
+        showToast({
+          title: 'Kamera blockiert',
+          message: err?.message || 'Bitte erlaube den Zugriff und versuche es erneut.',
+          tone: 'warning',
+        });
       }
     },
 
@@ -206,13 +212,18 @@ export function registerDatasetComponents(Alpine) {
           if (updated?.dataset?.recordedCount >= (updated?.dataset?.expectedCount || 0)) {
             this.stopRecording();
           }
-        } catch (err) {
-          console.error(err);
-          this.error = 'Aufnahme fehlgeschlagen.';
-          this.stopRecording();
-          sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.ERROR, {
-            error: err.message,
-          });
+      } catch (err) {
+        console.error(err);
+        this.error = 'Aufnahme fehlgeschlagen.';
+        showToast({
+          title: 'Recorder-Fehler',
+          message: err?.message || 'Bitte versuche die Aufnahme erneut.',
+          tone: 'error',
+        });
+        this.stopRecording();
+        sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.ERROR, {
+          error: err.message,
+        });
         }
       }, 1200);
     },
@@ -254,6 +265,11 @@ export function registerDatasetComponents(Alpine) {
       } catch (error) {
         console.error(error);
         this.error = error?.message || 'Mikrofon konnte nicht gestartet werden.';
+        showToast({
+          title: 'Mikrofon blockiert',
+          message: this.error,
+          tone: 'warning',
+        });
       }
     },
 
@@ -281,6 +297,11 @@ export function registerDatasetComponents(Alpine) {
       } catch (error) {
         console.error(error);
         this.error = error?.message || 'Audioaufnahme fehlgeschlagen.';
+        showToast({
+          title: 'Audioaufnahme fehlgeschlagen',
+          message: this.error,
+          tone: 'error',
+        });
         this.stopRecording();
         sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.ERROR, {
           error: this.error,
