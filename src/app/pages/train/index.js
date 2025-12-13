@@ -1,6 +1,8 @@
-import { sessionStore, STEP } from '../../store/sessionStore.js';
+import { sessionStore, STEP, TRAINING_STATUS } from '../../store/sessionStore.js';
 import { canAccessTraining, canAccessInference } from '../../guards/navigation.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
+import { isTrainingReady, getTrainingSummary } from '../../store/selectors.js';
+import { startMockTraining, abortMockTraining } from '../../services/ml/mockTraining.js';
 
 export function renderTrainPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -10,6 +12,9 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
   }
 
   const trainingState = state.training;
+  const summary = getTrainingSummary(state);
+  const readyForTraining = isTrainingReady(state);
+  const isRunning = trainingState.status === TRAINING_STATUS.RUNNING;
   root.innerHTML = `
     <section class="train-page">
       <header class="train-header">
@@ -31,10 +36,19 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
         <article class="training-panel">
           <h2>Trainingsstatus</h2>
           <p>Status: <strong>${trainingState.status}</strong></p>
-          <p>Fortschritt: ${trainingState.progress}%</p>
+          <div class="training-progress">
+            <div class="training-progress-bar">
+              <div class="training-progress-fill" style="width: ${trainingState.progress}%"></div>
+            </div>
+            <span>${trainingState.progress}%</span>
+          </div>
           <div class="training-actions">
-            <button type="button" class="primary" data-start-training disabled>Training starten</button>
-            <button type="button" class="ghost" data-abort-training disabled>Training abbrechen</button>
+            <button type="button" class="primary" data-start-training ${
+              readyForTraining && !isRunning ? '' : 'disabled'
+            }>Training starten</button>
+            <button type="button" class="ghost" data-abort-training ${
+              isRunning ? '' : 'disabled'
+            }>Training abbrechen</button>
           </div>
         </article>
       </section>
@@ -42,9 +56,9 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
   `;
 
   renderNoticeBanner(document.getElementById('trainNotice'), {
-    tone: 'warning',
-    title: 'Training kommt bald',
-    message: 'Dieser Schritt zeigt aktuell nur Platzhalter. Der Trainingsfluss wird als nächstes angebunden.',
+    tone: readyForTraining ? 'info' : 'warning',
+    title: 'Trainingsbereitschaft',
+    message: trainingSummaryMessage(summary, readyForTraining),
   });
 
   root.querySelector('[data-back-collect]')?.addEventListener('click', () => {
@@ -54,6 +68,14 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
     if (canAccessInference(sessionStore.getState())) {
       sessionStore.setStep(STEP.INFER);
     }
+  });
+  const startBtn = root.querySelector('[data-start-training]');
+  startBtn?.addEventListener('click', () => {
+    startMockTraining();
+  });
+  const abortBtn = root.querySelector('[data-abort-training]');
+  abortBtn?.addEventListener('click', () => {
+    abortMockTraining();
   });
 }
 
@@ -69,4 +91,12 @@ function renderAccessDenied(root) {
   root.querySelector('[data-go-collect]')?.addEventListener('click', () => {
     sessionStore.setStep(STEP.COLLECT);
   });
+}
+
+function trainingSummaryMessage(summary, ready) {
+  const base = `${summary.readyClasses}/${summary.totalClasses} Klassen bereit · ${summary.totalSamples} Samples`;
+  if (ready) {
+    return `${base}. Du kannst das Training starten.`;
+  }
+  return `${base}. Stelle sicher, dass alle Klassen Datensätze im Status „Bereit“ haben.`;
 }

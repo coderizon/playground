@@ -155,6 +155,31 @@ export function createSessionStore(initial = createInitialSessionState()) {
     });
   };
 
+  const addDatasetSample = (classId, sample = {}) => {
+    if (!classId) return;
+    setState((current) => ({
+      ...current,
+      classes: current.classes.map((classState) => {
+        if (classState.id !== classId) return classState;
+        const samples = [...(classState.dataset.samples || []), enrichSample(sample)];
+        const recordedCount = samples.length;
+        const status =
+          recordedCount >= classState.dataset.expectedCount
+            ? DATASET_STATUS.READY
+            : DATASET_STATUS.RECORDING;
+        return freezeState({
+          ...classState,
+          dataset: {
+            ...classState.dataset,
+            samples,
+            recordedCount,
+            status,
+          },
+        });
+      }),
+    }));
+  };
+
   const removeClass = (classId) => {
     if (!classId) return;
     setState((current) => ({
@@ -249,6 +274,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
     startSession,
     discardSession,
     addClass,
+    addDatasetSample,
     updateClass,
     updateDatasetStatus,
     setTrainingStatus,
@@ -265,13 +291,17 @@ export const sessionStore = createSessionStore();
 function createClassState(options = {}) {
   const id = options.id || createId();
   const defaultName = options.name?.trim() || `Class ${id.slice(-4)}`;
+  const samples = options.dataset?.samples ? [...options.dataset.samples] : [];
   return freezeState({
     id,
     name: defaultName,
     dataset: {
       status: validateDatasetStatus(options.dataset?.status) || DATASET_STATUS.EMPTY,
-      samples: options.dataset?.samples ?? [],
-      recordedCount: options.dataset?.recordedCount ?? 0,
+      samples,
+      recordedCount:
+        typeof options.dataset?.recordedCount === 'number'
+          ? options.dataset.recordedCount
+          : samples.length,
       expectedCount: options.dataset?.expectedCount ?? 20,
       error: options.dataset?.error ?? null,
       source: options.dataset?.source ?? null,
@@ -321,4 +351,12 @@ function validateEdgeStatus(status) {
 function sanitizeClassNameInput(name) {
   if (typeof name !== 'string') return '';
   return name.trim().slice(0, 60);
+}
+
+function enrichSample(sample) {
+  return {
+    id: createId(),
+    capturedAt: Date.now(),
+    ...sample,
+  };
 }

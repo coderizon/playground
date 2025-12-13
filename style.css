@@ -455,6 +455,28 @@ body[data-mode="face"] .preview-column {
   box-shadow: 0 10px 20px rgba(17, 34, 68, 0.08);
 }
 
+.training-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.training-progress-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #e5e9f5;
+  overflow: hidden;
+}
+
+.training-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3f73ff, #7c3aed);
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
 .training-actions {
   margin-top: 16px;
   display: flex;
@@ -498,6 +520,11 @@ body[data-mode="face"] .preview-column {
   padding: 14px 16px;
   border: 1px solid var(--border);
   background: #f8fafc;
+}
+
+.notice--info {
+  border-color: #bfdbfe;
+  background: #eff6ff;
 }
 
 .notice--warning {

@@ -61,7 +61,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
               <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
               <div class="dataset-preview">
                 <template x-if="isRecording(classItem.id)">
-                  <video autoplay muted playsinline x-ref="preview" class="preview-video"></video>
+                  <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
                 </template>
                 <template x-if="!isRecording(classItem.id)">
                   <div class="preview-placeholder">Recorder bereit</div>

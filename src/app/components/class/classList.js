@@ -48,14 +48,14 @@ export function registerClassComponents(Alpine) {
     },
 
     attachPreview(stream) {
-      const video = this.$refs.preview;
+      const video = this.$refs[`preview-${this.recordingClassId}`];
       if (video) {
         video.srcObject = stream;
       }
     },
 
     detachPreview() {
-      const video = this.$refs.preview;
+      const video = this.$refs[`preview-${this.recordingClassId}`];
       if (video) {
         video.srcObject = null;
       }
@@ -64,16 +64,13 @@ export function registerClassComponents(Alpine) {
     beginSampleLoop(classId) {
       this.endSampleLoop();
       this.sampleInterval = window.setInterval(() => {
+        sessionStore.addDatasetSample(classId, { source: 'camera' });
         const state = sessionStore.getState();
         const classState = state.classes.find((cls) => cls.id === classId);
         if (!classState) return;
-        const nextCount = Math.min(
-          classState.dataset.recordedCount + 1,
-          classState.dataset.expectedCount
-        );
-        sessionStore.updateDatasetStatus(classId, DATASET_STATUS.RECORDING, {
-          recordedCount: nextCount,
-        });
+        if (classState.dataset.recordedCount >= classState.dataset.expectedCount) {
+          this.stopRecording(classState);
+        }
       }, 1200);
     },
 
