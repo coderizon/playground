@@ -298,7 +298,7 @@ export function registerDatasetComponents(Alpine) {
       }
     },
 
-    async startAudioRecording() {
+    async startAudioRecording({ duration = 2000 } = {}) {
       try {
         await requestMicrophoneStream();
         this.error = null;
@@ -307,11 +307,12 @@ export function registerDatasetComponents(Alpine) {
         this.recording = true;
         this.audioStopRequested = false;
         this.audioProgress = 0;
+        this.currentAudioDuration = duration;
         sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.RECORDING, {
           error: null,
         });
-        this.animateAudioProgress(2000);
-        this.captureAudioSample();
+        this.animateAudioProgress(duration);
+        this.captureAudioSample(duration);
       } catch (error) {
         console.error(error);
         this.error = error?.message || 'Mikrofon konnte nicht gestartet werden.';
@@ -324,16 +325,16 @@ export function registerDatasetComponents(Alpine) {
       }
     },
 
-    async captureAudioSample() {
+    async captureAudioSample(durationMs = 2000) {
       if (!this.recording || this.audioStopRequested) {
         this.updateStatusAfterStop();
         return;
       }
       try {
-        const result = await recordAudioSample(2000);
+        const result = await recordAudioSample(durationMs);
         sessionStore.addDatasetSample(this.classId, {
           source: 'microphone',
-          durationMs: result?.durationMs || 2000,
+          durationMs: result?.durationMs || durationMs,
         });
         const updated = sessionStore
           .getState()
@@ -343,7 +344,8 @@ export function registerDatasetComponents(Alpine) {
           return;
         }
         if (!this.audioStopRequested) {
-          this.captureAudioSample();
+          this.animateAudioProgress(durationMs);
+          this.captureAudioSample(durationMs);
         }
       } catch (error) {
         console.error(error);

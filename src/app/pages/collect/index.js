@@ -114,17 +114,33 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   <button type="button" class="ghost" @click="startRecording()" :disabled="!canStart">Erneut versuchen</button>
                 </div>
                 <div class="class-card-actions">
-                  <button
-                    type="button"
-                    class="ghost"
-                    @click="startRecording()"
-                    :disabled="!canStart"
-                    x-text="isAudioTask ? 'Audio aufnehmen' : 'Aufnahme starten'"
-                  ></button>
+                  <div class="audio-actions" x-show="isAudioTask">
+                    <button
+                      type="button"
+                      class="ghost"
+                      @click="startRecording()"
+                      :disabled="!canStart"
+                    >Audio aufnehmen</button>
+                    <button
+                      type="button"
+                      class="ghost"
+                      @click="startRecording({ duration: 20000 })"
+                      :disabled="!canStart"
+                    >Hintergrund (20s)</button>
+                  </div>
+                  <template x-if="!isAudioTask">
+                    <button
+                      type="button"
+                      class="ghost"
+                      @click="startRecording()"
+                      :disabled="!canStart"
+                    >Aufnahme starten</button>
+                  </template>
                   <button type="button" class="ghost" @click="stopRecording()" :disabled="!canStop">Stoppen</button>
                   <button type="button" class="ghost" @click="discardDataset()" :disabled="!canDiscard">Datensatz verwerfen</button>
                 </div>
                 <p class="dataset-hint" x-text="statusHint()"></p>
+                <p class="background-tip" x-show="isAudioTask">Tipp: Füge eine eigene Hintergrundklasse hinzu (z.B. „Stille“) und nimm 20s Umgebungsgeräusche auf.</p>
                 <div class="sample-list" x-show="sampleList().length">
                   <p class="eyebrow">Samples</p>
                   <ul>
