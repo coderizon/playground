@@ -132,6 +132,17 @@ export function registerDatasetComponents(Alpine) {
       };
     },
 
+    cameraStats() {
+      if (this.isAudioTask) return null;
+      const samples = this.dataset.samples || [];
+      const frameSamples = samples.filter((sample) => sample.source === 'camera');
+      if (!frameSamples.length) return null;
+      return {
+        count: frameSamples.length,
+        warning: frameSamples.length < this.expectedCount / 2,
+      };
+    },
+
     previewLabel() {
       if (this.isReady) return 'Datensatz bereit';
       if (this.recordedCount > 0) {

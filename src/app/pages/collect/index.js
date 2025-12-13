@@ -85,7 +85,10 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 <div class="dataset-preview" :class="{'is-audio': isAudioTask}">
                   <template x-if="!isAudioTask">
                     <template x-if="recording">
-                      <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
+                      <div class="camera-guidance">
+                        <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
+                        <p>Halte dein Objekt im Fokus · wir sammeln automatisch Frames</p>
+                      </div>
                     </template>
                     <template x-if="!recording">
                       <div class="preview-placeholder" x-text="previewLabel()"></div>
@@ -136,6 +139,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                       Durchschnittliche Clip-Länge:
                       <strong x-text="(audioStats().average / 1000).toFixed(1) + 's'"></strong>
                       <span x-show="audioStats().shortClip" class="warning-chip">Einige Clips sind kürzer als 1,5s</span>
+                    </p>
+                  </template>
+                  <template x-if="cameraStats()">
+                    <p class="sample-analytics">
+                      Erfasste Frames:
+                      <strong x-text="cameraStats().count"></strong>
+                      <span x-show="cameraStats().warning" class="warning-chip">Mehr Variationen empfohlen</span>
                     </p>
                   </template>
                 </div>
