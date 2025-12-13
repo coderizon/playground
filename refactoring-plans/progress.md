@@ -6,7 +6,7 @@
 - **Session store & selectors**: `src/app/store/sessionStore.js` holds the full session model (classes, training, inference, edge state). Derived helpers live in `src/app/store/selectors.js`. Guards (`src/app/guards/navigation.js`) enforce the journey invariants and pages subscribe to the store to enable/disable controls in real time.
 - **Alpine component layer**:
   - `classList` now focuses on class creation, naming, and dataset status messaging.
-  - `datasetRecorder` components own camera permissions, sample loops, readiness hints, and destructive discards while piping embeddings into the TF.js bridge.
+  - `datasetRecorder` components own camera permissions, microphone-based clip capture (MediaRecorder), readiness hints, and destructive discards while piping embeddings into the TF.js bridge.
   - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs.
   - `collectSummary` surfaces overall readiness (classes, samples, blockers) directly on the Collect page; `inferenceControls` manages camera permissions, start/stop intents, and navigation safety copy; `predictionPanel` subscribes to inference predictions, throttles updates, and communicates streaming status so users get clear feedback even on slower devices.
   - Global confirm dialog + notice banners provide consistent messaging.
@@ -30,8 +30,8 @@
    - Build out the full `pages/collect|train|infer` directories (controllers + sub-components) instead of single files.
    - Extract inference HUD/edge panel into dedicated page controllers (beyond current Alpine data on the page) so routes stay declarative.
 2. **Recording experience**
-   - Extend the dataset recorder to support audio tasks, richer permission failure prompts, and manual sample discard per sample.
-   - Add per-class dataset analytics (e.g., average sample length, capture device warnings) so users understand quality, not only counts.
+   - Add richer permission failure prompts (toasts, retry buttons) and manual sample discard per sample.
+   - Add per-class dataset analytics (e.g., average clip duration, capture device warnings) so users understand quality, not only counts.
 3. **Training/inference realism**
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.

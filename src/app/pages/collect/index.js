@@ -82,17 +82,31 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
               </p>
               <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
               <section class="dataset-recorder" x-data="datasetRecorder(classItem.id)" x-init="init()">
-                <div class="dataset-preview">
-                  <template x-if="recording">
-                    <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
+                <div class="dataset-preview" :class="{'is-audio': isAudioTask}">
+                  <template x-if="!isAudioTask">
+                    <template x-if="recording">
+                      <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
+                    </template>
+                    <template x-if="!recording">
+                      <div class="preview-placeholder" x-text="previewLabel()"></div>
+                    </template>
                   </template>
-                  <template x-if="!recording">
-                    <div class="preview-placeholder" x-text="previewLabel()"></div>
+                  <template x-if="isAudioTask">
+                    <div class="audio-preview">
+                      <div class="audio-meter" :class="{'is-active': recording}"></div>
+                      <p x-text="audioStatusLabel()"></p>
+                    </div>
                   </template>
                 </div>
                 <p class="field-error" x-show="error" x-text="error"></p>
                 <div class="class-card-actions">
-                  <button type="button" class="ghost" @click="startRecording()" :disabled="!canStart">Aufnahme starten</button>
+                  <button
+                    type="button"
+                    class="ghost"
+                    @click="startRecording()"
+                    :disabled="!canStart"
+                    x-text="isAudioTask ? 'Audio aufnehmen' : 'Aufnahme starten'"
+                  ></button>
                   <button type="button" class="ghost" @click="stopRecording()" :disabled="!canStop">Stoppen</button>
                   <button type="button" class="ghost" @click="discardDataset()" :disabled="!canDiscard">Datensatz verwerfen</button>
                 </div>

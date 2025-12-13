@@ -6,6 +6,11 @@ import {
 import { openConfirmDialog } from '../common/confirmDialog.js';
 import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
 import {
+  requestMicrophoneStream,
+  stopMicrophoneStream,
+  recordAudioSample,
+} from '../../services/media/microphoneService.js';
+import {
   recordSampleFrame,
   clearSamplesForClass,
 } from '../../services/ml/modelBridge.js';
@@ -20,6 +25,8 @@ export function registerDatasetComponents(Alpine) {
     recording: false,
     error: null,
     sampleInterval: null,
+    audioStopRequested: false,
+    modality: sessionStore.getState().selectedTaskModel?.inputModality || 'camera',
     unsubscribe: null,
 
     init() {
@@ -31,7 +38,7 @@ export function registerDatasetComponents(Alpine) {
       this.endSampleLoop();
       this.unsubscribe?.();
       if (activeRecorderId === this.classId) {
-        stopCameraStream();
+        this.teardownStreams();
         activeRecorderId = null;
       }
     },
@@ -39,6 +46,7 @@ export function registerDatasetComponents(Alpine) {
     sync(state) {
       this.classState = state.classes.find((cls) => cls.id === this.classId) || null;
       this.trainingStatus = state.training?.status || TRAINING_STATUS.IDLE;
+      this.modality = state.selectedTaskModel?.inputModality || 'camera';
       if (this.trainingLocked && this.recording) {
         this.stopRecording();
       }
@@ -78,6 +86,10 @@ export function registerDatasetComponents(Alpine) {
       return this.trainingStatus === TRAINING_STATUS.RUNNING;
     },
 
+    get isAudioTask() {
+      return this.modality === 'microphone';
+    },
+
     get canStart() {
       if (this.trainingLocked) return false;
       if (this.recording) return false;
@@ -104,6 +116,9 @@ export function registerDatasetComponents(Alpine) {
     },
 
     statusHint() {
+      if (this.dataset?.readinessReason) {
+        return this.dataset.readinessReason;
+      }
       if (this.isReady) {
         return 'Datensatz vollständig · weiter zum Training möglich';
       }
@@ -115,6 +130,10 @@ export function registerDatasetComponents(Alpine) {
 
     async startRecording() {
       if (!this.canStart) return;
+      if (this.isAudioTask) {
+        await this.startAudioRecording();
+        return;
+      }
       try {
         const stream = await requestCameraStream();
         this.error = null;
@@ -133,18 +152,17 @@ export function registerDatasetComponents(Alpine) {
 
     stopRecording() {
       if (!this.canStop) return;
-      this.endSampleLoop();
-      stopCameraStream();
-      this.detachPreview();
+      this.audioStopRequested = true;
+      if (this.isAudioTask) {
+        stopMicrophoneStream();
+      } else {
+        this.endSampleLoop();
+        stopCameraStream();
+        this.detachPreview();
+      }
       this.recording = false;
       activeRecorderId = null;
-      const status =
-        this.recordedCount >= this.expectedCount
-          ? DATASET_STATUS.READY
-          : this.recordedCount > 0
-          ? DATASET_STATUS.RECORDING
-          : DATASET_STATUS.EMPTY;
-      sessionStore.updateDatasetStatus(this.classId, status);
+      this.updateStatusAfterStop();
     },
 
     discardDataset() {
@@ -207,6 +225,7 @@ export function registerDatasetComponents(Alpine) {
     },
 
     attachPreview(stream) {
+      if (this.isAudioTask) return;
       const video = this.$refs[`preview-${this.classId}`];
       if (video) {
         video.srcObject = stream;
@@ -214,10 +233,85 @@ export function registerDatasetComponents(Alpine) {
     },
 
     detachPreview() {
+      if (this.isAudioTask) return;
       const video = this.$refs[`preview-${this.classId}`];
       if (video) {
         video.srcObject = null;
       }
+    },
+
+    async startAudioRecording() {
+      try {
+        await requestMicrophoneStream();
+        this.error = null;
+        activeRecorderId = this.classId;
+        this.recording = true;
+        this.audioStopRequested = false;
+        sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.RECORDING, {
+          error: null,
+        });
+        this.captureAudioSample();
+      } catch (error) {
+        console.error(error);
+        this.error = error?.message || 'Mikrofon konnte nicht gestartet werden.';
+      }
+    },
+
+    async captureAudioSample() {
+      if (!this.recording || this.audioStopRequested) {
+        this.updateStatusAfterStop();
+        return;
+      }
+      try {
+        await recordAudioSample(2000);
+        sessionStore.addDatasetSample(this.classId, {
+          source: 'microphone',
+          durationMs: 2000,
+        });
+        const updated = sessionStore
+          .getState()
+          .classes.find((cls) => cls.id === this.classId);
+        if (updated?.dataset?.recordedCount >= (updated?.dataset?.expectedCount || 0)) {
+          this.stopRecording();
+          return;
+        }
+        if (!this.audioStopRequested) {
+          this.captureAudioSample();
+        }
+      } catch (error) {
+        console.error(error);
+        this.error = error?.message || 'Audioaufnahme fehlgeschlagen.';
+        this.stopRecording();
+        sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.ERROR, {
+          error: this.error,
+        });
+      }
+    },
+
+    updateStatusAfterStop() {
+      const status =
+        this.recordedCount >= this.expectedCount
+          ? DATASET_STATUS.READY
+          : this.recordedCount > 0
+          ? DATASET_STATUS.RECORDING
+          : DATASET_STATUS.EMPTY;
+      sessionStore.updateDatasetStatus(this.classId, status);
+    },
+
+    teardownStreams() {
+      if (this.isAudioTask) {
+        stopMicrophoneStream();
+      } else {
+        stopCameraStream();
+      }
+    },
+
+    audioStatusLabel() {
+      if (this.recording) return 'Audioaufnahme läuft';
+      if (this.recordedCount > 0) {
+        return `${this.recordedCount}/${this.expectedCount} Clips`;
+      }
+      return 'Recorder bereit';
     },
   }));
 }
