@@ -22,7 +22,7 @@
   - `services/ml/modelBridge.js` uses TF.js to capture embeddings, train, and infer.
   - `services/ml/liveInference.js` runs the inference loop.
   - `services/ml/mockTraining.js` + `mockInference.js` remain as fallbacks for future tests.
-  - `services/edge/edgeService.js` wraps BLE modules, tracks connection state, and streams predictions (currently Arduino send only).
+  - `services/edge/edgeService.js` wraps BLE modules, tracks connection state, streams predictions to Arduino/Micro:bit/Calliope, and flags streaming errors as edge status updates.
 
 ## Remaining Work to Fulfill `vision.md`
 
@@ -31,9 +31,8 @@
    - Build out the full `pages/collect|train|infer` directories (controllers + sub-components) instead of single files.
    - Extract inference HUD/edge panel into dedicated page controllers (beyond current Alpine data on the page) so routes stay declarative.
 2. **Recording experience**
-   - Add richer permission failure prompts (toasts, retry buttons) and manual sample discard per sample.
-   - Extend analytics/guidance to show per-sample thumbnails and integrate audio progress meters inspired by `ml-speech`.
-   - Introduce modality-specific guidance (e.g., audio progress bars / background-noise instructions inspired by `ml-speech`) so users know how long to speak or record.
+   - Add camera-specific analytics (per-sample thumbnails already exist; still need in-app preview thumbnails or sample replay) plus richer background-noise guidance for audio tasks.
+   - Introduce optional background/noise capture presets inspired by `ml-speech` (long-duration recordings with visual progress) so users know when to relax or speak.
 3. **Training/inference realism**
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
