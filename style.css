@@ -396,6 +396,37 @@ body[data-mode="face"] .preview-column {
   background: #f9fbff;
 }
 
+.train-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.train-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.train-header__actions {
+  display: flex;
+  gap: 12px;
+}
+
+.training-panel {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 10px 20px rgba(17, 34, 68, 0.08);
+}
+
+.training-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+}
+
 .mobile-step {
   flex: 1;
   border: 1px solid var(--border);

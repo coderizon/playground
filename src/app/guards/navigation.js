@@ -12,3 +12,16 @@ export function canGoToTraining(state) {
   if (classes.length < 2) return false;
   return classes.every((classState) => classState.dataset?.status === DATASET_STATUS.READY);
 }
+
+export function canAccessTraining(state) {
+  if (!state) return false;
+  const classes = state.classes || [];
+  if (!state.selectedTaskModel || classes.length < 2) return false;
+  return classes.every((classState) => classState.dataset?.status === DATASET_STATUS.READY);
+}
+
+export function canAccessInference(state) {
+  if (!state) return false;
+  if (!state.selectedTaskModel) return false;
+  return state.training?.status === 'done';
+}
