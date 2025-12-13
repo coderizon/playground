@@ -15,7 +15,7 @@
   - **Home**: task/model grid wired to the store, session discard/back-to-home controls.
   - **Collect**: classes + recording previews, dataset readiness gating, training progression guard.
   - **Train**: MobileNet feature extraction + real classifier training via `modelBridge.js`, progress bar, guard-driven navigation.
-  - **Infer**: Live camera inference loop, start/stop guard via `inferenceControls`, throttled prediction display, explicit streaming toggle/notice.
+  - **Infer**: Live camera inference loop, FPS-aware start/stop guard via `inferenceControls` (with before-unload protection + confirmations), throttled prediction display, explicit streaming toggle/notice.
 - **Services**:
   - `services/media/cameraService.js` centralizes camera stream handling.
   - `services/ml/modelBridge.js` uses TF.js to capture embeddings, train, and infer.
@@ -34,7 +34,7 @@
    - Add per-class dataset analytics (e.g., average sample length, capture device warnings) so users understand quality, not only counts.
 3. **Training/inference realism**
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
-   - Add inference telemetry/guard rails (FPS indicator, explicit "stop before leaving" confirmations) and capture permission errors in dedicated HUD copy.
+   - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
 4. **Edge streaming completeness**
    - Implement streaming for Micro:bit and Calliope (currently TODO in `edgeService.js`).
    - Add connection state persistence, edge error dialogs, and integrate BLE modal parity from the legacy UI.

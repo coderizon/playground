@@ -1,4 +1,4 @@
-import { sessionStore, STEP } from '../../store/sessionStore.js';
+import { sessionStore, STEP, INFERENCE_STATUS } from '../../store/sessionStore.js';
 import { canAccessInference } from '../../guards/navigation.js';
 import { stopLiveInference } from '../../services/ml/liveInference.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
@@ -91,20 +91,20 @@ export function renderInferPage(root, state = sessionStore.getState()) {
   });
 
   root.querySelector('[data-back-train]')?.addEventListener('click', () => {
-    stopLiveInference();
-    sessionStore.setStep(STEP.TRAIN);
+    ensureInferenceStopped(() => sessionStore.setStep(STEP.TRAIN));
   });
   root.querySelector('[data-discard-session]')?.addEventListener('click', () => {
-    openConfirmDialog({
-      title: 'Session verwerfen?',
-      message: 'Alle gesammelten Daten gehen verloren. Willst du fortfahren?',
-      destructive: true,
-      confirmLabel: 'Session verwerfen',
-      onConfirm: () => {
-        stopLiveInference();
-        sessionStore.discardSession();
-      },
-    });
+    ensureInferenceStopped(() =>
+      openConfirmDialog({
+        title: 'Session verwerfen?',
+        message: 'Alle gesammelten Daten gehen verloren. Willst du fortfahren?',
+        destructive: true,
+        confirmLabel: 'Session verwerfen',
+        onConfirm: () => {
+          sessionStore.discardSession();
+        },
+      })
+    );
   });
 }
 
@@ -133,4 +133,22 @@ function inferNoticeMessage(state) {
     return state.edge.error || 'Streaming angehalten aufgrund eines Verbindungsfehlers.';
   }
   return 'Verbinde ein Edge-Gerät, um Vorhersagen zu streamen.';
+}
+
+function ensureInferenceStopped(next) {
+  const running = sessionStore.getState().inference.status === INFERENCE_STATUS.RUNNING;
+  if (!running) {
+    next?.();
+    return;
+  }
+  openConfirmDialog({
+    title: 'Inference stoppen?',
+    message: 'Bitte stoppe die laufende Inference, bevor du die Seite verlässt.',
+    confirmLabel: 'Inference stoppen',
+    destructive: true,
+    onConfirm: () => {
+      stopLiveInference();
+      next?.();
+    },
+  });
 }
