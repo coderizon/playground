@@ -3,6 +3,8 @@ import { canAccessInference } from '../../guards/navigation.js';
 import { getInferencePredictions, isInferenceRunning } from '../../store/selectors.js';
 import { startLiveInference, stopLiveInference } from '../../services/ml/liveInference.js';
 import { requestCameraStream } from '../../services/media/cameraService.js';
+import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
+import { openConfirmDialog } from '../../components/common/confirmDialog.js';
 
 export function renderInferPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -27,6 +29,7 @@ export function renderInferPage(root, state = sessionStore.getState()) {
         </div>
       </header>
       <section class="infer-body">
+        <div id="inferNotice"></div>
         <article class="inference-panel" x-data="edgePanel()" x-init="init()">
           <h2>Inference</h2>
           <p>Status: ${state.inference.status}${state.inference.error ? ` · ${state.inference.error}` : ''}</p>
@@ -85,13 +88,27 @@ export function renderInferPage(root, state = sessionStore.getState()) {
     </section>
   `;
 
+  renderNoticeBanner(document.getElementById('inferNotice'), {
+    tone: state.edge.status === 'error' ? 'warning' : 'info',
+    title: 'Streamingstatus',
+    message: inferNoticeMessage(state),
+  });
+
   root.querySelector('[data-back-train]')?.addEventListener('click', () => {
     stopLiveInference();
     sessionStore.setStep(STEP.TRAIN);
   });
   root.querySelector('[data-discard-session]')?.addEventListener('click', () => {
-    stopLiveInference();
-    sessionStore.discardSession();
+    openConfirmDialog({
+      title: 'Session verwerfen?',
+      message: 'Alle gesammelten Daten gehen verloren. Willst du fortfahren?',
+      destructive: true,
+      confirmLabel: 'Session verwerfen',
+      onConfirm: () => {
+        stopLiveInference();
+        sessionStore.discardSession();
+      },
+    });
   });
   const previewVideo = root.querySelector('#inferPreview');
   initInferencePreview(previewVideo);
@@ -130,4 +147,14 @@ async function initInferencePreview(videoEl) {
       error: 'Kamera konnte nicht gestartet werden.',
     });
   }
+}
+
+function inferNoticeMessage(state) {
+  if (state.edge.status === 'connected') {
+    return 'Vorhersagen werden an das verbundene Gerät gesendet, wenn Streaming aktiviert ist.';
+  }
+  if (state.edge.status === 'error') {
+    return state.edge.error || 'Streaming angehalten aufgrund eines Verbindungsfehlers.';
+  }
+  return 'Verbinde ein Edge-Gerät, um Vorhersagen zu streamen.';
 }

@@ -21,6 +21,7 @@ export function registerEdgeComponents(Alpine) {
     init() {
       this.unsubscribe = sessionStore.subscribe((state) => {
         this.edgeStatus = state.edge;
+        this.connecting = getEdgeState().connecting;
       });
     },
 
