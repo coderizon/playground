@@ -1,4 +1,4 @@
-import { DATASET_STATUS, TRAINING_STATUS } from './sessionStore.js';
+import { DATASET_STATUS, TRAINING_STATUS, INFERENCE_STATUS } from './sessionStore.js';
 
 export function isTrainingReady(state) {
   if (!state) return false;
@@ -20,4 +20,21 @@ export function getTrainingSummary(state) {
 
 export function isTrainingInProgress(state) {
   return state?.training?.status === TRAINING_STATUS.RUNNING;
+}
+
+export function isInferenceRunning(state) {
+  return state?.inference?.status === INFERENCE_STATUS.RUNNING;
+}
+
+export function getInferencePredictions(state) {
+  const classes = state?.classes || [];
+  const prediction = state?.inference?.lastPrediction;
+  const values = Array.isArray(prediction?.values)
+    ? prediction.values
+    : classes.map(() => 0);
+  return classes.map((cls, index) => ({
+    name: cls.name || `Class ${index + 1}`,
+    value: values[index] ?? 0,
+    isBest: index === prediction?.bestIndex,
+  }));
 }

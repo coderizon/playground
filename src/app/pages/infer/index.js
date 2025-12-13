@@ -1,5 +1,7 @@
 import { sessionStore, STEP } from '../../store/sessionStore.js';
 import { canAccessInference } from '../../guards/navigation.js';
+import { getInferencePredictions, isInferenceRunning } from '../../store/selectors.js';
+import { startMockInference, stopMockInference } from '../../services/ml/mockInference.js';
 
 export function renderInferPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -8,6 +10,8 @@ export function renderInferPage(root, state = sessionStore.getState()) {
     return;
   }
 
+  const predictions = getInferencePredictions(state);
+  const running = isInferenceRunning(state);
   root.innerHTML = `
     <section class="infer-page">
       <header class="infer-header">
@@ -26,8 +30,23 @@ export function renderInferPage(root, state = sessionStore.getState()) {
           <h2>Inference</h2>
           <p>Status: ${state.inference.status}</p>
           <div class="inference-actions">
-            <button type="button" class="primary" disabled>Inference starten</button>
-            <button type="button" class="ghost" disabled>Stoppen</button>
+            <button type="button" class="primary" data-start-infer ${running ? 'disabled' : ''}>Inference starten</button>
+            <button type="button" class="ghost" data-stop-infer ${running ? '' : 'disabled'}>Stoppen</button>
+          </div>
+          <div class="prediction-output">
+            <h3>Vorhersage</h3>
+            <ul>
+              ${predictions
+                .map(
+                  (row) => `
+                <li class="${row.isBest && running ? 'is-active' : ''}">
+                  <span>${row.name}</span>
+                  <strong>${Math.round(row.value * 100)}%</strong>
+                </li>
+              `
+                )
+                .join('')}
+            </ul>
           </div>
           <div class="edge-panel">
             <p>Edge-Verbindung</p>
@@ -43,6 +62,12 @@ export function renderInferPage(root, state = sessionStore.getState()) {
   });
   root.querySelector('[data-discard-session]')?.addEventListener('click', () => {
     sessionStore.discardSession();
+  });
+  root.querySelector('[data-start-infer]')?.addEventListener('click', () => {
+    startMockInference();
+  });
+  root.querySelector('[data-stop-infer]')?.addEventListener('click', () => {
+    stopMockInference();
   });
 }
 
