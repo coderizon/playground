@@ -1,27 +1,58 @@
 import { sessionStore as realStore, STEP, INFERENCE_STATUS } from '../store/sessionStore.js';
+import { openConfirmDialog } from '../components/common/confirmDialog.js';
+import { createInferenceController } from './inferenceController.js';
+import { stopLiveInference } from '../services/ml/liveInference.js';
 
-export function createSessionController(store = realStore) {
+function fallbackConfirm(options = {}) {
+  const message = options.message || 'Aktion bestätigen?';
+  const approved =
+    typeof window !== 'undefined' && typeof window.confirm === 'function'
+      ? window.confirm(message)
+      : true;
+  if (approved) {
+    options.onConfirm?.();
+    return true;
+  }
+  return false;
+}
+
+export function createSessionController(options = {}) {
+  const { store = realStore, confirm = fallbackConfirm, inferenceController } = options;
+  const guard =
+    inferenceController ||
+    createInferenceController({
+      store,
+      confirm,
+      stopLiveInference,
+    });
+
+  const runDiscardConfirm = () => {
+    const snapshot = store.getState();
+    confirm({
+      title: 'Session verwerfen?',
+      message: snapshot.inference.status === INFERENCE_STATUS.RUNNING
+        ? 'Inference läuft – Session und alle gesammelten Daten werden gelöscht.'
+        : 'Aktuelle Session verwerfen? Alle gesammelten Daten gehen verloren.',
+      destructive: true,
+      confirmLabel: 'Session verwerfen',
+      onConfirm: () => {
+        store.discardSession();
+        store.setStep(STEP.HOME);
+      },
+    });
+  };
+
   return {
-    discard(options = {}) {
-      const confirmDialog = options.confirm ?? window.confirm;
-      const state = store.getState();
-      if (!state.selectedTaskModel) return false;
-
-      const prompt =
-        state.inference.status === INFERENCE_STATUS.RUNNING
-          ? 'Inference läuft – Session wirklich verwerfen?'
-          : 'Aktuelle Session verwerfen?';
-      const approved = typeof confirmDialog === 'function' ? Boolean(confirmDialog(prompt)) : true;
-      if (!approved) return false;
-
-      if (state.inference.status === INFERENCE_STATUS.RUNNING) {
-        store.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
-      }
-      store.discardSession();
-      store.setStep(STEP.HOME);
+    discard() {
+      if (!store.getState().selectedTaskModel) return false;
+      guard.ensureInferenceStopped(runDiscardConfirm);
       return true;
     },
   };
 }
 
-export const discardSessionWithConfirm = (options) => createSessionController().discard(options);
+export const discardSessionWithConfirm = () =>
+  createSessionController({
+    store: realStore,
+    confirm: openConfirmDialog,
+  }).discard();

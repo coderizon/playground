@@ -1,10 +1,6 @@
 import assert from 'node:assert/strict';
 import { createSessionController } from '../../src/app/routes/sessionController.js';
-import {
-  STEP,
-  INFERENCE_STATUS,
-  TRAINING_STATUS,
-} from '../../src/app/store/sessionStore.js';
+import { STEP, INFERENCE_STATUS, TRAINING_STATUS } from '../../src/app/store/sessionStore.js';
 
 function createStore(initial = {}) {
   let state = {
@@ -14,12 +10,10 @@ function createStore(initial = {}) {
     training: { status: TRAINING_STATUS.IDLE },
     ...initial,
   };
-  const listeners = new Set();
-  const store = {
+  return {
     getState: () => state,
     setState: (patch) => {
       state = { ...state, ...patch };
-      listeners.forEach((listener) => listener(state));
     },
     setStep: (step) => {
       state = { ...state, step };
@@ -32,38 +26,70 @@ function createStore(initial = {}) {
         training: { status: TRAINING_STATUS.IDLE },
       };
     },
-    subscribe: (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
+    setInferenceStatus: (status, patch = {}) => {
+      state = {
+        ...state,
+        inference: { ...(state.inference || {}), status, ...patch },
+      };
     },
   };
-  store.setInferenceStatus = (status, patch = {}) => {
-    const next = { ...(state.inference || {}), status, ...patch };
-    store.setState({ inference: next });
-  };
-  return store;
 }
 
-test('discardSessionWithConfirm stops inference before discarding', () => {
+function createConfirmStub({ approve = true } = {}) {
+  return (options = {}) => {
+    if (approve) {
+      options.onConfirm?.();
+      return true;
+    }
+    return false;
+  };
+}
+
+test('discard invokes inference guard before showing confirm', () => {
   const store = createStore({
     step: STEP.INFER,
     inference: { status: INFERENCE_STATUS.RUNNING },
   });
-  const controller = createSessionController(store);
-  const confirmed = controller.discard({ confirm: () => true });
-  assert.equal(confirmed, true);
-  assert.equal(store.getState().inference.status, INFERENCE_STATUS.IDLE);
+  let guardCalled = false;
+  let confirmOptions = null;
+  const controller = createSessionController({
+    store,
+    confirm: (options) => {
+      confirmOptions = options;
+      options.onConfirm?.();
+      return true;
+    },
+    inferenceController: {
+      ensureInferenceStopped: (next) => {
+        guardCalled = true;
+        store.setInferenceStatus(INFERENCE_STATUS.IDLE, { lastPrediction: null });
+        next?.();
+        return true;
+      },
+    },
+  });
+  controller.discard();
+  assert.equal(guardCalled, true);
+  assert.ok(confirmOptions);
   assert.equal(store.getState().selectedTaskModel, null);
 });
 
-test('discardSessionWithConfirm aborts when confirmation returns false', () => {
+test('discard aborts when confirm declines', () => {
   const store = createStore({
     step: STEP.COLLECT,
     inference: { status: INFERENCE_STATUS.IDLE },
   });
-  const controller = createSessionController(store);
-  const confirmed = controller.discard({ confirm: () => false });
-  assert.equal(confirmed, false);
+  const controller = createSessionController({
+    store,
+    confirm: createConfirmStub({ approve: false }),
+    inferenceController: {
+      ensureInferenceStopped: (next) => {
+        next?.();
+        return true;
+      },
+    },
+  });
+  controller.discard();
   assert.notEqual(store.getState().selectedTaskModel, null);
 });
 

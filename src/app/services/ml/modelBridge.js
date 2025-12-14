@@ -1,4 +1,4 @@
-import { MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH } from '../../../../constants.js';
+import { MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH } from '../../../constants.js';
 import { sessionStore, TRAINING_STATUS, INFERENCE_STATUS } from '../../store/sessionStore.js';
 import { isTrainingReady, getLatestDatasetUpdatedAt } from '../../store/selectors.js';
 
