@@ -13,6 +13,7 @@ function createStore(initial = {}) {
     selectedTaskModel: null,
     classes: [],
     training: { status: TRAINING_STATUS.IDLE },
+    inference: { status: INFERENCE_STATUS.IDLE },
     ...initial,
   };
   const transitions = [];
@@ -87,6 +88,19 @@ test('goHome always transitions to home', () => {
   const controller = createNavigationController(store);
   assert.equal(controller.goHome(), true);
   assert.deepEqual(store.getTransitions(), [STEP.HOME]);
+});
+
+test('navigation aborts when inference running and confirmation denied', () => {
+  const store = createStore({
+    step: STEP.INFER,
+    selectedTaskModel: { id: 'foo', requiresTraining: false },
+    inference: { status: INFERENCE_STATUS.RUNNING },
+  });
+  const controller = createNavigationController(store, {
+    confirmNavigation: () => false,
+  });
+  assert.equal(controller.goHome(), false);
+  assert.deepEqual(store.getTransitions(), []);
 });
 
 for (const [name, fn] of tests) {

@@ -11,27 +11,16 @@ export function registerInferenceControls(Alpine) {
     fps: null,
     lastFrameTime: null,
     unsubscribe: null,
-    beforeUnloadHandler: null,
     telemetryActive: false,
 
     init() {
       this.sync(sessionStore.getState());
       this.preparePreview();
-      this.beforeUnloadHandler = (event) => {
-        if (sessionStore.getState().inference.status === INFERENCE_STATUS.RUNNING) {
-          event.preventDefault();
-          event.returnValue = '';
-        }
-      };
-      window.addEventListener('beforeunload', this.beforeUnloadHandler);
       this.unsubscribe = sessionStore.subscribe((state) => this.sync(state));
     },
 
     destroy() {
       this.unsubscribe?.();
-      if (this.beforeUnloadHandler) {
-        window.removeEventListener('beforeunload', this.beforeUnloadHandler);
-      }
     },
 
     sync(state) {

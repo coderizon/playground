@@ -4,38 +4,27 @@ import {
   canAccessTraining,
   canAccessInference,
 } from '../guards/navigation.js';
+import { confirmNavigationIfInferenceRunning } from './navigationGuards.js';
 
-export function createNavigationController(store = sessionStore) {
+export function createNavigationController(store = sessionStore, options = {}) {
   if (!store || typeof store.getState !== 'function' || typeof store.setStep !== 'function') {
     throw new Error('[navigationController] store with getState/setStep required');
   }
+  const confirmNavigation = options.confirmNavigation ?? confirmNavigationIfInferenceRunning;
 
-  const goHome = () => {
-    store.setStep(STEP.HOME);
-    return true;
-  };
-
-  const goCollect = () => {
+  const guardedTransition = (check, step) => {
     const state = store.getState();
-    if (!canGoToCollect(state)) return false;
-    if (state.step === STEP.COLLECT) return true;
-    store.setStep(STEP.COLLECT);
+    if (check && !check(state)) return false;
+    if (state.step === step) return true;
+    if (!confirmNavigation()) return false;
+    store.setStep(step);
     return true;
   };
 
-  const goTrain = () => {
-    const state = store.getState();
-    if (!canAccessTraining(state)) return false;
-    store.setStep(STEP.TRAIN);
-    return true;
-  };
-
-  const goInfer = () => {
-    const state = store.getState();
-    if (!canAccessInference(state)) return false;
-    store.setStep(STEP.INFER);
-    return true;
-  };
+  const goHome = () => guardedTransition(null, STEP.HOME);
+  const goCollect = () => guardedTransition(canGoToCollect, STEP.COLLECT);
+  const goTrain = () => guardedTransition(canAccessTraining, STEP.TRAIN);
+  const goInfer = () => guardedTransition(canAccessInference, STEP.INFER);
 
   return {
     goHome,

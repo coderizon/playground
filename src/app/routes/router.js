@@ -5,6 +5,7 @@ import { renderTrainPage } from '../pages/train/index.js';
 import { renderInferPage } from '../pages/infer/index.js';
 import { goHome } from './navigationController.js';
 import { initHistorySync } from './historySync.js';
+import { registerNavigationGuards } from './navigationGuards.js';
 
 const routeHandlers = {
   [STEP.HOME]: renderHomePage,
@@ -19,6 +20,7 @@ export function startRouter(root) {
   }
 
   ensureToastHost();
+  registerNavigationGuards();
   initHistorySync();
 
   const render = () => {
