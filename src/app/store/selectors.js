@@ -1,4 +1,9 @@
-import { DATASET_STATUS, TRAINING_STATUS, INFERENCE_STATUS, PERMISSION_STATUS } from './sessionStore.js';
+import {
+  DATASET_STATUS,
+  TRAINING_STATUS,
+  INFERENCE_STATUS,
+  PERMISSION_STATUS,
+} from './sessionStore.js';
 
 export function isTrainingReady(state) {
   if (!state) return false;
@@ -114,6 +119,40 @@ export function getPermissionIssues(state) {
       };
     })
     .filter((issue) => issue.status === PERMISSION_STATUS.BLOCKED);
+}
+
+export function getEdgeStreamingContext(state) {
+  const permissionIssues = getPermissionIssues(state);
+  if (permissionIssues.some((issue) => issue.type === 'camera')) {
+    const cameraIssue = permissionIssues.find((issue) => issue.type === 'camera');
+    return {
+      canStream: false,
+      reasonType: 'permission',
+      reason:
+        cameraIssue?.message ||
+        cameraIssue?.hint ||
+        'Kamerazugriff blockiert – erlauben, um Streaming zu aktivieren.',
+      staleClasses: [],
+    };
+  }
+  const retry = getTrainingRetryContext(state);
+  if (retry?.datasetChangedSinceLastRun) {
+    return {
+      canStream: false,
+      reasonType: 'training',
+      reason:
+        retry.staleClasses?.length === 1
+          ? `${retry.staleClasses[0].name} enthält neue Samples. Trainiere erneut, bevor du streamst.`
+          : 'Datensätze wurden seit dem letzten Training geändert. Trainiere erneut, bevor du streamst.',
+      staleClasses: retry.staleClasses || [],
+    };
+  }
+  return {
+    canStream: true,
+    reasonType: null,
+    reason: '',
+    staleClasses: [],
+  };
 }
 
 function permissionCopy(type) {

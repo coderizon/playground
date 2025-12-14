@@ -1,11 +1,18 @@
 import { sessionStore } from '../../store/sessionStore.js';
-import { getTrainingRetryContext, getPermissionIssues } from '../../store/selectors.js';
+import {
+  getTrainingRetryContext,
+  getPermissionIssues,
+  getEdgeStreamingContext,
+} from '../../store/selectors.js';
 import {
   connectDevice,
   disconnectDevice,
   getEdgeState,
   setStreaming,
 } from '../../services/edge/edgeService.js';
+import { createInferenceController } from '../../routes/inferenceController.js';
+import { openConfirmDialog } from '../common/confirmDialog.js';
+import { stopLiveInference } from '../../services/ml/liveInference.js';
 import arduinoThumb from '../../../assets/images/arduino.png';
 import microbitThumb from '../../../assets/images/microbit.png';
 import calliopeThumb from '../../../assets/images/calliope.png';
@@ -44,6 +51,11 @@ const DEVICE_OPTIONS = [
   },
 ];
 
+const inferenceController = createInferenceController({
+  confirm: openConfirmDialog,
+  stopLiveInference,
+});
+
 export function registerEdgeComponents(Alpine) {
   Alpine.data('edgePanel', () => ({
     devices: DEVICE_OPTIONS,
@@ -54,6 +66,7 @@ export function registerEdgeComponents(Alpine) {
     lastFocusedTrigger: null,
     retryContext: getTrainingRetryContext(sessionStore.getState()),
     permissionIssues: getPermissionIssues(sessionStore.getState()),
+    streamingContext: getEdgeStreamingContext(sessionStore.getState()),
     unsubscribe: null,
 
     init() {
@@ -66,6 +79,7 @@ export function registerEdgeComponents(Alpine) {
         this.streaming = getEdgeState().streaming;
         this.retryContext = getTrainingRetryContext(state);
         this.permissionIssues = getPermissionIssues(state);
+        this.streamingContext = getEdgeStreamingContext(state);
         if (state.edge.status === 'error') {
           this.openModal();
         }
@@ -96,7 +110,9 @@ export function registerEdgeComponents(Alpine) {
     },
 
     disconnect() {
-      disconnectDevice();
+      inferenceController.ensureInferenceStopped(() => {
+        disconnectDevice();
+      });
     },
 
     statusLabel() {
@@ -130,26 +146,19 @@ export function registerEdgeComponents(Alpine) {
     },
 
     canStream() {
-      return !this.streamBlockedByPermissions() && !this.streamBlockedByFreshTraining();
+      return this.streamingContext?.canStream !== false;
     },
 
     streamBlockedByPermissions() {
-      const issues = Array.isArray(this.permissionIssues) ? this.permissionIssues : [];
-      return issues.some((issue) => issue.type === 'camera');
+      return this.streamingContext?.reasonType === 'permission';
     },
 
     streamBlockedByFreshTraining() {
-      return Boolean(this.retryContext?.datasetChangedSinceLastRun);
+      return this.streamingContext?.reasonType === 'training';
     },
 
     streamingBlockedReason() {
-      if (this.streamBlockedByPermissions()) {
-        return 'Kamerazugriff blockiert – erlaube die Kamera, bevor du Streaming aktivierst.';
-      }
-      if (this.streamBlockedByFreshTraining()) {
-        return 'Datensätze wurden seit dem letzten Training geändert. Trainiere erneut, bevor du an Geräte streamst.';
-      }
-      return '';
+      return this.streamingContext?.reason || '';
     },
 
     warnStreamingBlocked() {

@@ -6,6 +6,7 @@ import {
   getClassesUpdatedSince,
   getTrainingRetryContext,
   getPermissionIssues,
+  getEdgeStreamingContext,
 } from '../../src/app/store/selectors.js';
 
 test('getLatestDatasetUpdatedAt returns newest dataset timestamp', () => {
@@ -69,4 +70,72 @@ test('getPermissionIssues returns blocked entries with copy fallback', () => {
   assert.equal(issues[0].type, 'camera');
   assert.equal(issues[0].message, 'Kamera deaktiviert');
   assert.equal(issues[0].title.includes('Kamera'), true);
+});
+
+test('getEdgeStreamingContext reflects permissions and training recency', () => {
+  const baseState = {
+    permissions: {
+      camera: {
+        status: PERMISSION_STATUS.BLOCKED,
+        message: 'Kamera deaktiviert',
+        updatedAt: 10,
+      },
+      microphone: {
+        status: PERMISSION_STATUS.GRANTED,
+      },
+    },
+    training: {
+      lastRun: {
+        status: TRAINING_STATUS.DONE,
+        completedAt: 100,
+        datasetUpdatedAt: 100,
+      },
+    },
+    classes: [],
+  };
+  let context = getEdgeStreamingContext(baseState);
+  assert.equal(context.canStream, false);
+  assert.equal(context.reasonType, 'permission');
+
+  const trainingState = {
+    ...baseState,
+    permissions: {
+      camera: { status: PERMISSION_STATUS.GRANTED, message: null },
+    },
+    classes: [
+      {
+        id: 'a',
+        name: 'A',
+        dataset: { status: DATASET_STATUS.READY, lastUpdatedAt: 200 },
+      },
+    ],
+  };
+  const stateWithRetry = {
+    ...trainingState,
+    training: {
+      lastRun: {
+        status: TRAINING_STATUS.DONE,
+        completedAt: 150,
+        datasetUpdatedAt: 150,
+      },
+    },
+  };
+  context = getEdgeStreamingContext(stateWithRetry);
+  assert.equal(context.canStream, false);
+  assert.equal(context.reasonType, 'training');
+  assert.ok(context.reason.includes('Trainiere erneut'));
+
+  const okState = {
+    ...trainingState,
+    training: {
+      lastRun: {
+        status: TRAINING_STATUS.DONE,
+        completedAt: 200,
+        datasetUpdatedAt: 200,
+      },
+    },
+  };
+  context = getEdgeStreamingContext(okState);
+  assert.equal(context.canStream, true);
+  assert.equal(context.reason, '');
 });
