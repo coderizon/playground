@@ -50,6 +50,6 @@ The edge-streaming parity/QA slice is complete (store persistence, modal UX, tes
    - Pin external dependencies (tf.js, mediapipe) as described in the vision (self-host or lock versions).
 6. **Documentation & onboarding**
    - Expand this progress file with per-sprint updates.
-   - Add component/guard docs under `docs/` once the structure stabilizes.
+   - Add component/guard docs under `docs/` once the structure stabilizes. **(✅ `docs/components.md` now summarizes confirm dialog, dataset recorder, edge streaming, and controllers.)**
 
 Keep referencing `refactoring-plans/vision.md` as the contract; this file tracks implementation status and outstanding work.
