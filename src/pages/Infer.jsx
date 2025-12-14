@@ -51,6 +51,8 @@ export function Infer({ state }) {
     discardSessionWithConfirm();
   };
 
+  const requiresTraining = state.selectedTaskModel?.requiresTraining;
+
   return (
     <section className="infer-page">
       <header className="infer-header">
@@ -60,7 +62,9 @@ export function Infer({ state }) {
           <p className="subline">Starte die Vorschau, beobachte Wahrscheinlichkeiten und verbinde ein Edge-Gerät.</p>
         </div>
         <div className="infer-header__actions">
-          <button type="button" className="ghost" onClick={handleBackToTrain}>Zurück zu Training</button>
+          {requiresTraining && (
+            <button type="button" className="ghost" onClick={handleBackToTrain}>Zurück zu Training</button>
+          )}
           <button type="button" className="primary danger" onClick={handleDiscard}>Session verwerfen</button>
         </div>
       </header>
