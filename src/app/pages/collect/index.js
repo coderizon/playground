@@ -163,6 +163,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                         <template x-if="sample.thumbnail">
                           <img :src="sample.thumbnail" alt="Sample Vorschau" class="sample-thumb">
                         </template>
+                        <template x-if="sample.previewFrames?.length">
+                          <div class="frame-strip">
+                            <template x-for="frame in sample.previewFrames" :key="frame">
+                              <img :src="frame" alt="Frame Vorschau" class="sample-thumb small">
+                            </template>
+                          </div>
+                        </template>
                         <div>
                           <strong x-text="sample.displayLabel"></strong>
                           <span x-text="sample.displayDuration"></span>

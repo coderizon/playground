@@ -135,7 +135,8 @@ export function registerDatasetComponents(Alpine) {
         canDelete: !this.recording && !this.trainingLocked,
         displayLabel: this.sampleLabel(sample, index),
         displayDuration: this.sampleDuration(sample),
-        thumbnail: this.resolveThumbnail(sample),
+        thumbnail: sample.thumbnail || null,
+        previewFrames: sample.previewFrames || [],
         canAnnotate: Boolean(sample.id),
         annotation: sample.annotation || '',
       }));
@@ -265,14 +266,18 @@ export function registerDatasetComponents(Alpine) {
             this.stopRecording();
             return;
           }
-          const thumbnail = this.captureFrameSnapshot(video);
+          const capture = this.captureFrameSnapshot(video);
           await recordSampleFrame(
             video,
             this.classId,
             classIndex,
             state.classes.length || 1
           );
-          sessionStore.addDatasetSample(this.classId, { source: 'camera', thumbnail });
+          sessionStore.addDatasetSample(this.classId, {
+            source: 'camera',
+            thumbnail: capture?.thumbnail,
+            previewFrames: capture?.frames || [],
+          });
           const updated = sessionStore
             .getState()
             .classes.find((cls) => cls.id === this.classId);
@@ -449,30 +454,6 @@ export function registerDatasetComponents(Alpine) {
       return `${(sample.durationMs / 1000).toFixed(1)}s`;
     },
 
-    resolveThumbnail(sample) {
-      if (sample.thumbnail) return sample.thumbnail;
-      if (sample.source === 'camera') {
-        return this.generateCameraPreview();
-      }
-      return null;
-    },
-
-    generateCameraPreview() {
-      const video = this.$refs[`preview-${this.classId}`];
-      if (!video) return null;
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 160;
-        canvas.height = 120;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL('image/jpeg', 0.7);
-      } catch (error) {
-        console.warn('Vorschau konnte nicht erstellt werden', error);
-        return null;
-      }
-    },
-
     cameraCoverage(frameSamples) {
       if (!frameSamples.length) return 'Nutzereingabe benötigt';
       const latest = frameSamples.at(-1)?.capturedAt || Date.now();
@@ -511,7 +492,10 @@ export function registerDatasetComponents(Alpine) {
         canvas.height = 120;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL('image/jpeg', 0.7);
+        const frames = [canvas.toDataURL('image/jpeg', 0.7)];
+        ctx.drawImage(video, 2, 0, canvas.width, canvas.height);
+        frames.push(canvas.toDataURL('image/jpeg', 0.7));
+        return { thumbnail: frames[0], frames };
       } catch (error) {
         console.warn('Snapshot konnte nicht erstellt werden.', error);
         return null;

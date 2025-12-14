@@ -578,6 +578,17 @@ body[data-mode="face"] .preview-column {
   border: 1px solid var(--border);
 }
 
+.sample-thumb.small {
+  width: 36px;
+  height: 28px;
+  opacity: 0.8;
+}
+
+.frame-strip {
+  display: flex;
+  gap: 4px;
+}
+
 .sample-annotation {
   margin-top: 6px;
 }
