@@ -2,19 +2,28 @@ import {
   sessionStore,
   TRAINING_STATUS,
 } from '../../store/sessionStore.js';
-import { isTrainingReady, getTrainingSummary, getDatasetReadinessIssues } from '../../store/selectors.js';
+import {
+  isTrainingReady,
+  getTrainingSummary,
+  getDatasetReadinessIssues,
+  getTrainingRetryContext,
+} from '../../store/selectors.js';
 import {
   trainWithRecordedSamples,
   abortTraining,
 } from '../../services/ml/modelBridge.js';
 
 export function registerTrainingComponents(Alpine) {
+  const initialState = sessionStore.getState();
+  const initialRetry = getTrainingRetryContext(initialState);
   Alpine.data('trainingPanel', () => ({
-    training: sessionStore.getState().training,
-    summary: getTrainingSummary(sessionStore.getState()),
-    ready: isTrainingReady(sessionStore.getState()),
-    step: sessionStore.getState().step,
-    issues: getDatasetReadinessIssues(sessionStore.getState()),
+    training: initialState.training,
+    summary: getTrainingSummary(initialState),
+    ready: isTrainingReady(initialState),
+    step: initialState.step,
+    issues: getDatasetReadinessIssues(initialState),
+    retry: initialRetry,
+    staleClasses: initialRetry?.staleClasses || [],
     unsubscribe: null,
 
     init() {
@@ -24,6 +33,8 @@ export function registerTrainingComponents(Alpine) {
         this.ready = isTrainingReady(state);
         this.step = state.step;
         this.issues = getDatasetReadinessIssues(state);
+        this.retry = getTrainingRetryContext(state);
+        this.staleClasses = this.retry?.staleClasses || [];
       });
     },
 
@@ -68,6 +79,40 @@ export function registerTrainingComponents(Alpine) {
       return 'Alles bereit – starte das Training.';
     },
 
+    get lastRunLabel() {
+      const info = this.retry?.lastRun;
+      if (!info) return '';
+      const time = info.completedAt ? new Date(info.completedAt).toLocaleTimeString() : '';
+      switch (info.status) {
+        case TRAINING_STATUS.DONE:
+          return `Zuletzt erfolgreich trainiert (${time}).`;
+        case TRAINING_STATUS.ABORTED:
+          return `Letzter Durchlauf abgebrochen (${time}). Passe deine Daten an und starte erneut.`;
+        case TRAINING_STATUS.ERROR:
+          return `Letzter Durchlauf fehlgeschlagen (${time}): ${info.error || ''}`;
+        default:
+          return '';
+      }
+    },
+
+    get datasetChangeLabel() {
+      if (!this.retry?.lastRun) return '';
+      if (!this.retry?.latestDatasetUpdate) {
+        return '';
+      }
+      if (!this.retry.datasetChangedSinceLastRun) {
+        return 'Seit dem letzten Training wurden keine neuen Samples aufgenommen.';
+      }
+      if (this.staleClasses.length === 1) {
+        return '1 Klasse hat neue Samples seit dem letzten Training.';
+      }
+      return `${this.staleClasses.length} Klassen haben neue Samples seit dem letzten Training.`;
+    },
+
+    get hasRetryInsights() {
+      return Boolean(this.retry?.lastRun);
+    },
+
     startTraining() {
       if (!this.canStart) return;
       trainWithRecordedSamples();
@@ -76,6 +121,15 @@ export function registerTrainingComponents(Alpine) {
     abortTraining() {
       if (!this.canAbort) return;
       abortTraining();
+    },
+
+    formatTimestamp(value) {
+      if (!value) return '';
+      try {
+        return new Date(value).toLocaleString();
+      } catch {
+        return '';
+      }
     },
   }));
 }

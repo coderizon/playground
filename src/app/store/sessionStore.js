@@ -62,6 +62,7 @@ export function createInitialSessionState(overrides = {}) {
         learningRate: 0.001,
       },
       error: null,
+      lastRun: null,
     },
     inference: {
       status: INFERENCE_STATUS.IDLE,
@@ -127,6 +128,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
         status: TRAINING_STATUS.IDLE,
         progress: 0,
         error: null,
+        lastRun: null,
       },
       inference: {
         ...current.inference,
@@ -244,6 +246,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
           dataset: {
             ...classState.dataset,
             samples,
+            lastUpdatedAt: Date.now(),
           },
         });
       }),
@@ -314,6 +317,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
         recordedCount: 0,
         status: DATASET_STATUS.EMPTY,
         error: null,
+        lastUpdatedAt: Date.now(),
         readinessReason: describeReadiness({
           ...classState.dataset,
           samples: [],
@@ -443,6 +447,7 @@ function createClassState(options = {}) {
     expectedCount: options.dataset?.expectedCount ?? 20,
     error: options.dataset?.error ?? null,
     source: options.dataset?.source ?? null,
+    lastUpdatedAt: options.dataset?.lastUpdatedAt ?? null,
   };
   const readinessReason = describeReadiness(dataset);
   return freezeState({

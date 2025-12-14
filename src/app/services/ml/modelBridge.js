@@ -1,6 +1,6 @@
 import { MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH } from '../../../../constants.js';
 import { sessionStore, TRAINING_STATUS, INFERENCE_STATUS } from '../../store/sessionStore.js';
-import { isTrainingReady } from '../../store/selectors.js';
+import { isTrainingReady, getLatestDatasetUpdatedAt } from '../../store/selectors.js';
 
 const FEATURE_MODEL_URL =
   'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1';
@@ -65,6 +65,7 @@ export async function trainWithRecordedSamples() {
   const xs = tf.stack(recordedSamples.map((sample) => sample.tensor));
   const ys = tf.oneHot(tf.tensor1d(labels, 'int32'), state.classes.length || 1);
   const { epochs, batchSize } = state.training.params;
+  const datasetUpdatedAt = getLatestDatasetUpdatedAt(state) || Date.now();
 
   try {
     await classifier.fit(xs, ys, {
@@ -88,12 +89,28 @@ export async function trainWithRecordedSamples() {
     if (trainingAbortRequested || sessionStore.getState().training.status === TRAINING_STATUS.ABORTED) {
       sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
     } else {
-      sessionStore.setTrainingStatus(TRAINING_STATUS.DONE, { progress: 100 });
+      sessionStore.setTrainingStatus(TRAINING_STATUS.DONE, {
+        progress: 100,
+        lastRun: {
+          status: TRAINING_STATUS.DONE,
+          completedAt: Date.now(),
+          error: null,
+          datasetUpdatedAt,
+        },
+      });
       sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
     }
   } catch (error) {
     console.error(error);
-    sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, { error: error.message });
+    sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, {
+      error: error.message,
+      lastRun: {
+        status: TRAINING_STATUS.ERROR,
+        completedAt: Date.now(),
+        error: error.message,
+        datasetUpdatedAt,
+      },
+    });
   } finally {
     xs.dispose();
     ys.dispose();
@@ -216,9 +233,16 @@ export function abortTraining() {
   const state = sessionStore.getState();
   if (state.training.status !== TRAINING_STATUS.RUNNING) return;
   trainingAbortRequested = true;
+  const datasetUpdatedAt = getLatestDatasetUpdatedAt(state) || Date.now();
   sessionStore.setTrainingStatus(TRAINING_STATUS.ABORTED, {
     progress: state.training.progress || 0,
     error: null,
+    lastRun: {
+      status: TRAINING_STATUS.ABORTED,
+      completedAt: Date.now(),
+      error: null,
+      datasetUpdatedAt,
+    },
   });
   if (classifier) {
     classifier.stopTraining = true;

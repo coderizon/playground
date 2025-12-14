@@ -11,7 +11,7 @@
   - `datasetRecorder` components own camera permissions, microphone-based clip capture (MediaRecorder), readiness hints, and destructive discards while piping embeddings into the TF.js bridge; toast notifications surface permission failures inline.
   - Audio recorder presets mirror the ml-speech guidance: quick 2s clips plus a 20s background capture with inline hints, completion status, and inline playback so students can review what they just captured. Camera samples now surface derived thumbnails, hover-activated frame strips, and coverage summaries so learners see variation without leaving Collect.
   - Modality guidance: audio recorder shows progress meters + short-clip analytics, camera recorder captures frame thumbnails + variation hints.
-  - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs.
+  - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs. It now also mirrors `training.lastRun` metadata (status, timestamp, failure reason) and compares it to each class' `dataset.lastUpdatedAt` so learners immediately see which classes changed since the previous run.
   - `collectSummary` surfaces overall readiness (classes, samples, blockers) directly on the Collect page; `inferenceControls` manages camera permissions, start/stop intents, and navigation safety copy; `predictionPanel` subscribes to inference predictions, throttles updates, and communicates streaming status so users get clear feedback even on slower devices.
   - Global confirm dialog + notice banners provide consistent messaging.
   - Edge panel component connects BLE devices, toggles streaming, mirrors connection/streaming state on the inference page, persists the last selected device/error in `sessionStore.edge`, auto-opens the BLE modal on failures, highlights the selected device with inline error copy, shows device thumbnails plus quick-start steps for Arduino, Micro:bit und Calliope, and now provides a11y affordances (focus trap, Escape handling, labeled dialog) so keyboard-only users can recover from BLE errors.
@@ -39,8 +39,8 @@ The edge-streaming parity/QA slice is complete (store persistence, modal UX, tes
    - Add camera-specific analytics (per-sample frame strips now exist; next step is richer scrub/selection preview and optional note editing UX enhancements) plus richer background-noise guidance for audio tasks (presets + playback shipped).
    - Introduce optional background/noise capture presets inspired by `ml-speech` (long-duration recordings with visual progress) so users know when to relax or speak. **(✅ Presets + playback shipped.)**
 3. **Training/inference realism**
-   - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
-   - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
+   - Add richer camera/microphone failure surfaces (dedicated banners/toasts) and wire them into the shared confirmation dialog tests for inference start/stop.
+   - Use the new retry context to drive specific CTA states (e.g., highlight “Train erneut” on dataset changes) and ensure edge streaming toggles respect the same metadata.
 4. **Guards & routing**
    - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js`, with unit suites for navigation/history/session/class controllers and edge streaming under `tests/`.
    - Remaining work: cover the global confirm dialog invocations inside inference (e.g., `ensureInferenceStopped`), and audit any remaining destructive micro-actions to ensure they defer to the shared controllers.

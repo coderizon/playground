@@ -50,3 +50,49 @@ export function getDatasetReadinessIssues(state) {
       status: cls.dataset?.status || DATASET_STATUS.EMPTY,
     }));
 }
+
+export function getLatestDatasetUpdatedAt(state) {
+  const classes = state?.classes || [];
+  const latest = classes.reduce((max, cls) => {
+    const timestamp = Number(cls.dataset?.lastUpdatedAt) || 0;
+    return timestamp > max ? timestamp : max;
+  }, 0);
+  return latest > 0 ? latest : null;
+}
+
+export function getClassesUpdatedSince(state, sinceTimestamp) {
+  const classes = state?.classes || [];
+  const baseline = Number(sinceTimestamp) || 0;
+  return classes
+    .map((cls, index) => ({
+      id: cls.id,
+      name: cls.name || `Class ${index + 1}`,
+      updatedAt: Number(cls.dataset?.lastUpdatedAt) || null,
+    }))
+    .filter((cls) => cls.updatedAt && cls.updatedAt > baseline);
+}
+
+export function getTrainingRetryContext(state) {
+  if (!state) {
+    return {
+      lastRun: null,
+      latestDatasetUpdate: null,
+      datasetChangedSinceLastRun: false,
+      staleClasses: [],
+    };
+  }
+  const lastRun = state.training?.lastRun || null;
+  const latestDatasetUpdate = getLatestDatasetUpdatedAt(state);
+  const staleClasses = lastRun
+    ? getClassesUpdatedSince(state, lastRun.datasetUpdatedAt || 0)
+    : [];
+  return {
+    lastRun,
+    latestDatasetUpdate,
+    datasetChangedSinceLastRun:
+      Boolean(lastRun?.datasetUpdatedAt) &&
+      Boolean(latestDatasetUpdate) &&
+      latestDatasetUpdate > (lastRun.datasetUpdatedAt || 0),
+    staleClasses,
+  };
+}

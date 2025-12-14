@@ -40,6 +40,24 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
             <button type="button" class="primary" @click="startTraining" :disabled="!canStart">Training starten</button>
             <button type="button" class="ghost" @click="abortTraining" :disabled="!canAbort">Training abbrechen</button>
           </div>
+          <div class="training-meta">
+            <p class="eyebrow">Trainingshistorie</p>
+            <p x-text="lastRunLabel || 'Noch kein Training durchgeführt.'"></p>
+            <p class="training-hint" x-show="datasetChangeLabel" x-text="datasetChangeLabel"></p>
+          </div>
+          <template x-if="staleClasses.length">
+            <div class="training-meta">
+              <p class="eyebrow">Seit letztem Training aktualisiert</p>
+              <ul>
+                <template x-for="cls in staleClasses" :key="cls.id">
+                  <li>
+                    <strong x-text="cls.name"></strong>
+                    <span class="hint" x-text="formatTimestamp(cls.updatedAt)"></span>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </template>
         </article>
         <aside class="training-summary">
           <h3>Datensatz-Übersicht</h3>
