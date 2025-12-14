@@ -70,6 +70,19 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
               </li>
             </template>
           </ul>
+          <template x-if="backgroundIssues.length">
+            <div class="summary-background" role="status" aria-live="polite" aria-atomic="true">
+              <p class="eyebrow">Audio-Check</p>
+              <ul>
+                <template x-for="issue in backgroundIssues" :key="issue.id">
+                  <li>
+                    <strong x-text="issue.name"></strong>
+                    <span x-text="issue.reason"></span>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </template>
         </section>
         <div class="collect-class-list">
           <template x-if="classes.length === 0">

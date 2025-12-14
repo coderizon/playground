@@ -7,6 +7,7 @@ import {
   getTrainingRetryContext,
   getPermissionIssues,
   getEdgeStreamingContext,
+  getAudioBackgroundIssues,
 } from '../../src/app/store/selectors.js';
 
 test('getLatestDatasetUpdatedAt returns newest dataset timestamp', () => {
@@ -138,4 +139,55 @@ test('getEdgeStreamingContext reflects permissions and training recency', () => 
   context = getEdgeStreamingContext(okState);
   assert.equal(context.canStream, true);
   assert.equal(context.reason, '');
+});
+
+test('getAudioBackgroundIssues flags missing background samples during audio sessions', () => {
+  const state = {
+    selectedTaskModel: { inputModality: 'microphone' },
+    classes: [
+      {
+        id: 'a',
+        name: 'A',
+        dataset: {
+          samples: [
+            { id: 'a1', source: 'microphone', durationMs: 1000 },
+            { id: 'a2', source: 'microphone', durationMs: 1200 },
+          ],
+        },
+      },
+      {
+        id: 'b',
+        name: 'B',
+        dataset: {
+          samples: [
+            { id: 'b1', source: 'microphone', durationMs: 21000 },
+          ],
+        },
+      },
+    ],
+  };
+  const issues = getAudioBackgroundIssues(state);
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].name, 'A');
+  assert.ok(issues[0].reason.includes('Hintergrundaufnahme'));
+
+  const okState = {
+    ...state,
+    classes: [
+      {
+        id: 'a',
+        name: 'A',
+        dataset: {
+          samples: [{ id: 'bg', preset: 'background', durationMs: 15000 }],
+        },
+      },
+    ],
+  };
+  assert.equal(getAudioBackgroundIssues(okState).length, 0);
+
+  const nonAudioState = {
+    selectedTaskModel: { inputModality: 'camera' },
+    classes: state.classes,
+  };
+  assert.equal(getAudioBackgroundIssues(nonAudioState).length, 0);
 });

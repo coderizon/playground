@@ -1,5 +1,9 @@
 import { sessionStore, DATASET_STATUS } from '../../store/sessionStore.js';
-import { isTrainingReady, getDatasetReadinessIssues } from '../../store/selectors.js';
+import {
+  isTrainingReady,
+  getDatasetReadinessIssues,
+  getAudioBackgroundIssues,
+} from '../../store/selectors.js';
 
 export function registerCollectSummary(Alpine) {
   Alpine.data('collectSummary', () => ({
@@ -9,6 +13,7 @@ export function registerCollectSummary(Alpine) {
     trainingReady: false,
     message: '',
     issues: [],
+    backgroundIssues: [],
     unsubscribe: null,
 
     init() {
@@ -32,6 +37,7 @@ export function registerCollectSummary(Alpine) {
       );
       this.trainingReady = isTrainingReady(state);
       this.issues = getDatasetReadinessIssues(state);
+      this.backgroundIssues = getAudioBackgroundIssues(state);
       this.message = this.buildMessage(classes);
     },
 
@@ -44,6 +50,9 @@ export function registerCollectSummary(Alpine) {
           return this.issues[0].reason;
         }
         return 'Mindestens zwei Klassen müssen im Status „Bereit“ sein.';
+      }
+      if (this.backgroundIssues.length) {
+        return this.backgroundIssues[0].reason;
       }
       return 'Alle Klassen bereit für den Trainingsschritt.';
     },

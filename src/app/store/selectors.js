@@ -5,6 +5,8 @@ import {
   PERMISSION_STATUS,
 } from './sessionStore.js';
 
+const BACKGROUND_MIN_DURATION_MS = 15000;
+
 export function isTrainingReady(state) {
   if (!state) return false;
   const classes = state.classes || [];
@@ -121,6 +123,23 @@ export function getPermissionIssues(state) {
     .filter((issue) => issue.status === PERMISSION_STATUS.BLOCKED);
 }
 
+export function getAudioBackgroundIssues(state) {
+  if (!isAudioSession(state)) return [];
+  const classes = state?.classes || [];
+  return classes
+    .map((cls, index) => ({
+      id: cls.id,
+      name: cls.name || `Class ${index + 1}`,
+      hasBackground: hasBackgroundSample(cls.dataset),
+    }))
+    .filter((cls) => !cls.hasBackground)
+    .map((cls) => ({
+      id: cls.id,
+      name: cls.name,
+      reason: 'Füge eine 20s Hintergrundaufnahme hinzu, damit das Modell Stille erkennt.',
+    }));
+}
+
 export function getEdgeStreamingContext(state) {
   const permissionIssues = getPermissionIssues(state);
   if (permissionIssues.some((issue) => issue.type === 'camera')) {
@@ -176,4 +195,17 @@ function permissionCopy(type) {
         message: 'Ein Gerät wurde blockiert.',
       };
   }
+}
+
+function isAudioSession(state) {
+  return state?.selectedTaskModel?.inputModality === 'microphone';
+}
+
+function hasBackgroundSample(dataset) {
+  const samples = dataset?.samples || [];
+  return samples.some(
+    (sample) =>
+      sample?.preset === 'background' ||
+      (Number(sample?.durationMs) || 0) >= BACKGROUND_MIN_DURATION_MS
+  );
 }
