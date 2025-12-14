@@ -26,6 +26,12 @@
 - **Guard usage**: delegates destructive navigation to `inferenceController.ensureInferenceStopped` (see `pages/infer/view.js`).
 - **Shortcuts**: `P` starts inference and `O` stops it when the panel has focus (mirrors the dataset hotkeys).
 
+## Training Panel (`src/app/components/training/trainingPanel.js`)
+
+- **Purpose**: renders the training CTA/progress surface and subscribes to `trainingPanel()` state so UI + controller logic stay in sync.
+- **Data sources**: listens to `getTrainingSummary`, `getDatasetReadinessIssues`, `getAudioBackgroundIssues`, and `getTrainingRetryContext`.
+- **Guidance**: surfaces stale class metadata, dataset blockers, and microphone-specific background warnings (with CTA copy) so learners know what to fix before starting/restarting training.
+
 ## Edge Streaming Context (`src/app/store/selectors.js` & `src/app/components/edge/edgePanel.js`)
 
 - **Purpose**: `getEdgeStreamingContext` centralizes whether streaming is allowed (camera permission + training freshness). `edgePanel` consumes it to disable toggles and surface reasons.

@@ -442,6 +442,14 @@
     @apply mt-2 space-y-2 text-sm text-slate-600;
   }
 
+  .training-issues--background {
+    @apply border border-amber-200 bg-amber-50 text-amber-900 rounded-2xl p-4;
+  }
+
+  .training-issues--background ul {
+    @apply text-amber-900;
+  }
+
   .infer-body {
     @apply space-y-6;
   }

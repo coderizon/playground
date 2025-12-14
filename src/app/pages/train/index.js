@@ -83,6 +83,19 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
               </ul>
             </div>
           </template>
+          <template x-if="backgroundIssues.length">
+            <div class="training-issues training-issues--background">
+              <p class="eyebrow">Audio-Check</p>
+              <ul>
+                <template x-for="issue in backgroundIssues" :key="issue.id">
+                  <li>
+                    <strong x-text="issue.name"></strong>
+                    <span x-text="issue.reason"></span>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </template>
         </aside>
       </section>
     </section>

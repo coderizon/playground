@@ -7,6 +7,7 @@ import {
   getTrainingSummary,
   getDatasetReadinessIssues,
   getTrainingRetryContext,
+  getAudioBackgroundIssues,
 } from '../../store/selectors.js';
 import {
   startTrainingWithController,
@@ -22,6 +23,7 @@ export function registerTrainingComponents(Alpine) {
     ready: isTrainingReady(initialState),
     step: initialState.step,
     issues: getDatasetReadinessIssues(initialState),
+    backgroundIssues: getAudioBackgroundIssues(initialState),
     retry: initialRetry,
     staleClasses: initialRetry?.staleClasses || [],
     unsubscribe: null,
@@ -33,6 +35,7 @@ export function registerTrainingComponents(Alpine) {
         this.ready = isTrainingReady(state);
         this.step = state.step;
         this.issues = getDatasetReadinessIssues(state);
+        this.backgroundIssues = getAudioBackgroundIssues(state);
         this.retry = getTrainingRetryContext(state);
         this.staleClasses = this.retry?.staleClasses || [];
       });
@@ -131,6 +134,11 @@ export function registerTrainingComponents(Alpine) {
     },
 
     get startCtaSubline() {
+      if (this.backgroundIssues.length) {
+        return this.backgroundIssues.length === 1
+          ? `Audio-Check: ${this.backgroundIssues[0].name} benötigt eine Hintergrundaufnahme.`
+          : 'Audio-Check: Mehrere Klassen benötigen eine Hintergrundaufnahme.';
+      }
       if (!this.retry?.lastRun) {
         return '';
       }
