@@ -20,6 +20,12 @@
 - **Permissions**: updates `sessionStore.permissions` so `permissionAlerts` and edge streaming know when cameras/mics are blocked.
 - **Follow-up**: Scrub slider + metadata counters and the background-noise guidance pill are in place; next focus is polishing per-sample annotations/metadata UX (see `progress.md` backlog).
 
+## Inference Controls (`src/app/components/inference/inferenceControls.js`)
+
+- **Purpose**: prepares the preview stream, exposes start/stop actions, and reports inference status + FPS hints to learners.
+- **Guard usage**: delegates destructive navigation to `inferenceController.ensureInferenceStopped` (see `pages/infer/view.js`).
+- **Shortcuts**: `P` starts inference and `O` stops it when the panel has focus (mirrors the dataset hotkeys).
+
 ## Edge Streaming Context (`src/app/store/selectors.js` & `src/app/components/edge/edgePanel.js`)
 
 - **Purpose**: `getEdgeStreamingContext` centralizes whether streaming is allowed (camera permission + training freshness). `edgePanel` consumes it to disable toggles and surface reasons.

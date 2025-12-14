@@ -75,6 +75,22 @@ export function registerInferenceControls(Alpine) {
       this.telemetryActive = false;
     },
 
+    handleHotkey(event) {
+      const tag = event.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      const key = event.key?.toLowerCase();
+      if (!key) return;
+      if (key === 'p' && this.previewReady && !this.running) {
+        event.preventDefault();
+        this.startInference();
+        return;
+      }
+      if (key === 'o' && this.running) {
+        event.preventDefault();
+        this.stopInference();
+      }
+    },
+
     statusCopy() {
       if (this.inference?.error) {
         return this.inference.error;

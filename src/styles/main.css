@@ -321,6 +321,14 @@
     @apply rounded-md border border-slate-300 bg-white px-2 py-0.5 font-semibold;
   }
 
+  .inference-hotkeys {
+    @apply flex flex-wrap gap-3 text-xs text-slate-500;
+  }
+
+  .inference-hotkeys kbd {
+    @apply rounded-md border border-slate-300 bg-white px-2 py-0.5 font-semibold;
+  }
+
   .permission-retry {
     @apply flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900;
   }

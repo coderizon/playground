@@ -46,7 +46,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
             </div>
           </template>
         </section>
-        <article class="inference-panel" x-data="inferenceControls()" x-init="init()">
+        <article class="inference-panel" x-data="inferenceControls()" x-init="init()" @keydown.window="handleHotkey($event)">
           <h2>Inference</h2>
           <p class="inference-status" x-text="statusCopy()" role="status" aria-live="polite" aria-atomic="true"></p>
           <div class="inference-video">
@@ -55,6 +55,10 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
           <div class="inference-actions">
             <button type="button" class="primary" @click="startInference" :disabled="!previewReady || running">Inference starten</button>
             <button type="button" class="ghost" @click="stopInference" :disabled="!running">Stoppen</button>
+          </div>
+          <div class="inference-hotkeys" aria-hidden="true">
+            <span><kbd>P</kbd> Start</span>
+            <span><kbd>O</kbd> Stop</span>
           </div>
           <div class="prediction-output" x-data="predictionPanel()" x-init="init()">
             <h3>Vorhersage</h3>
