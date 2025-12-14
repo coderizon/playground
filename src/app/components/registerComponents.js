@@ -7,6 +7,7 @@ import { registerConfirmDialog } from './common/confirmDialog.js';
 import { registerEdgeModal } from './edge/edgeModal.js';
 import { registerDatasetComponents } from './dataset/datasetRecorder.js';
 import { registerTrainingComponents } from './training/trainingPanel.js';
+import { registerTrainingSummaryPanel } from './training/trainingSummaryPanel.js';
 import { registerInferenceComponents } from './inference/predictionPanel.js';
 import { registerInferenceControls } from './inference/inferenceControls.js';
 import { registerToastComponent } from './common/toast.js';
@@ -26,4 +27,5 @@ export function registerAppComponents(Alpine) {
   registerInferenceControls(Alpine);
   registerToastComponent(Alpine);
   registerPermissionAlerts(Alpine);
+  registerTrainingSummaryPanel(Alpine);
 }

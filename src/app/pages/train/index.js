@@ -64,7 +64,7 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
             </div>
           </template>
         </article>
-        <aside class="training-summary">
+        <aside class="training-summary" x-data="trainingSummaryPanel()" x-init="init()">
           <h3>Datensatz-Übersicht</h3>
           <p>
             <strong x-text="summary.readyClasses + '/' + summary.totalClasses"></strong>
