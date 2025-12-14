@@ -508,12 +508,15 @@ export function registerDatasetComponents(Alpine) {
         frames,
         index: 0,
         timer: null,
+        scrubbing: false,
         currentFrame() {
           return this.frames[this.index] || sample.thumbnail || null;
         },
         start() {
           if (!this.frames.length) return;
+          if (this.scrubbing) return;
           this.stop();
+          this.scrubbing = false;
           this.timer = window.setInterval(() => {
             this.index = (this.index + 1) % this.frames.length;
           }, 400);
@@ -523,10 +526,30 @@ export function registerDatasetComponents(Alpine) {
             window.clearInterval(this.timer);
             this.timer = null;
           }
-          this.index = 0;
+          if (!this.scrubbing) {
+            this.index = 0;
+          }
+        },
+        scrubTo(position) {
+          if (!this.frames.length) return;
+          this.scrubbing = true;
+          this.stop();
+          const next = Math.min(
+            Math.max(parseInt(position, 10) || 0, 0),
+            this.frames.length - 1
+          );
+          this.index = next;
+        },
+        releaseScrub() {
+          this.scrubbing = false;
+        },
+        scrubAriaLabel() {
+          if (!this.frames.length) return 'Keine Frames verfügbar';
+          return `Frame ${this.index + 1} von ${this.frames.length}`;
         },
         destroy() {
           this.stop();
+          this.scrubbing = false;
         },
       };
     },

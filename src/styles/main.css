@@ -317,8 +317,24 @@
     @apply flex flex-1 items-center gap-4;
   }
 
+  .sample-visual {
+    @apply flex flex-col items-center gap-2;
+  }
+
   .sample-thumb {
     @apply h-16 w-20 rounded-lg object-cover;
+  }
+
+  .sample-scrub {
+    @apply flex w-full flex-col items-center gap-1 text-[11px] text-slate-500;
+  }
+
+  .sample-scrub-slider {
+    @apply h-2 w-28 appearance-none rounded-full bg-slate-200 accent-indigo-500;
+  }
+
+  .sample-scrub-label {
+    @apply text-xs font-medium text-slate-600;
   }
 
   .sample-annotation-input {

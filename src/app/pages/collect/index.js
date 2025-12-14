@@ -190,16 +190,38 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   <template x-for="sample in sampleList()" :key="sample.id">
                     <li x-data="samplePreview(sample)" @mouseleave="stop()">
                       <div class="sample-meta">
-                        <template x-if="currentFrame()">
-                          <img
-                            :src="currentFrame()"
-                            alt="Sample Vorschau"
-                            class="sample-thumb"
-                            @mouseenter="start()"
-                            @focus="start()"
-                            @blur="stop()"
-                          >
-                        </template>
+                        <div class="sample-visual">
+                          <template x-if="currentFrame()">
+                            <img
+                              :src="currentFrame()"
+                              alt="Sample Vorschau"
+                              class="sample-thumb"
+                              @mouseenter="start()"
+                              @focus="start()"
+                              @blur="stop()"
+                            >
+                          </template>
+                          <div class="sample-scrub" x-show="frames.length > 1">
+                            <input
+                              type="range"
+                              min="0"
+                              :max="frames.length - 1"
+                              :value="index"
+                              class="sample-scrub-slider"
+                              @input="scrubTo($event.target.value)"
+                              @change="releaseScrub()"
+                              @mouseup="releaseScrub()"
+                              @touchend="releaseScrub()"
+                              :aria-label="scrubAriaLabel()"
+                            />
+                            <p class="sample-scrub-label">
+                              Frame
+                              <span x-text="index + 1"></span>
+                              /
+                              <span x-text="frames.length"></span>
+                            </p>
+                          </div>
+                        </div>
                         <div>
                           <strong x-text="sample.displayLabel"></strong>
                           <span x-text="sample.displayDuration"></span>
