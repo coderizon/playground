@@ -106,9 +106,10 @@ export function Collect({ state }) {
   const totalSamples = classes.reduce((acc, c) => acc + (c.dataset?.recordedCount || 0), 0);
   const trainingReady = canGoToTraining(state);
   
-  // Disable adding new classes if any existing class has 0 samples
+  // Disable adding new classes if any existing class has 0 samples or is actively recording
   const hasEmptyClass = classes.some(c => (c.dataset?.recordedCount || 0) === 0);
-  const addClassDisabled = trainingLocked || hasEmptyClass;
+  const isAnyClassRecording = classes.some(c => c.dataset?.status === DATASET_STATUS.RECORDING);
+  const addClassDisabled = trainingLocked || hasEmptyClass || isAnyClassRecording;
   
   // Training Gate Hint
   const trainingHint = (() => {
@@ -164,6 +165,12 @@ export function Collect({ state }) {
         {hasEmptyClass && !trainingLocked && (
           <p className="collect-lock-hint" role="status" aria-live="polite">
             Fülle zuerst die vorhandenen Klassen mit Daten, bevor du neue hinzufügst.
+          </p>
+        )}
+
+        {isAnyClassRecording && !trainingLocked && (
+          <p className="collect-lock-hint" role="status" aria-live="polite">
+            Beende zuerst alle laufenden Aufnahmen, bevor du neue Klassen hinzufügst.
           </p>
         )}
 
