@@ -18,7 +18,7 @@
   - Calls `sessionStore.updateDatasetStatus/addDatasetSample` to keep readiness hints in sync.
 - **Shortcuts**: when the recorder container is focused, `R` starts, `S` stops, and `D` discards (if allowed). Documented inline with `<kbd>` hints.
 - **Permissions**: updates `sessionStore.permissions` so `permissionAlerts` and edge streaming know when cameras/mics are blocked.
-- **Follow-up**: Add scrub/preview controls + richer analytics (see `progress.md` backlog).
+- **Follow-up**: Scrub slider + analytics are in place; next focus is polishing per-sample annotations/metadata UX (see `progress.md` backlog).
 
 ## Edge Streaming Context (`src/app/store/selectors.js` & `src/app/components/edge/edgePanel.js`)
 
@@ -31,5 +31,6 @@
 - `navigationController`: flips steps after consulting guards + inference confirmations.
 - `sessionController`: discards sessions through the confirm dialog and ensures inference is stopped first.
 - `classController`: wraps per-class destructive actions with confirmations.
+- `sampleController`: guards per-sample deletes (blocked during training) and runs them through the shared confirm dialog so Collect UI never mutates the store directly.
 
 Refer back to `src/app/components/registerComponents.js` for how these are registered in Alpine.

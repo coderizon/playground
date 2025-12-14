@@ -8,7 +8,7 @@
 - **Browser history + leave guards**: `src/app/routes/historySync.js` keeps `window.history`/hash in lockstep with session steps, restores the right page on refresh/back, and falls back safely when guards block navigation. `src/app/routes/navigationGuards.js` registers a global `beforeunload` warning and reuses the confirmation helper. `createInferenceController` owns the reusable “ensure inference stopped” flow (`tests/routes/inferenceController.test.mjs`) that pages call before opening destructive dialogs. `tests/routes/historySync.test.mjs` stubs the browser to cover initial hash hydration, pushState, and popstate failure recovery.
 - **Alpine component layer**:
   - `classList` now focuses on class creation, naming, and dataset status messaging.
-  - `datasetRecorder` components own camera permissions, microphone-based clip capture (MediaRecorder), readiness hints, and destructive discards while piping embeddings into the TF.js bridge; toast notifications surface permission failures inline.
+  - `datasetRecorder` components own camera permissions, microphone-based clip capture (MediaRecorder), readiness hints, and destructive discards while piping embeddings into the TF.js bridge; toast notifications surface permission failures inline. Per-sample deletes now route through a dedicated controller/confirm dialog so training locks can block the action consistently.
   - Audio recorder presets mirror the ml-speech guidance: quick 2s clips plus a 20s background capture with inline hints, completion status, and inline playback so students can review what they just captured. Camera samples now surface derived thumbnails, hover-activated frame strips, coverage summaries, and a manual scrub slider so learners can pick the exact frame they plan to keep without re-recording.
   - Modality guidance: audio recorder shows progress meters + short-clip analytics, camera recorder captures frame thumbnails + variation hints.
   - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs. It now also mirrors `training.lastRun` metadata (status, timestamp, failure reason), compares it to each class' `dataset.lastUpdatedAt`, and updates the primary CTA (`Training starten` → `Erneut trainieren (neue Daten)`) plus inline hints so learners immediately see why a retrain is recommended.
@@ -43,8 +43,8 @@ The edge-streaming parity/QA slice is complete (store persistence, modal UX, tes
 3. **Training/inference realism**
    - Ensure inference confirmation helpers cover all destructive flows (BLE disconnect, session discard) with tests and toasts.
 4. **Guards & routing**
-   - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js`, with unit suites for navigation/history/session/class controllers and edge streaming under `tests/`.
-   - Remaining work: audit the remaining destructive micro-actions (sample deletion, training abort, etc.) to ensure they defer to the shared controllers and surface consistent confirm/toast copy.
+   - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js`, with unit suites for navigation/history/session/class/sample controllers and edge streaming under `tests/`.
+   - Remaining work: audit the remaining destructive micro-actions (training abort, dataset resets triggered outside Collect, BLE disconnect toasts, etc.) to ensure they defer to the shared controllers and surface consistent confirm/toast copy.
 5. **Quality bar**
    - Accessibility pass: focus traps for modals, keyboard shortcuts for recording, ARIA live regions for status text. **(✅ Status text now surfaces live regions; focus traps + shortcuts still pending.)**
    - Pin external dependencies (tf.js, mediapipe) as described in the vision (self-host or lock versions).

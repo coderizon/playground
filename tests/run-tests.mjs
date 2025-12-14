@@ -6,5 +6,6 @@ import './routes/navigationController.test.mjs';
 import './routes/historySync.test.mjs';
 import './routes/sessionController.test.mjs';
 import './routes/classController.test.mjs';
+import './routes/sampleController.test.mjs';
 import './routes/inferenceController.test.mjs';
 import './store/selectors.retry.test.mjs';

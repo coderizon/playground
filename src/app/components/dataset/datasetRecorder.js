@@ -5,6 +5,7 @@ import {
   PERMISSION_STATUS,
 } from '../../store/sessionStore.js';
 import { createClassController } from '../../routes/classController.js';
+import { createSampleController } from '../../routes/sampleController.js';
 import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
 import {
   requestMicrophoneStream,
@@ -34,6 +35,7 @@ export function registerDatasetComponents(Alpine) {
   const datasetController = createClassController({
     clearDataset: clearSamplesForClass,
   });
+  const sampleController = createSampleController();
   Alpine.data('datasetRecorder', (classId) => ({
     classId,
     classState: null,
@@ -251,7 +253,7 @@ export function registerDatasetComponents(Alpine) {
 
     removeSample(sample) {
       if (!sample?.id || this.recording || this.trainingLocked) return;
-      sessionStore.removeDatasetSample(this.classId, sample.id);
+      sampleController.removeSampleWithConfirm(this.classId, sample);
     },
 
     annotateSample(sample, value) {
