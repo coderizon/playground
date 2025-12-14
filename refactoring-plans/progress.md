@@ -19,6 +19,10 @@
   - Restored "Gestenerkennung" hand landmark visualization during data collection.
   - Implemented `HandPoseService` to bridge the legacy `hand-pose-detection` asset.
   - Added `GesturePreview` overlay component to `DatasetRecorder` for real-time skeleton drawing.
+- **Gestenerkennung Inference Fix**:
+  - Implemented dynamic feature extraction in `modelBridge.js` to correctly use Hand Landmarks for 'gesture-recognition' tasks and MobileNet for image tasks.
+  - Fixed a critical bug where `classIndex` became stale in `recordedSamples` when classes were added/removed, causing inference to fail with more than 2 classes.
+  - Updated classifier initialization to dynamically adjust `inputShape` based on the chosen feature extractor.
 - **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts.
 
 ## Current State Snapshot (Jan 2025)

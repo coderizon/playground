@@ -59,8 +59,27 @@ export async function trainWithRecordedSamples() {
   ensureClassifier(state.classes.length || 1, state.training.params.learningRate);
   trainingAbortRequested = false;
   sessionStore.setTrainingStatus(TRAINING_STATUS.RUNNING, { progress: 0, error: null });
-  const labels = recordedSamples.map((sample) => sample.classIndex);
-  const xs = tf.stack(recordedSamples.map((sample) => sample.tensor));
+
+  // Filter valid samples and map to current class indices
+  const validSamples = [];
+  const currentClassIds = state.classes.map(c => c.id);
+  
+  recordedSamples.forEach(sample => {
+    const currentIndex = currentClassIds.indexOf(sample.classId);
+    if (currentIndex !== -1) {
+      validSamples.push({ ...sample, classIndex: currentIndex });
+    }
+  });
+
+  if (!validSamples.length) {
+    sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, {
+      error: 'Keine gültigen Samples für aktuelle Klassen vorhanden.',
+    });
+    return;
+  }
+
+  const labels = validSamples.map((sample) => sample.classIndex);
+  const xs = tf.stack(validSamples.map((sample) => sample.tensor));
   const ys = tf.oneHot(tf.tensor1d(labels, 'int32'), state.classes.length || 1);
   const { epochs, batchSize } = state.training.params;
   const datasetUpdatedAt = getLatestDatasetUpdatedAt(state) || Date.now();
