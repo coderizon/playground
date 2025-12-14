@@ -33,11 +33,11 @@
 
 @layer components {
   .new-app-root-active {
-    @apply min-h-screen bg-slate-100 pb-16;
+    @apply min-h-screen bg-slate-100;
   }
 
   #new-app-root > section {
-    @apply max-w-6xl mx-auto;
+    @apply min-h-screen w-full;
   }
 
   .primary {
@@ -76,7 +76,7 @@
   .collect-page,
   .train-page,
   .infer-page {
-    @apply mt-10 flex flex-col gap-8 rounded-[32px] bg-white/90 p-8 shadow-xl ring-1 ring-slate-200;
+    @apply mt-0 flex min-h-screen flex-col gap-8 rounded-none border-0 bg-white p-8 shadow-none ring-0;
   }
 
   .new-app-home__header,
