@@ -96,27 +96,24 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
               <p>Füge mindestens zwei Klassen hinzu, benenne sie und sammle Beispiele.</p>
             </div>
           </template>
-          <template x-for="(classItem, index) in classes" :key="classItem.id">
-            <article class="class-card-v2">
+          <template x-for="classItem in classes" :key="classItem.id">
+            <article class="class-card-v2" x-data="classCard(classItem.id)" x-init="init()">
               <header>
                 <input
                   type="text"
                   class="class-name-input"
-                  :value="classItem.name"
+                  :value="classState?.name"
                   maxlength="60"
                   aria-label="Klassenname eingeben"
-                  @change="commitName(classItem.id, $event.target.value)"
-                  @blur="commitName(classItem.id, $event.target.value)"
+                  @change="commitName($event.target.value)"
+                  @blur="commitName($event.target.value)"
                 />
-                <span :class="datasetChipClass(classItem.dataset.status)">
-                  <span x-text="datasetLabel(classItem.dataset.status)"></span>
+                <span :class="datasetChipClass()">
+                  <span x-text="datasetLabel()"></span>
                 </span>
               </header>
-              <p class="dataset-summary">
-                <span x-text="classItem.dataset.recordedCount"></span>/<span x-text="classItem.dataset.expectedCount"></span>
-                Beispiele
-              </p>
-              <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
+              <p class="dataset-summary" x-text="datasetSummary()"></p>
+              <p class="field-error" x-show="errorMessage()" x-text="errorMessage()"></p>
               <section
                 class="dataset-recorder"
                 x-data="datasetRecorder(classItem.id)"
@@ -306,7 +303,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 </div>
               </section>
               <div class="class-card-actions">
-                <button type="button" class="ghost" @click="confirmDelete(classItem)" :disabled="trainingLocked">Klasse entfernen</button>
+                <button type="button" class="ghost" @click="deleteClass()" :disabled="trainingLocked">Klasse entfernen</button>
               </div>
             </article>
           </template>
