@@ -9,6 +9,7 @@
 - **Alpine component layer**:
   - `classList` now focuses on class creation, naming, and dataset status messaging.
   - `datasetRecorder` components own camera permissions, microphone-based clip capture (MediaRecorder), readiness hints, and destructive discards while piping embeddings into the TF.js bridge; toast notifications surface permission failures inline.
+  - Audio recorder presets mirror the ml-speech guidance: quick 2s clips plus a 20s background capture with inline hints + completion status so users learn to add ambient noise samples for robustness.
   - Modality guidance: audio recorder shows progress meters + short-clip analytics, camera recorder captures frame thumbnails + variation hints.
   - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs.
   - `collectSummary` surfaces overall readiness (classes, samples, blockers) directly on the Collect page; `inferenceControls` manages camera permissions, start/stop intents, and navigation safety copy; `predictionPanel` subscribes to inference predictions, throttles updates, and communicates streaming status so users get clear feedback even on slower devices.
@@ -35,8 +36,8 @@ The edge-streaming parity/QA slice is complete (store persistence, modal UX, tes
    - Gradually replace legacy utility classes with Tailwind utility/`@apply` patterns now that `src/styles/main.css` is the source of truth.
    - Extract collect/train/infer logic into dedicated controllers + sub-components (e.g., `pages/infer/view.js` now renders the full page).
 2. **Recording experience**
-   - Add camera-specific analytics (per-sample thumbnails already exist; still need in-app preview thumbnails or sample replay) plus richer background-noise guidance for audio tasks.
-   - Introduce optional background/noise capture presets inspired by `ml-speech` (long-duration recordings with visual progress) so users know when to relax or speak.
+   - Add camera-specific analytics (per-sample thumbnails already exist; still need in-app preview thumbnails or sample replay) plus richer background-noise guidance for audio tasks (presets shipped; next step is sample playback/annotation).
+   - Introduce optional background/noise capture presets inspired by `ml-speech` (long-duration recordings with visual progress) so users know when to relax or speak. **(✅ Presets + guidance shipped; expand with sample playback/review.)**
 3. **Training/inference realism**
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.

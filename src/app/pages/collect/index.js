@@ -118,13 +118,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                     <button
                       type="button"
                       class="ghost"
-                      @click="startRecording()"
+                      @click="startRecording({ preset: 'clip' })"
                       :disabled="!canStart"
-                    >Audio aufnehmen</button>
+                    >Kurzclip (2s)</button>
                     <button
                       type="button"
                       class="ghost"
-                      @click="startRecording({ duration: 20000 })"
+                      @click="startRecording({ preset: 'background' })"
                       :disabled="!canStart"
                     >Hintergrund (20s)</button>
                   </div>
@@ -139,8 +139,14 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   <button type="button" class="ghost" @click="stopRecording()" :disabled="!canStop">Stoppen</button>
                   <button type="button" class="ghost" @click="discardDataset()" :disabled="!canDiscard">Datensatz verwerfen</button>
                 </div>
+                <div class="audio-preset-hint" x-show="isAudioTask">
+                  <p>
+                    <strong x-text="activePresetLabel()"></strong>
+                    <span x-text="audioPresetHint()"></span>
+                  </p>
+                  <p class="audio-background-status" x-text="audioBackgroundStatus()"></p>
+                </div>
                 <p class="dataset-hint" x-text="statusHint()"></p>
-                <p class="background-tip" x-show="isAudioTask">Tipp: Füge eine eigene Hintergrundklasse hinzu (z.B. „Stille“) und nimm 20s Umgebungsgeräusche auf.</p>
                 <div class="sample-list" x-show="sampleList().length">
                   <p class="eyebrow">Samples</p>
                   <ul>

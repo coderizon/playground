@@ -13,6 +13,20 @@ import {
 import { recordSampleFrame, clearSamplesForClass } from '../../services/ml/modelBridge.js';
 import { showToast } from '../common/toast.js';
 
+const AUDIO_PRESETS = {
+  clip: {
+    label: 'Kurzclip',
+    duration: 2000,
+    hint: 'Nimm 2s Clips mit klaren Geräuschen oder Wörtern auf.',
+  },
+  background: {
+    label: 'Hintergrund',
+    duration: 20000,
+    hint: 'Halte 20s Umgebungsgeräusche fest, damit das Modell Stille erkennt.',
+  },
+};
+const BACKGROUND_MIN_DURATION = 15000;
+
 let activeRecorderId = null;
 
 export function registerDatasetComponents(Alpine) {
@@ -31,6 +45,7 @@ export function registerDatasetComponents(Alpine) {
     lastPermissionError: '',
     audioProgress: 0,
     audioProgressHandle: null,
+    activePreset: 'clip',
     unsubscribe: null,
 
     init() {
@@ -168,10 +183,10 @@ export function registerDatasetComponents(Alpine) {
       return `Noch ${Math.max(this.expectedCount - this.recordedCount, 0)} Beispiele sammeln`;
     },
 
-    async startRecording() {
+    async startRecording(options = {}) {
       if (!this.canStart) return;
       if (this.isAudioTask) {
-        await this.startAudioRecording();
+        await this.startAudioRecording(options);
         return;
       }
       try {
@@ -289,8 +304,10 @@ export function registerDatasetComponents(Alpine) {
       }
     },
 
-    async startAudioRecording({ duration = 2000 } = {}) {
+    async startAudioRecording({ duration, preset = 'clip' } = {}) {
       try {
+        const config = AUDIO_PRESETS[preset] || AUDIO_PRESETS.clip;
+        const durationMs = duration ?? config.duration;
         await requestMicrophoneStream();
         this.error = null;
         this.lastPermissionError = '';
@@ -298,12 +315,13 @@ export function registerDatasetComponents(Alpine) {
         this.recording = true;
         this.audioStopRequested = false;
         this.audioProgress = 0;
-        this.currentAudioDuration = duration;
+        this.currentAudioDuration = durationMs;
+        this.activePreset = preset;
         sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.RECORDING, {
           error: null,
         });
-        this.animateAudioProgress(duration);
-        this.captureAudioSample(duration);
+        this.animateAudioProgress(durationMs);
+        this.captureAudioSample(durationMs);
       } catch (error) {
         console.error(error);
         this.error = error?.message || 'Mikrofon konnte nicht gestartet werden.';
@@ -380,6 +398,29 @@ export function registerDatasetComponents(Alpine) {
         return `${this.recordedCount}/${this.expectedCount} Clips`;
       }
       return 'Recorder bereit';
+    },
+
+    audioPresetHint() {
+      if (!this.isAudioTask) return '';
+      const preset = AUDIO_PRESETS[this.activePreset] || AUDIO_PRESETS.clip;
+      return preset.hint;
+    },
+
+    activePresetLabel() {
+      const preset = AUDIO_PRESETS[this.activePreset] || AUDIO_PRESETS.clip;
+      return preset.label;
+    },
+
+    audioBackgroundStatus() {
+      if (!this.isAudioTask) return '';
+      return this.hasBackgroundSample()
+        ? 'Hintergrund erfasst · kombiniere mit Kurzclips.'
+        : 'Füge eine 20s Hintergrundaufnahme hinzu, damit das Modell Stille kennt.';
+    },
+
+    hasBackgroundSample() {
+      const samples = this.classState?.dataset?.samples || [];
+      return samples.some((sample) => (sample.durationMs || 0) >= BACKGROUND_MIN_DURATION);
     },
 
     captureFrameSnapshot(video) {
