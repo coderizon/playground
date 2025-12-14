@@ -132,17 +132,30 @@ export function registerDatasetComponents(Alpine) {
 
     sampleList() {
       const samples = this.dataset.samples || [];
-      return samples.map((sample, index) => ({
-        ...sample,
-        label: sample.label || `Sample ${index + 1}`,
-        canDelete: !this.recording && !this.trainingLocked,
-        displayLabel: this.sampleLabel(sample, index),
-        displayDuration: this.sampleDuration(sample),
-        thumbnail: sample.thumbnail || null,
-        previewFrames: sample.previewFrames || [],
-        canAnnotate: Boolean(sample.id),
-        annotation: sample.annotation || '',
-      }));
+      return samples.map((sample, index) => {
+        const annotation = sample.annotation || '';
+        const capturedLabel = this.formatSampleTimestamp(sample.capturedAt);
+        const sourceLabel =
+          sample.source === 'microphone'
+            ? 'Audioaufnahme'
+            : sample.source === 'camera'
+            ? 'Kamera'
+            : 'Sample';
+        return {
+          ...sample,
+          label: sample.label || `Sample ${index + 1}`,
+          canDelete: !this.recording && !this.trainingLocked,
+          displayLabel: this.sampleLabel(sample, index),
+          displayDuration: this.sampleDuration(sample),
+          thumbnail: sample.thumbnail || null,
+          previewFrames: sample.previewFrames || [],
+          canAnnotate: Boolean(sample.id),
+          annotation,
+          annotationLength: annotation.length,
+          capturedLabel,
+          sourceLabel,
+        };
+      });
     },
 
     audioStats() {
@@ -627,6 +640,16 @@ export function registerDatasetComponents(Alpine) {
         this.audioProgressHandle = null;
       }
       this.audioProgress = 0;
+    },
+
+    formatSampleTimestamp(value) {
+      if (!value) return '';
+      try {
+        const date = new Date(value);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        return '';
+      }
     },
   }));
 }

@@ -222,9 +222,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                             </p>
                           </div>
                         </div>
-                        <div>
+                        <div class="sample-details">
                           <strong x-text="sample.displayLabel"></strong>
                           <span x-text="sample.displayDuration"></span>
+                          <p class="sample-meta-info">
+                            <span x-text="sample.sourceLabel"></span>
+                            <span x-text="sample.capturedLabel" x-show="sample.capturedLabel"></span>
+                          </p>
                           <template x-if="sample.audioUrl">
                             <audio
                               class="sample-audio-player"
@@ -245,6 +249,9 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                               :value="sample.annotation"
                               @change="annotateSample(sample, $event.target.value)"
                             />
+                            <p class="sample-annotation-counter">
+                              <span x-text="sample.annotationLength + '/80'"></span>
+                            </p>
                           </div>
                         </div>
                       </div>

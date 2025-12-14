@@ -317,12 +317,20 @@
     @apply flex flex-1 items-center gap-4;
   }
 
+  .sample-details {
+    @apply flex flex-col gap-1 text-sm text-slate-600;
+  }
+
   .sample-visual {
     @apply flex flex-col items-center gap-2;
   }
 
   .sample-thumb {
     @apply h-16 w-20 rounded-lg object-cover;
+  }
+
+  .sample-meta-info {
+    @apply flex flex-wrap gap-2 text-xs uppercase tracking-wide text-slate-400;
   }
 
   .sample-scrub {
@@ -339,6 +347,10 @@
 
   .sample-annotation-input {
     @apply mt-1 w-full rounded-lg border border-slate-200 px-2 py-1 text-sm shadow-inner focus:border-indigo-200 focus:outline-none;
+  }
+
+  .sample-annotation-counter {
+    @apply mt-1 text-right text-[11px] text-slate-400;
   }
 
   .sample-analytics {

@@ -18,7 +18,7 @@
   - Calls `sessionStore.updateDatasetStatus/addDatasetSample` to keep readiness hints in sync.
 - **Shortcuts**: when the recorder container is focused, `R` starts, `S` stops, and `D` discards (if allowed). Documented inline with `<kbd>` hints.
 - **Permissions**: updates `sessionStore.permissions` so `permissionAlerts` and edge streaming know when cameras/mics are blocked.
-- **Follow-up**: Scrub slider + analytics are in place; next focus is polishing per-sample annotations/metadata UX (see `progress.md` backlog).
+- **Follow-up**: Scrub slider + metadata counters are in place; next focus is polishing per-sample annotations/metadata UX (see `progress.md` backlog).
 
 ## Edge Streaming Context (`src/app/store/selectors.js` & `src/app/components/edge/edgePanel.js`)
 
