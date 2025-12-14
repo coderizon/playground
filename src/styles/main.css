@@ -391,15 +391,31 @@
     @apply rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900;
   }
 
+  .collect-floating-toolbar {
+    @apply fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3;
+  }
+
+  .collect-floating-toggle {
+    @apply flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-slate-700 shadow-lg shadow-slate-900/15 transition;
+  }
+
+  .collect-floating-toggle:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+
   .collect-floating-hints {
-    @apply fixed bottom-6 right-6 z-40 flex max-w-sm flex-col gap-3;
+    @apply flex max-w-sm flex-col gap-3;
     width: min(320px, calc(100% - 3rem));
   }
 
   @media (max-width: 640px) {
-    .collect-floating-hints {
+    .collect-floating-toolbar {
       left: 1rem;
       right: 1rem;
+      align-items: stretch;
+    }
+
+    .collect-floating-hints {
       width: auto;
     }
   }

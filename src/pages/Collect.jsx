@@ -126,6 +126,7 @@ export function Collect({ state }) {
     }
   };
 
+  const [showHints, setShowHints] = useState(false);
   const floatingHints = [];
   if (trainingHint) {
     floatingHints.push(trainingHint);
@@ -221,15 +222,27 @@ export function Collect({ state }) {
         </div>
       </section>
 
-      {floatingHints.length > 0 && (
-        <div className="collect-floating-hints" aria-live="polite">
-          {floatingHints.map((message) => (
-            <p key={message} className="collect-lock-hint" role="status">
-              {message}
-            </p>
-          ))}
-        </div>
-      )}
+      <div className="collect-floating-toolbar">
+        <button
+          type="button"
+          className="collect-floating-toggle"
+          onClick={() => setShowHints((prev) => !prev)}
+          disabled={floatingHints.length === 0}
+          aria-label="Hinweise anzeigen oder ausblenden"
+          aria-pressed={showHints}
+        >
+          i
+        </button>
+        {showHints && floatingHints.length > 0 && (
+          <div className="collect-floating-hints" aria-live="polite">
+            {floatingHints.map((message) => (
+              <p key={message} className="collect-lock-hint" role="status">
+                {message}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
