@@ -249,9 +249,9 @@ export function registerDatasetComponents(Alpine) {
           status: PERMISSION_STATUS.GRANTED,
           message: null,
         });
-        await this.$nextTick();
-        this.attachPreview(stream);
-        if (!this.$refs[`preview-${this.classId}`]) {
+        const previewAttached = await this.assignPreviewStream(stream);
+        if (!previewAttached) {
+          stopCameraStream();
           throw new Error('Recorder-Vorschau konnte nicht initialisiert werden.');
         }
         activeRecorderId = this.classId;
@@ -390,12 +390,19 @@ export function registerDatasetComponents(Alpine) {
       }
     },
 
-    attachPreview(stream) {
-      if (this.isAudioTask) return;
-      const video = this.$refs[`preview-${this.classId}`];
-      if (video) {
-        video.srcObject = stream;
+    async assignPreviewStream(stream) {
+      if (this.isAudioTask) return true;
+      const attempts = 10;
+      for (let i = 0; i < attempts; i++) {
+        await this.$nextTick();
+        const video = this.$refs[`preview-${this.classId}`];
+        if (video) {
+          video.srcObject = stream;
+          return true;
+        }
+        await waitFor(30);
       }
+      return false;
     },
 
     detachPreview() {
@@ -673,4 +680,8 @@ function blobToDataUrl(blob) {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
+}
+
+function waitFor(ms = 30) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
