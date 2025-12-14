@@ -16,8 +16,22 @@ import {
   setCalliopeConnectionListener,
   sendToCalliope,
 } from '../../../bluetooth/calliope.js';
-import { sessionStore } from '../../store/sessionStore.js';
-import { isInferenceRunning, getInferencePredictions } from '../../store/selectors.js';
+import { sessionStore as realSessionStore } from '../../store/sessionStore.js';
+import {
+  isInferenceRunning as realIsInferenceRunning,
+  getInferencePredictions as realGetInferencePredictions,
+} from '../../store/selectors.js';
+
+const overrides = globalThis.__EDGE_TEST_OVERRIDES || null;
+if (overrides) {
+  delete globalThis.__EDGE_TEST_OVERRIDES;
+}
+
+const sessionStore = overrides?.sessionStore ?? realSessionStore;
+const selectors = overrides?.selectors ?? {
+  isInferenceRunning: realIsInferenceRunning,
+  getInferencePredictions: realGetInferencePredictions,
+};
 
 const devices = {
   arduino: {
@@ -39,6 +53,13 @@ const devices = {
     setListener: setCalliopeConnectionListener,
   },
 };
+const deviceDefinitions = overrides?.devices ?? devices;
+const deviceSenders =
+  overrides?.senders ?? {
+    arduino: sendToArduino,
+    microbit: sendToMicrobit,
+    calliope: sendToCalliope,
+  };
 
 const state = {
   selectedDevice: null,
@@ -47,7 +68,7 @@ const state = {
   streaming: false,
 };
 
-Object.entries(devices).forEach(([key, device]) => {
+Object.entries(deviceDefinitions).forEach(([key, device]) => {
   device.setListener((connected) => {
     if (connected && state.selectedDevice !== key) {
       state.selectedDevice = key;
@@ -69,7 +90,7 @@ export function getEdgeState() {
 }
 
 export async function connectDevice(deviceId) {
-  const device = devices[deviceId];
+  const device = deviceDefinitions[deviceId];
   if (!device) throw new Error('Unbekanntes Gerät');
   if (device.isConnected()) {
     state.selectedDevice = deviceId;
@@ -112,8 +133,12 @@ export function disconnectDevice() {
 }
 
 sessionStore.subscribe((sessionState) => {
-  if (state.streaming && sessionState.edge.status === 'connected' && isInferenceRunning(sessionState)) {
-    const predictions = getInferencePredictions(sessionState);
+  if (
+    state.streaming &&
+    sessionState.edge.status === 'connected' &&
+    selectors.isInferenceRunning(sessionState)
+  ) {
+    const predictions = selectors.getInferencePredictions(sessionState);
     const top = predictions.find((row) => row.isBest);
     if (top) {
       sendPrediction(`${top.name}:${Math.round((top.value || 0) * 100)}%`);
@@ -129,19 +154,9 @@ export function setStreaming(enabled) {
 async function sendPrediction(payload) {
   if (!state.selectedDevice) return;
   try {
-    switch (state.selectedDevice) {
-      case 'arduino':
-        await sendToArduino(payload);
-        break;
-      case 'microbit':
-        await sendToMicrobit(payload);
-        break;
-      case 'calliope':
-        await sendToCalliope(payload);
-        break;
-      default:
-        break;
-    }
+    const sender = deviceSenders[state.selectedDevice];
+    if (!sender) return;
+    await sender(payload);
   } catch (error) {
     console.error('Streaming fehlgeschlagen', error);
     handleStreamingError(error);
@@ -155,7 +170,7 @@ function handleStreamingError(error) {
   sessionStore.setEdgeStatus('error', {
     error: state.error,
     deviceInfo: state.selectedDevice
-      ? { id: state.selectedDevice, name: devices[state.selectedDevice]?.name }
+      ? { id: state.selectedDevice, name: deviceDefinitions[state.selectedDevice]?.name }
       : null,
     selectedDevice: state.selectedDevice,
   });

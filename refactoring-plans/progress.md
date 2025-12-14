@@ -23,7 +23,7 @@
   - `services/ml/modelBridge.js` uses TF.js to capture embeddings, train, and infer.
   - `services/ml/liveInference.js` runs the inference loop.
   - `services/ml/mockTraining.js` + `mockInference.js` remain as fallbacks for future tests.
-  - `services/edge/edgeService.js` wraps BLE modules, tracks connection state, streams predictions to Arduino/Micro:bit/Calliope, and flags streaming errors as edge status updates; regression tests in `tests/store/sessionStore.edge.test.mjs` cover edge state persistence/contracts.
+  - `services/edge/edgeService.js` wraps BLE modules, tracks connection state, streams predictions to Arduino/Micro:bit/Calliope, and flags streaming errors as edge status updates; regression tests in `tests/store/sessionStore.edge.test.mjs` cover edge state persistence/contracts, and `tests/services/edgeService.test.mjs` fakes the BLE stack to verify streaming toggles + error propagation end to end.
 
 ## Remaining Work to Fulfill `vision.md`
 
@@ -37,7 +37,7 @@
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
 4. **Edge streaming completeness**
-   - Add integration-style tests (or fakes for `edgeService`) that exercise streaming toggles and BLE error propagation to ensure send failures keep inference + edge state in sync.
+   - Ship a lightweight hardware QA checklist (docs + sample scripts) so teams know how to validate BLE streaming on real boards after each release.
 5. **Guards & routing**
    - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js` with node-based unit tests under `tests/guards/navigation.test.mjs`.
    - Increase coverage of step transitions by centralizing navigation calls (`navigationController`, `stepTransitions`) and adding richer routing tests.
