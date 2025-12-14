@@ -23,6 +23,8 @@
   - Implemented dynamic feature extraction in `modelBridge.js` to correctly use Hand Landmarks for 'gesture-recognition' tasks and MobileNet for image tasks.
   - Fixed a critical bug where `classIndex` became stale in `recordedSamples` when classes were added/removed, causing inference to fail with more than 2 classes.
   - Updated classifier initialization to dynamically adjust `inputShape` based on the chosen feature extractor.
+- **UI/UX Enhancement**:
+  - Improved visibility of the "Session verwerfen" button on the Inference page by applying `primary danger` styling, highlighting its destructive nature.
 - **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts.
 
 ## Current State Snapshot (Jan 2025)
