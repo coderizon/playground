@@ -416,7 +416,7 @@
     .collect-floating-toolbar {
       left: 1rem;
       right: 1rem;
-      align-items: stretch;
+      align-items: flex-end;
     }
 
     .collect-floating-hints {
