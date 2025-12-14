@@ -1222,6 +1222,16 @@ button:disabled {
   color: #0f3042;
 }
 
+.ble-modal-error {
+  margin: 0 4px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #f7b0a6;
+  background: #fff8f7;
+  color: #9c1c1c;
+  font-size: 14px;
+}
+
 .ble-device-list {
   display: flex;
   flex-direction: column;

@@ -11,7 +11,7 @@
   - `trainingPanel` wraps TF.js intents (start/abort), surfaces dataset readiness summaries, and broadcasts locking hints so Collect UI disables itself while training runs.
   - `collectSummary` surfaces overall readiness (classes, samples, blockers) directly on the Collect page; `inferenceControls` manages camera permissions, start/stop intents, and navigation safety copy; `predictionPanel` subscribes to inference predictions, throttles updates, and communicates streaming status so users get clear feedback even on slower devices.
   - Global confirm dialog + notice banners provide consistent messaging.
-  - Edge panel component connects BLE devices, toggles streaming, and mirrors connection/streaming state on the inference page.
+  - Edge panel component connects BLE devices, toggles streaming, mirrors connection/streaming state on the inference page, persists the last selected device/error in `sessionStore.edge`, auto-opens the BLE modal on failures, and highlights the selected device with inline error copy in the modal for quicker retries.
 - **Styling foundation**: Tailwind entry point lives in `src/styles/main.css` (with `@tailwind base/components/utilities`) replacing the old root `style.css`. Further utility extraction can now happen per component.
 - **Flow coverage**:
   - **Home**: task/model grid wired to the store, session discard/back-to-home controls.
@@ -37,8 +37,7 @@
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
 4. **Edge streaming completeness**
-   - Edge service streams predictions to Arduino/Micro:bit/Calliope and surfaces send failures as edge errors that pause streaming.
-   - Add connection state persistence, edge error dialogs, and integrate BLE modal parity from the legacy UI.
+   - Port the legacy BLE device guidance (thumbnails/instructions), add keyboard/focus handling for the modal, and cover streaming/edge status changes with unit tests.
 5. **Guards & routing**
    - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js` with node-based unit tests under `tests/guards/navigation.test.mjs`.
    - Increase coverage of step transitions by centralizing navigation calls (`navigationController`, `stepTransitions`) and adding richer routing tests.

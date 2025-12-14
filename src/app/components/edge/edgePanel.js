@@ -21,10 +21,16 @@ export function registerEdgeComponents(Alpine) {
     modalOpen: false,
 
     init() {
+      if (this.edgeStatus.status === 'error') {
+        this.modalOpen = true;
+      }
       this.unsubscribe = sessionStore.subscribe((state) => {
         this.edgeStatus = state.edge;
         this.connecting = getEdgeState().connecting;
         this.streaming = getEdgeState().streaming;
+        if (state.edge.status === 'error') {
+          this.modalOpen = true;
+        }
       });
     },
 
@@ -61,6 +67,10 @@ export function registerEdgeComponents(Alpine) {
       }
     },
 
+    edgeStatusCopy() {
+      return this.statusLabel();
+    },
+
     streamingEnabled() {
       return getEdgeState().streaming;
     },
@@ -75,7 +85,7 @@ export function registerEdgeComponents(Alpine) {
     },
 
     async retryLastDevice() {
-      const lastId = getEdgeState().selectedDevice || this.edgeStatus.deviceInfo?.id;
+      const lastId = this.edgeStatus.selectedDevice || this.edgeStatus.deviceInfo?.id;
       if (!lastId) return;
       await this.connect(lastId);
     },
@@ -90,6 +100,27 @@ export function registerEdgeComponents(Alpine) {
 
     closeModal() {
       this.modalOpen = false;
+    },
+
+    deviceClasses(id) {
+      return {
+        'is-connected': this.edgeStatus.selectedDevice === id,
+      };
+    },
+
+    deviceStatusCopy(id) {
+      if (this.edgeStatus.deviceInfo?.id === id) {
+        return 'Verbunden';
+      }
+      if (this.edgeStatus.selectedDevice === id) {
+        return this.edgeStatus.status === 'error' ? 'Erneut versuchen' : 'Ausgewählt';
+      }
+      return 'Bereit';
+    },
+
+    modalErrorCopy() {
+      if (this.edgeStatus.status !== 'error') return '';
+      return this.edgeStatus.error || 'Verbindung fehlgeschlagen. Bitte versuche es erneut.';
     },
   }));
 }

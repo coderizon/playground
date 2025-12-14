@@ -74,6 +74,7 @@ export function createInitialSessionState(overrides = {}) {
       status: EDGE_STATUS.DISCONNECTED,
       deviceInfo: null,
       error: null,
+      selectedDevice: null,
     },
   };
 
@@ -331,14 +332,30 @@ export function createSessionStore(initial = createInitialSessionState()) {
   };
 
   const setEdgeStatus = (status, patch = {}) => {
-    setState((current) => ({
-      ...current,
-      edge: {
+    setState((current) => {
+      const nextStatus = validateEdgeStatus(status) || current.edge.status;
+      const nextEdge = {
         ...current.edge,
-        status: validateEdgeStatus(status) || current.edge.status,
-        ...patch,
-      },
-    }));
+        status: nextStatus,
+      };
+
+      if (Object.prototype.hasOwnProperty.call(patch, 'deviceInfo')) {
+        nextEdge.deviceInfo = patch.deviceInfo;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, 'selectedDevice')) {
+        nextEdge.selectedDevice = patch.selectedDevice;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, 'error')) {
+        nextEdge.error = patch.error;
+      } else if (nextStatus !== EDGE_STATUS.ERROR) {
+        nextEdge.error = null;
+      }
+
+      return {
+        ...current,
+        edge: nextEdge,
+      };
+    });
   };
 
   const setStep = (step) => {

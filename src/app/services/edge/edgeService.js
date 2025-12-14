@@ -55,6 +55,7 @@ Object.entries(devices).forEach(([key, device]) => {
     sessionStore.setEdgeStatus(connected ? 'connected' : 'disconnected', {
       deviceInfo: connected ? { id: key, name: device.name } : null,
       error: null,
+      selectedDevice: state.selectedDevice,
     });
     state.connecting = false;
     if (!connected) {
@@ -71,26 +72,41 @@ export async function connectDevice(deviceId) {
   const device = devices[deviceId];
   if (!device) throw new Error('Unbekanntes Gerät');
   if (device.isConnected()) {
-    sessionStore.setEdgeStatus('connected', { deviceInfo: { id: deviceId, name: device.name } });
+    state.selectedDevice = deviceId;
+    sessionStore.setEdgeStatus('connected', {
+      deviceInfo: { id: deviceId, name: device.name },
+      selectedDevice: state.selectedDevice,
+      error: null,
+    });
     return;
   }
   state.selectedDevice = deviceId;
   state.connecting = true;
   state.error = null;
-  sessionStore.setEdgeStatus('connecting', { deviceInfo: { id: deviceId, name: device.name } });
+  sessionStore.setEdgeStatus('connecting', {
+    deviceInfo: { id: deviceId, name: device.name },
+    selectedDevice: state.selectedDevice,
+    error: null,
+  });
   try {
     await device.connect();
   } catch (error) {
     console.error(error);
     state.error = error.message;
-    sessionStore.setEdgeStatus('error', { error: error.message });
+    sessionStore.setEdgeStatus('error', {
+      error: error.message,
+      selectedDevice: state.selectedDevice,
+      deviceInfo: { id: deviceId, name: device.name },
+    });
     state.connecting = false;
   }
 }
 
 export function disconnectDevice() {
-  state.selectedDevice = null;
-  sessionStore.setEdgeStatus('disconnected', { deviceInfo: null });
+  sessionStore.setEdgeStatus('disconnected', {
+    deviceInfo: null,
+    selectedDevice: state.selectedDevice,
+  });
   state.streaming = false;
   state.error = null;
 }
@@ -138,6 +154,9 @@ function handleStreamingError(error) {
   sessionStore.setInferenceStreaming(false);
   sessionStore.setEdgeStatus('error', {
     error: state.error,
-    deviceInfo: state.selectedDevice ? { id: state.selectedDevice, name: devices[state.selectedDevice]?.name } : null,
+    deviceInfo: state.selectedDevice
+      ? { id: state.selectedDevice, name: devices[state.selectedDevice]?.name }
+      : null,
+    selectedDevice: state.selectedDevice,
   });
 }

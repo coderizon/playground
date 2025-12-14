@@ -77,15 +77,19 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                   <h3>Verbinde ein Gerät</h3>
                   <button type="button" class="icon-close" @click="modalOpen = false">×</button>
                 </div>
+                <p class="ble-modal-error" x-show="edgeStatus.status === 'error'" x-text="modalErrorCopy()"></p>
                 <div class="ble-device-list">
                   <template x-for="device in devices" :key="device.id">
-                    <button type="button" class="ble-device" @click="connect(device.id)" :disabled="connecting">
+                    <button
+                      type="button"
+                      class="ble-device"
+                      :class="deviceClasses(device.id)"
+                      @click="connect(device.id)"
+                      :disabled="connecting"
+                    >
                       <div class="ble-device-info">
                         <span class="ble-device-name" x-text="device.name"></span>
-                        <span class="ble-device-status">
-                          <template x-if="edgeStatus.deviceInfo?.id === device.id">Verbunden</template>
-                          <template x-if="edgeStatus.deviceInfo?.id !== device.id">Bereit</template>
-                        </span>
+                        <span class="ble-device-status" x-text="deviceStatusCopy(device.id)"></span>
                       </div>
                     </button>
                   </template>
