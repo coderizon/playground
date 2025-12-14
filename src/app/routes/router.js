@@ -20,6 +20,7 @@ export function startRouter(root) {
   }
 
   ensureToastHost();
+  ensureConfirmDialogHost();
   registerNavigationGuards();
   initHistorySync();
 
@@ -66,5 +67,50 @@ function ensureToastHost() {
   document.body.appendChild(toastRoot);
   if (window.Alpine && typeof window.Alpine.initTree === 'function') {
     window.Alpine.initTree(toastRoot);
+  }
+}
+
+function ensureConfirmDialogHost() {
+  if (document.getElementById('confirm-dialog-root')) return;
+  const confirmRoot = document.createElement('div');
+  confirmRoot.id = 'confirm-dialog-root';
+  confirmRoot.innerHTML = `
+    <div
+      x-data="confirmDialog()"
+      x-show="open"
+      class="confirm-backdrop"
+      x-cloak
+      @click.self="close()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirmDialogTitle"
+      @keydown.window="handleKeydown($event)"
+    >
+      <div class="confirm-dialog" :class="{'is-destructive': destructive}" tabindex="-1" x-ref="dialog">
+        <h3 id="confirmDialogTitle" x-text="title"></h3>
+        <p x-text="message"></p>
+        <div class="confirm-actions">
+          <button
+            type="button"
+            class="ghost"
+            @click="close()"
+            x-text="cancelLabel"
+            data-dialog-focusable
+          ></button>
+          <button
+            type="button"
+            class="primary"
+            :class="{'danger': destructive}"
+            @click="confirm()"
+            x-text="confirmLabel"
+            data-dialog-focusable
+          ></button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(confirmRoot);
+  if (window.Alpine && typeof window.Alpine.initTree === 'function') {
+    window.Alpine.initTree(confirmRoot);
   }
 }
