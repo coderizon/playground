@@ -136,6 +136,8 @@ export function registerDatasetComponents(Alpine) {
         displayLabel: this.sampleLabel(sample, index),
         displayDuration: this.sampleDuration(sample),
         thumbnail: this.resolveThumbnail(sample),
+        canAnnotate: Boolean(sample.id),
+        annotation: sample.annotation || '',
       }));
     },
 
@@ -240,6 +242,13 @@ export function registerDatasetComponents(Alpine) {
     removeSample(sample) {
       if (!sample?.id || this.recording || this.trainingLocked) return;
       sessionStore.removeDatasetSample(this.classId, sample.id);
+    },
+
+    annotateSample(sample, value) {
+      if (!sample?.id || this.recording || this.trainingLocked) return;
+      sessionStore.updateDatasetSample(this.classId, sample.id, {
+        annotation: value?.trim().slice(0, 80) || '',
+      });
     },
 
     beginSampleLoop() {

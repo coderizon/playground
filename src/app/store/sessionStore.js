@@ -224,6 +224,28 @@ export function createSessionStore(initial = createInitialSessionState()) {
     }));
   };
 
+  const updateDatasetSample = (classId, sampleId, patch = {}) => {
+    if (!classId || !sampleId) return;
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
+    setState((current) => ({
+      ...current,
+      classes: current.classes.map((classState) => {
+        if (classState.id !== classId) return classState;
+        const samples = (classState.dataset.samples || []).map((sample) => {
+          if (sample.id !== sampleId) return sample;
+          return freezeState({ ...sample, ...patch });
+        });
+        return freezeState({
+          ...classState,
+          dataset: {
+            ...classState.dataset,
+            samples,
+          },
+        });
+      }),
+    }));
+  };
+
   const removeClass = (classId) => {
     if (!classId) return;
     if (state.training?.status === TRAINING_STATUS.RUNNING) return;
@@ -381,6 +403,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
     removeDatasetSample,
     updateClass,
     updateDatasetStatus,
+    updateDatasetSample,
     resetDataset,
     setTrainingStatus,
     setInferenceStatus,

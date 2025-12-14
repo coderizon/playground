@@ -578,6 +578,18 @@ body[data-mode="face"] .preview-column {
   border: 1px solid var(--border);
 }
 
+.sample-annotation {
+  margin-top: 6px;
+}
+
+.sample-annotation-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
 .sample-analytics {
   margin-top: 8px;
   font-size: 13px;

@@ -157,28 +157,41 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 <div class="sample-list" x-show="sampleList().length">
                   <p class="eyebrow">Samples</p>
                   <ul>
-                    <template x-for="sample in sampleList()" :key="sample.id">
-                      <li>
-                        <div class="sample-meta">
-                          <template x-if="sample.thumbnail">
-                            <img :src="sample.thumbnail" alt="Sample Vorschau" class="sample-thumb">
+                  <template x-for="sample in sampleList()" :key="sample.id">
+                    <li>
+                      <div class="sample-meta">
+                        <template x-if="sample.thumbnail">
+                          <img :src="sample.thumbnail" alt="Sample Vorschau" class="sample-thumb">
+                        </template>
+                        <div>
+                          <strong x-text="sample.displayLabel"></strong>
+                          <span x-text="sample.displayDuration"></span>
+                          <template x-if="sample.audioUrl">
+                            <audio
+                              class="sample-audio-player"
+                              controls
+                              :src="sample.audioUrl"
+                              preload="metadata"
+                            ></audio>
                           </template>
-                          <div>
-                            <strong x-text="sample.displayLabel"></strong>
-                            <span x-text="sample.displayDuration"></span>
-                            <template x-if="sample.audioUrl">
-                              <audio
-                                class="sample-audio-player"
-                                controls
-                                :src="sample.audioUrl"
-                                preload="metadata"
-                              ></audio>
-                            </template>
+                          <div class="sample-annotation" x-show="sample.canAnnotate">
+                            <label class="visually-hidden" :for="'annotate-' + sample.id">Notiz</label>
+                            <input
+                              type="text"
+                              class="sample-annotation-input"
+                              :id="'annotate-' + sample.id"
+                              maxlength="80"
+                              :placeholder="sample.source === 'microphone' ? 'z.B. „leise Umgebung“' : 'z.B. \"von rechts\"'"
+                              :disabled="!sample.canAnnotate"
+                              :value="sample.annotation"
+                              @change="annotateSample(sample, $event.target.value)"
+                            />
                           </div>
                         </div>
-                        <button type="button" class="ghost" @click="removeSample(sample)" :disabled="!sample.canDelete">Entfernen</button>
-                      </li>
-                    </template>
+                      </div>
+                      <button type="button" class="ghost" @click="removeSample(sample)" :disabled="!sample.canDelete">Entfernen</button>
+                    </li>
+                  </template>
                   </ul>
                   <template x-if="audioStats()">
                     <p class="sample-analytics">
