@@ -33,24 +33,19 @@
 
 ## Remaining Work to Fulfill `vision.md`
 
-The edge-streaming parity/QA slice is complete (store persistence, modal UX, tests, and hardware checklist). The focus now shifts to the remaining pillars below:
+The edge-streaming parity/QA slice is complete (store persistence, modal UX, tests, and hardware checklist). To reach the full contract, tackle the remaining pillars in this order:
 
-1. **UX polish & structure**
-   - Gradually replace legacy utility classes with Tailwind utility/`@apply` patterns now that `src/styles/main.css` is the source of truth.
-   - Extract collect/train/infer logic into dedicated controllers + sub-components (e.g., `pages/infer/view.js` now renders the full page).
-2. **Recording experience**
-   - Add camera-specific analytics (per-sample frame strips + scrub slider + metadata now exist; next step is richer annotation UX) plus continue iterating on background-noise guidance (pill + CTA shipped; next step is integrating the guidance into Collect summaries).
-   - Introduce optional background/noise capture presets inspired by `ml-speech` (long-duration recordings with visual progress) so users know when to relax or speak. **(✅ Presets + playback shipped.)**
-3. **Training/inference realism**
-   - Ensure inference confirmation helpers cover all destructive flows (BLE disconnect, session discard) with tests and toasts.
-4. **Guards & routing**
-   - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js`, with unit suites for navigation/history/session/class/sample/training controllers and edge streaming under `tests/`.
-   - Remaining work: audit the remaining destructive micro-actions (dataset resets triggered outside Collect, BLE disconnect toasts, etc.) to ensure they defer to the shared controllers and surface consistent confirm/toast copy.
-5. **Quality bar**
-   - Accessibility pass: focus traps for modals, keyboard shortcuts for recording, ARIA live regions for status text. **(✅ Status text now surfaces live regions; focus traps + shortcuts still pending.)**
-   - Pin external dependencies (tf.js, mediapipe) as described in the vision (self-host or lock versions).
+1. **Guard & destructive flow audit**
+   - Ensure *every* destructive action (BLE disconnects, dataset resets outside Collect, session discard shortcuts, etc.) defers to the shared controllers with confirmations/toasts so state loss is always intentional.
+2. **Accessibility + interaction standards (Quality bar)**
+   - Finish the a11y checklist: focus traps for remaining modals, consistent keyboard shortcuts for critical flows, ARIA polish. These guardrails must be in place before ship-ready testing.
+3. **Dependency pinning/self-hosting**
+   - With `src/config/externalResources.js` in place, pin or mirror TF.js/Mediapipe assets per the vision so we control external drift and can satisfy offline/self-hosted requirements.
+4. **Recording experience polish**
+   - Build out the remaining annotation/metadata UX (post-scrub workflow, inline guidance) and finish integrating background-noise guidance into summary panels/CTAs so audio sessions stay aligned with `ml-speech`.
+5. **UX polish & structure**
+   - Continue migrating legacy utility classes to Tailwind and extract Home/Collect/Train/Infer logic into focused controllers/components so the SPA matches the architecture described in `vision.md`.
 6. **Documentation & onboarding**
-   - Expand this progress file with per-sprint updates.
-   - Add component/guard docs under `docs/` once the structure stabilizes. **(✅ `docs/components.md` now summarizes confirm dialog, dataset recorder, edge streaming, and controllers.)**
+   - Keep this progress file up to date per sprint and expand the component/guard docs (`docs/components.md`) once the final structure settles so new contributors have a clear reference.
 
 Keep referencing `refactoring-plans/vision.md` as the contract; this file tracks implementation status and outstanding work.
