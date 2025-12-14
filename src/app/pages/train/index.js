@@ -37,9 +37,10 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
             <span x-text="(training.progress || 0) + '%'"></span>
           </div>
           <div class="training-actions">
-            <button type="button" class="primary" @click="startTraining" :disabled="!canStart">Training starten</button>
+            <button type="button" class="primary" @click="startTraining" :disabled="!canStart" x-text="startCtaLabel"></button>
             <button type="button" class="ghost" @click="abortTraining" :disabled="!canAbort">Training abbrechen</button>
           </div>
+          <p class="training-hint" x-show="startCtaSubline" x-text="startCtaSubline"></p>
           <div class="training-meta">
             <p class="eyebrow">Trainingshistorie</p>
             <p x-text="lastRunLabel || 'Noch kein Training durchgeführt.'"></p>

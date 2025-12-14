@@ -113,6 +113,39 @@ export function registerTrainingComponents(Alpine) {
       return Boolean(this.retry?.lastRun);
     },
 
+    get datasetChangedSinceLastRun() {
+      return Boolean(this.retry?.datasetChangedSinceLastRun);
+    },
+
+    get startCtaLabel() {
+      if (this.isRunning) {
+        return 'Training läuft …';
+      }
+      if (!this.retry?.lastRun) {
+        return 'Training starten';
+      }
+      if (this.datasetChangedSinceLastRun) {
+        return 'Erneut trainieren (neue Daten)';
+      }
+      return 'Erneut trainieren';
+    },
+
+    get startCtaSubline() {
+      if (!this.retry?.lastRun) {
+        return '';
+      }
+      if (this.datasetChangedSinceLastRun) {
+        if (this.staleClasses.length === 1) {
+          return `${this.staleClasses[0].name} enthält neue Samples.`;
+        }
+        if (this.staleClasses.length > 1) {
+          return `${this.staleClasses.length} Klassen enthalten neue Samples.`;
+        }
+        return 'Neue Samples erkannt.';
+      }
+      return 'Es wurden keine neuen Samples seit dem letzten Training aufgenommen.';
+    },
+
     startTraining() {
       if (!this.canStart) return;
       trainWithRecordedSamples();
