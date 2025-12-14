@@ -51,12 +51,12 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
               Aktualisiert um <span x-text="readableTimestamp()"></span>
             </p>
           </div>
-          <div class="edge-panel" x-data="edgePanel()" x-init="init()" @open-edge-modal.window="modalOpen = true">
+          <div class="edge-panel" x-data="edgePanel()" x-init="init()" @open-edge-modal.window="openModal()">
             <p>Edge-Verbindung</p>
             <p class="edge-status" x-text="edgeStatusCopy()"></p>
             <p class="edge-error" x-show="edgeStatus.status === 'error'" x-text="edgeStatus.error"></p>
             <div class="edge-inline-controls">
-              <button type="button" class="ghost" @click="$dispatch('open-edge-modal')">Gerät wählen</button>
+              <button type="button" class="ghost" @click="openModal($event)">Gerät wählen</button>
               <label class="stream-toggle">
                 <input type="checkbox" @change="toggleStreaming()" :checked="streamingEnabled()" :disabled="edgeStatus.status !== 'connected'"/>
                 <span>Vorhersagen streamen</span>
@@ -70,12 +70,31 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                 Trennen
               </button>
             </div>
-            <div class="ble-modal-backdrop" x-show="modalOpen" @click="modalOpen = false" x-transition.opacity></div>
-            <section class="ble-modal" x-show="modalOpen" x-transition>
+            <div class="ble-modal-backdrop" x-show="modalOpen" @click="closeModal()" x-transition.opacity></div>
+            <section
+              class="ble-modal"
+              x-show="modalOpen"
+              x-transition
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edgeModalTitle"
+              x-ref="edgeModal"
+              tabindex="-1"
+              @keydown="handleModalKeydown($event)"
+              @keydown.escape.prevent.stop="closeModal()"
+            >
               <div class="ble-modal-shell">
                 <div class="ble-modal-header">
-                  <h3>Verbinde ein Gerät</h3>
-                  <button type="button" class="icon-close" @click="modalOpen = false">×</button>
+                  <h3 id="edgeModalTitle">Verbinde ein Gerät</h3>
+                  <button
+                    type="button"
+                    class="icon-close"
+                    @click="closeModal()"
+                    data-modal-focusable
+                    aria-label="Dialog schließen"
+                  >
+                    ×
+                  </button>
                 </div>
                 <p class="ble-modal-error" x-show="edgeStatus.status === 'error'" x-text="modalErrorCopy()"></p>
                 <div class="ble-device-list">
@@ -86,6 +105,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                       :class="deviceClasses(device.id)"
                       @click="connect(device.id)"
                       :disabled="connecting"
+                      data-modal-focusable
                     >
                       <div class="ble-device-info">
                         <span class="ble-device-name" x-text="device.name"></span>

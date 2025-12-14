@@ -49,6 +49,7 @@ export function registerEdgeComponents(Alpine) {
     connecting: getEdgeState().connecting,
     streaming: getEdgeState().streaming,
     modalOpen: false,
+    lastFocusedTrigger: null,
 
     init() {
       if (this.edgeStatus.status === 'error') {
@@ -59,7 +60,14 @@ export function registerEdgeComponents(Alpine) {
         this.connecting = getEdgeState().connecting;
         this.streaming = getEdgeState().streaming;
         if (state.edge.status === 'error') {
-          this.modalOpen = true;
+          this.openModal();
+        }
+      });
+      this.$watch('modalOpen', (value) => {
+        if (value) {
+          this.$nextTick(() => this.focusFirstModalControl());
+        } else {
+          this.restoreFocus();
         }
       });
     },
@@ -124,7 +132,10 @@ export function registerEdgeComponents(Alpine) {
       console.error('[edgePanel] connection error', error);
     },
 
-    openModal() {
+    openModal(event) {
+      if (event?.target) {
+        this.lastFocusedTrigger = event.target;
+      }
       this.modalOpen = true;
     },
 
@@ -140,6 +151,40 @@ export function registerEdgeComponents(Alpine) {
 
     thumbClass(id) {
       return `ble-device-thumb thumb-${id}`;
+    },
+
+    focusableModalElements() {
+      const modal = this.$refs.edgeModal;
+      if (!modal) return [];
+      return Array.from(modal.querySelectorAll('[data-modal-focusable]')).filter(
+        (el) => !el.hasAttribute('disabled') && !el.getAttribute('aria-disabled')
+      );
+    },
+
+    focusFirstModalControl() {
+      const [first] = this.focusableModalElements();
+      first?.focus({ preventScroll: true });
+    },
+
+    restoreFocus() {
+      if (this.lastFocusedTrigger && typeof this.lastFocusedTrigger.focus === 'function') {
+        this.lastFocusedTrigger.focus();
+      }
+    },
+
+    handleModalKeydown(event) {
+      if (event.key !== 'Tab') return;
+      const focusables = this.focusableModalElements();
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     },
 
     deviceStatusCopy(id) {
