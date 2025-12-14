@@ -175,6 +175,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
           recordedCount,
           status,
         });
+        const lastUpdatedAt = Date.now();
         return freezeState({
           ...classState,
           dataset: {
@@ -183,6 +184,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
             recordedCount,
             status,
             readinessReason,
+            lastUpdatedAt,
           },
         });
       }),
@@ -210,6 +212,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
           samples,
           status,
         });
+        const lastUpdatedAt = Date.now();
         return freezeState({
           ...classState,
           dataset: {
@@ -218,6 +221,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
             recordedCount,
             status,
             readinessReason,
+            lastUpdatedAt,
           },
         });
       }),
