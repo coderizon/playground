@@ -99,7 +99,15 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 Beispiele
               </p>
               <p class="field-error" x-show="validationErrors[classItem.id]" x-text="validationErrors[classItem.id]"></p>
-              <section class="dataset-recorder" x-data="datasetRecorder(classItem.id)" x-init="init()">
+              <section
+                class="dataset-recorder"
+                x-data="datasetRecorder(classItem.id)"
+                x-init="init()"
+                tabindex="0"
+                role="group"
+                :aria-label="'Recorder für Klasse ' + (classItem.name || 'Unbenannt')"
+                @keydown.window="handleHotkey($event)"
+              >
                 <div class="dataset-preview" :class="{'is-audio': isAudioTask}">
                   <template x-if="!isAudioTask">
                     <template x-if="recording">
@@ -129,6 +137,11 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                 <div class="permission-retry" x-show="lastPermissionError">
                   <p x-text="lastPermissionError"></p>
                   <button type="button" class="ghost" @click="startRecording()" :disabled="!canStart">Erneut versuchen</button>
+                </div>
+                <div class="dataset-hotkeys" aria-hidden="true">
+                  <span><kbd>R</kbd> Start</span>
+                  <span><kbd>S</kbd> Stop</span>
+                  <span><kbd>D</kbd> Verwerfen</span>
                 </div>
                 <div class="class-card-actions">
                   <div class="audio-actions" x-show="isAudioTask">

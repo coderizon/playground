@@ -267,6 +267,27 @@ export function registerDatasetComponents(Alpine) {
       this.removeSample(sample);
     },
 
+    handleHotkey(event) {
+      const tag = event.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return;
+      const key = event.key?.toLowerCase();
+      if (!key) return;
+      if (key === 'r' && this.canStart) {
+        event.preventDefault();
+        this.startRecording();
+        return;
+      }
+      if (key === 's' && this.canStop) {
+        event.preventDefault();
+        this.stopRecording();
+        return;
+      }
+      if (key === 'd' && this.canDiscard) {
+        event.preventDefault();
+        this.discardDataset();
+      }
+    },
+
     beginSampleLoop() {
       this.endSampleLoop();
       this.sampleInterval = window.setInterval(async () => {
