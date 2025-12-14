@@ -8,50 +8,9 @@
     <!-- Import the webpage's stylesheet -->
     <link rel="stylesheet" href="/src/styles/main.css">
   </head>  
-  <body data-step="collect" class="landing-active">
-                  <div class="model-card-actions">
-                    <span class="md-tag primary" aria-disabled="true">Trainierbar</span>
-                    <span class="md-tag" aria-disabled="true">BLE connect</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="app-shell" class="hidden">
-      <header class="topbar">
-        <button class="icon-button nav-toggle" aria-label="Menü öffnen" type="button">
-          <span class="icon-lines"></span>
-        </button>
-        <div class="brand">
-          <span class="brand-title">AI Playground</span>
-        </div>
-        <div class="mode-picker">
-          <button id="modeLabel" class="mode-label" type="button" aria-haspopup="true" aria-expanded="false">Bildklassifikation</button>
-          <div id="modeMenu" class="mode-menu hidden" role="menu" aria-label="Modus wählen">
-            <button data-mode="image" role="menuitem">Bildklassifikation</button>
-            <button data-mode="gesture" role="menuitem">Gestenerkennung</button>
-            <button data-mode="face" role="menuitem">Gesichtserkennung</button>
-
-          </div>
-        </div>
-      </header>
-
-      <div class="mobile-nav">
-        <button class="mobile-step active" data-step-target="collect">1 Daten</button>
-        <button class="mobile-step" data-step-target="train">2 Trainieren</button>
-        <button class="mobile-step" data-step-target="preview">3 Testen</button>
-      </div>
-
-      <main class="layout">
-      </main>
-    </div>
-
-
-    <!-- Import the bootstrapper that loads either the legacy prototype or the new app -->
+  <body>
+    <div id="new-app-root" hidden></div>
+    <!-- Import the bootstrapper that loads the SPA -->
     <script type="module" src="/src/bootstrap.js"></script>
   </body>
 </html>
