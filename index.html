@@ -232,47 +232,6 @@
           </div>
         </section>
 
-        <section class="training-column" data-step-section="train">
-          <div class="card training-card">
-            <div class="card-header spaced">
-              <h3>Training</h3>
-              <button id="train" class="primary">Modell trainieren</button>
-            </div>
-            <div id="trainingProgress" class="training-progress hidden" aria-live="polite">
-              <div class="training-progress-meta">
-                <span id="trainingProgressLabel">Bereit zum Trainieren</span>
-                <span id="trainingProgressValue" class="training-progress-value">0%</span>
-              </div>
-              <div class="training-progress-bar">
-                <div id="trainingProgressFill" class="training-progress-fill"></div>
-              </div>
-            </div>
-
-            <details open class="accordion">
-              <summary>Erweitert</summary>
-              <div class="form-grid">
-                <label>
-                  <span>Epochen</span>
-                  <input id="epochsInput" type="number" value="10" min="1" step="1">
-                </label>
-                <label>
-                  <span>Batchgröße</span>
-                  <input id="batchSizeInput" type="number" value="5" min="1" step="1">
-                </label>
-                <label>
-                  <span>Lernrate</span>
-                  <input id="learningRateInput" type="number" value="0.001" min="0.0001" step="0.0001">
-                </label>
-              </div>
-            </details>
-
-            <div class="reset-row">
-              <div class="helper">Auf Standardwerte zurücksetzen</div>
-              <button id="reset" class="ghost">Zurücksetzen</button>
-            </div>
-          </div>
-        </section>
-
         <section class="preview-column" data-step-section="preview">
           <div class="card preview-card">
             <div class="card-header">
