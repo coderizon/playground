@@ -318,6 +318,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
 
   const resetDataset = (classId) => {
     if (!classId) return;
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
     updateClass(classId, (classState) => ({
       dataset: {
         ...classState.dataset,
