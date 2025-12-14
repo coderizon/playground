@@ -158,17 +158,17 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   <p class="eyebrow">Samples</p>
                   <ul>
                   <template x-for="sample in sampleList()" :key="sample.id">
-                    <li>
+                    <li x-data="samplePreview(sample)" @mouseleave="stop()">
                       <div class="sample-meta">
-                        <template x-if="sample.thumbnail">
-                          <img :src="sample.thumbnail" alt="Sample Vorschau" class="sample-thumb">
-                        </template>
-                        <template x-if="sample.previewFrames?.length">
-                          <div class="frame-strip">
-                            <template x-for="frame in sample.previewFrames" :key="frame">
-                              <img :src="frame" alt="Frame Vorschau" class="sample-thumb small">
-                            </template>
-                          </div>
+                        <template x-if="currentFrame()">
+                          <img
+                            :src="currentFrame()"
+                            alt="Sample Vorschau"
+                            class="sample-thumb"
+                            @mouseenter="start()"
+                            @focus="start()"
+                            @blur="stop()"
+                          >
                         </template>
                         <div>
                           <strong x-text="sample.displayLabel"></strong>

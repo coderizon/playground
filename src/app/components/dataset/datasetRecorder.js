@@ -454,6 +454,39 @@ export function registerDatasetComponents(Alpine) {
       return `${(sample.durationMs / 1000).toFixed(1)}s`;
     },
 
+    samplePreview(sample) {
+      const frames = (sample.previewFrames || []).length
+        ? sample.previewFrames
+        : sample.thumbnail
+        ? [sample.thumbnail]
+        : [];
+      return {
+        frames,
+        index: 0,
+        timer: null,
+        currentFrame() {
+          return this.frames[this.index] || sample.thumbnail || null;
+        },
+        start() {
+          if (!this.frames.length) return;
+          this.stop();
+          this.timer = window.setInterval(() => {
+            this.index = (this.index + 1) % this.frames.length;
+          }, 400);
+        },
+        stop() {
+          if (this.timer) {
+            window.clearInterval(this.timer);
+            this.timer = null;
+          }
+          this.index = 0;
+        },
+        destroy() {
+          this.stop();
+        },
+      };
+    },
+
     cameraCoverage(frameSamples) {
       if (!frameSamples.length) return 'Nutzereingabe benötigt';
       const latest = frameSamples.at(-1)?.capturedAt || Date.now();
