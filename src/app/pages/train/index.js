@@ -28,8 +28,8 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
       <section class="train-body" x-data="trainingPanel()" x-init="init()">
         <article class="training-panel">
           <h2>Trainingsstatus</h2>
-          <p>Status: <strong x-text="statusLabel"></strong></p>
-          <p class="training-hint" x-text="lockHint"></p>
+          <p role="status" aria-live="polite" aria-atomic="true">Status: <strong x-text="statusLabel"></strong></p>
+          <p class="training-hint" x-text="lockHint" role="status" aria-live="polite" aria-atomic="true"></p>
           <div class="training-progress">
             <div class="training-progress-bar">
               <div class="training-progress-fill" :style="{'width': (training.progress || 0) + '%'}"></div>
@@ -43,8 +43,8 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
           <p class="training-hint" x-show="startCtaSubline" x-text="startCtaSubline"></p>
           <div class="training-meta">
             <p class="eyebrow">Trainingshistorie</p>
-            <p x-text="lastRunLabel || 'Noch kein Training durchgeführt.'"></p>
-            <p class="training-hint" x-show="datasetChangeLabel" x-text="datasetChangeLabel"></p>
+            <p x-text="lastRunLabel || 'Noch kein Training durchgeführt.'" role="status" aria-live="polite" aria-atomic="true"></p>
+            <p class="training-hint" x-show="datasetChangeLabel" x-text="datasetChangeLabel" role="status" aria-live="polite" aria-atomic="true"></p>
           </div>
           <template x-if="staleClasses.length">
             <div class="training-meta">

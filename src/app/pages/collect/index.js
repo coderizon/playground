@@ -43,7 +43,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
           <button type="button" class="primary" @click="addClass" :disabled="trainingLocked">Klasse hinzufügen</button>
           <span class="collect-count" x-text="classes.length + ' Klassen angelegt'"></span>
         </div>
-        <p class="collect-lock-hint" x-show="trainingLocked">
+        <p
+          class="collect-lock-hint"
+          x-show="trainingLocked"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.
         </p>
         <section class="collect-summary-panel" x-data="collectSummary()" x-init="init()">
@@ -55,7 +61,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
             <p class="eyebrow">Samples</p>
             <strong x-text="totalSamples"></strong>
           </div>
-          <p class="summary-message" x-text="message"></p>
+          <p class="summary-message" x-text="message" role="status" aria-live="polite" aria-atomic="true"></p>
           <ul class="summary-issues" x-show="!trainingReady && issues.length">
             <template x-for="issue in issues" :key="issue.id">
               <li>
@@ -164,7 +170,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   </p>
                   <p class="audio-background-status" x-text="audioBackgroundStatus()"></p>
                 </div>
-                <p class="dataset-hint" x-text="statusHint()"></p>
+                <p class="dataset-hint" x-text="statusHint()" role="status" aria-live="polite" aria-atomic="true"></p>
                 <div class="sample-list" x-show="sampleList().length">
                   <p class="eyebrow">Samples</p>
                   <ul>

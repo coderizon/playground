@@ -46,7 +46,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
         </section>
         <article class="inference-panel" x-data="inferenceControls()" x-init="init()">
           <h2>Inference</h2>
-          <p class="inference-status" x-text="statusCopy()"></p>
+          <p class="inference-status" x-text="statusCopy()" role="status" aria-live="polite" aria-atomic="true"></p>
           <div class="inference-video">
             <video autoplay muted playsinline :class="{'is-active': running}" x-ref="preview"></video>
           </div>
@@ -56,7 +56,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
           </div>
           <div class="prediction-output" x-data="predictionPanel()" x-init="init()">
             <h3>Vorhersage</h3>
-            <p class="prediction-status" x-text="statusCopy()"></p>
+            <p class="prediction-status" x-text="statusCopy()" role="status" aria-live="polite" aria-atomic="true"></p>
             <ul>
               <template x-for="(row, index) in predictions" :key="row.name + index">
                 <li :class="{'is-active': row.isBest && isRunning}">
@@ -65,14 +65,14 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                 </li>
               </template>
             </ul>
-            <p class="prediction-updated" x-show="lastUpdatedAt">
+            <p class="prediction-updated" x-show="lastUpdatedAt" role="status" aria-live="polite" aria-atomic="true">
               Aktualisiert um <span x-text="readableTimestamp()"></span>
             </p>
           </div>
           <div class="edge-panel" x-data="edgePanel()" x-init="init()" @open-edge-modal.window="openModal()">
             <p>Edge-Verbindung</p>
-            <p class="edge-status" x-text="edgeStatusCopy()"></p>
-            <p class="edge-error" x-show="edgeStatus.status === 'error'" x-text="edgeStatus.error"></p>
+            <p class="edge-status" x-text="edgeStatusCopy()" role="status" aria-live="polite" aria-atomic="true"></p>
+            <p class="edge-error" x-show="edgeStatus.status === 'error'" x-text="edgeStatus.error" role="status" aria-live="assertive" aria-atomic="true"></p>
             <div class="edge-inline-controls">
               <button type="button" class="ghost" @click="openModal($event)">Gerät wählen</button>
               <label class="stream-toggle">
@@ -93,7 +93,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                 Trennen
               </button>
             </div>
-            <p class="edge-streaming-hint" x-show="streamingBlockedReason()" x-text="streamingBlockedReason()"></p>
+            <p class="edge-streaming-hint" x-show="streamingBlockedReason()" x-text="streamingBlockedReason()" role="status" aria-live="polite" aria-atomic="true"></p>
             <div class="ble-modal-backdrop" x-show="modalOpen" @click="closeModal()" x-transition.opacity></div>
             <section
               class="ble-modal"
