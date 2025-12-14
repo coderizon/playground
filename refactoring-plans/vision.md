@@ -423,10 +423,10 @@ src/
     routes/
     guards/
   pages/
-    home/
-    collect/
-    train/
-    infer/
+    Home.jsx
+    Collect.jsx
+    Train.jsx
+    Infer.jsx
   components/
     class/
     dataset/
