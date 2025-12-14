@@ -238,7 +238,11 @@
   }
 
   .collect-toolbar {
-    @apply flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4;
+    @apply flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4;
+  }
+
+  .collect-toolbar__row {
+    @apply flex flex-wrap items-center justify-between gap-3;
   }
 
   .collect-count {
@@ -350,8 +354,8 @@
     @apply rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900;
   }
 
-  .collect-summary-panel {
-    @apply grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm md:grid-cols-[repeat(2,1fr)] lg:grid-cols-[repeat(3,minmax(0,1fr))];
+  .collect-summary-inline {
+    @apply grid gap-4 md:grid-cols-2;
   }
 
   .summary-item strong {

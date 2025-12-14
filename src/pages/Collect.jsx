@@ -8,22 +8,7 @@ import { NoticeBanner } from '../components/common/NoticeBanner.jsx';
 
 const classController = createClassController();
 
-function CollectToolbar({ classCount, onAddClass, trainingLocked }) {
-  return (
-    <div className="collect-toolbar">
-      <button type="button" className="primary" onClick={onAddClass} disabled={trainingLocked}>
-        Klasse hinzufügen
-      </button>
-      <span className="collect-count">
-        <span className="visually-hidden">Anzahl Klassen:</span>
-        <strong>{classCount}</strong>
-        <span>{classCount === 1 ? ' Klasse' : ' Klassen'}</span>
-      </span>
-    </div>
-  );
-}
-
-function CollectSummary({ classes, trainingReady, totalSamples }) {
+function CollectToolbar({ classCount, onAddClass, trainingLocked, classes, totalSamples }) {
   const readyClasses = classes.filter(c => c.dataset?.status === DATASET_STATUS.READY).length;
   
   // Background audio check
@@ -36,25 +21,36 @@ function CollectSummary({ classes, trainingReady, totalSamples }) {
     : [];
 
   return (
-    <section className="collect-summary-panel">
-      <div className="summary-item">
-        <p className="eyebrow">Klassen bereit</p>
-        <strong>{readyClasses}/{classes.length}</strong>
+    <section className="collect-toolbar">
+      <div className="collect-toolbar__row">
+        <button type="button" className="primary" onClick={onAddClass} disabled={trainingLocked}>
+          Klasse hinzufügen
+        </button>
+        <span className="collect-count">
+          <span className="visually-hidden">Anzahl Klassen:</span>
+          <strong>{classCount}</strong>
+          <span>{classCount === 1 ? ' Klasse' : ' Klassen'}</span>
+        </span>
       </div>
-      <div className="summary-item">
-        <p className="eyebrow">Samples</p>
-        <strong>{totalSamples}</strong>
+      <div className="collect-summary-inline">
+        <div className="summary-item">
+          <p className="eyebrow">Klassen bereit</p>
+          <strong>{readyClasses}/{classes.length}</strong>
+        </div>
+        <div className="summary-item">
+          <p className="eyebrow">Samples</p>
+          <strong>{totalSamples}</strong>
+        </div>
       </div>
-      
       {backgroundIssues.length > 0 && (
         <div className="summary-background" role="status" aria-live="polite">
           <p className="eyebrow">Audio-Check</p>
           <ul>
             {backgroundIssues.map(c => (
-               <li key={c.id}>
-                 <strong>{c.name || 'Unbenannt'}</strong>
-                 <span>Hintergrund fehlt</span>
-               </li>
+              <li key={c.id}>
+                <strong>{c.name || 'Unbenannt'}</strong>
+                <span>Hintergrund fehlt</span>
+              </li>
             ))}
           </ul>
         </div>
@@ -154,6 +150,8 @@ export function Collect({ state }) {
           classCount={classes.length} 
           onAddClass={handleAddClass} 
           trainingLocked={addClassDisabled} 
+          classes={classes}
+          totalSamples={totalSamples}
         />
         
         {trainingLocked && (
@@ -173,13 +171,6 @@ export function Collect({ state }) {
             Beende zuerst alle laufenden Aufnahmen, bevor du neue Klassen hinzufügst.
           </p>
         )}
-
-        <CollectSummary 
-          classes={classes} 
-          trainingReady={trainingReady} 
-          totalSamples={totalSamples} 
-        />
-
         <div className="collect-class-list">
           {classes.length === 0 ? (
             <CollectEmpty onAddFirst={handleAddClass} trainingLocked={addClassDisabled} />
