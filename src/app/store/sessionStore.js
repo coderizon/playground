@@ -535,14 +535,7 @@ function createId() {
 }
 
 function freezeState(target) {
-  return Object.freeze(structuredCloneIfPossible(target));
-}
-
-function structuredCloneIfPossible(value) {
-  if (typeof structuredClone === 'function') {
-    return structuredClone(value);
-  }
-  return JSON.parse(JSON.stringify(value));
+  return Object.freeze(target);
 }
 
 function validateDatasetStatus(status) {
