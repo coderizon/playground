@@ -4,6 +4,7 @@ import { renderCollectPage } from '../pages/collect/index.js';
 import { renderTrainPage } from '../pages/train/index.js';
 import { renderInferPage } from '../pages/infer/index.js';
 import { goHome } from './navigationController.js';
+import { initHistorySync } from './historySync.js';
 
 const routeHandlers = {
   [STEP.HOME]: renderHomePage,
@@ -18,6 +19,7 @@ export function startRouter(root) {
   }
 
   ensureToastHost();
+  initHistorySync();
 
   const render = () => {
     const state = sessionStore.getState();
