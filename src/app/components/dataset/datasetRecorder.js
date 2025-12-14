@@ -3,22 +3,22 @@ import {
   DATASET_STATUS,
   TRAINING_STATUS,
 } from '../../store/sessionStore.js';
-import { openConfirmDialog } from '../common/confirmDialog.js';
+import { createClassController } from '../../routes/classController.js';
 import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
 import {
   requestMicrophoneStream,
   stopMicrophoneStream,
   recordAudioSample,
 } from '../../services/media/microphoneService.js';
-import {
-  recordSampleFrame,
-  clearSamplesForClass,
-} from '../../services/ml/modelBridge.js';
+import { recordSampleFrame, clearSamplesForClass } from '../../services/ml/modelBridge.js';
 import { showToast } from '../common/toast.js';
 
 let activeRecorderId = null;
 
 export function registerDatasetComponents(Alpine) {
+  const datasetController = createClassController({
+    clearDataset: clearSamplesForClass,
+  });
   Alpine.data('datasetRecorder', (classId) => ({
     classId,
     classState: null,
@@ -214,16 +214,7 @@ export function registerDatasetComponents(Alpine) {
 
     discardDataset() {
       if (!this.canDiscard) return;
-      openConfirmDialog({
-        title: 'Datensatz verwerfen?',
-        message: 'Alle aufgezeichneten Beispiele dieser Klasse werden gelöscht.',
-        confirmLabel: 'Datensatz löschen',
-        destructive: true,
-        onConfirm: () => {
-          clearSamplesForClass(this.classId);
-          sessionStore.resetDataset(this.classId);
-        },
-      });
+      datasetController.discardDatasetWithConfirm(this.classId);
     },
 
     removeSample(sample) {

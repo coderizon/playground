@@ -1,5 +1,6 @@
 import { sessionStore, DATASET_STATUS, TRAINING_STATUS } from '../../store/sessionStore.js';
-import { openConfirmDialog } from '../common/confirmDialog.js';
+import { createClassController } from '../../routes/classController.js';
+const classController = createClassController();
 
 export function registerClassComponents(Alpine) {
   Alpine.data('classList', () => ({
@@ -43,13 +44,7 @@ export function registerClassComponents(Alpine) {
 
     confirmDelete(classItem) {
       if (!classItem || this.trainingLocked) return;
-      openConfirmDialog({
-        title: 'Klasse löschen?',
-        message: `Die Klasse \"${classItem.name}\" und ihre Daten werden entfernt.`,
-        confirmLabel: 'Löschen',
-        destructive: true,
-        onConfirm: () => sessionStore.removeClass(classItem.id),
-      });
+      classController.removeClassWithConfirm(classItem);
     },
 
     datasetLabel(status) {

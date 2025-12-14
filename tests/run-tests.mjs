@@ -4,3 +4,4 @@ import './services/edgeService.test.mjs';
 import './routes/navigationController.test.mjs';
 import './routes/historySync.test.mjs';
 import './routes/sessionController.test.mjs';
+import './routes/classController.test.mjs';
