@@ -232,79 +232,9 @@
           </div>
         </section>
 
-        <section class="preview-column" data-step-section="preview">
-          <div class="card preview-card">
-            <div class="card-header">
-              <div class="card-actions">
-                <button id="bleConnect" class="primary">BLE connect</button>
-              </div>
-            </div>
-            <div class="preview-body">
-              <div class="video-shell">
-                <video id="previewCam" autoplay muted playsinline class="hidden"></video>
-                <canvas id="gestureOverlay" class="overlay-canvas hidden"></canvas>
-              </div>
-              <div class="preview-output">
-                <div class="preview-output-header">
-                  <span class="preview-output-title">Ausgabe</span>
-                  <span class="preview-output-hint">Wahrscheinlichkeiten pro Klasse</span>
-                </div>
-                <div id="probabilityList" class="probability-list"></div>
-              </div>
-              <p id="status" class="sr-only">Du musst links ein Modell trainieren, um es hier als Vorschau ansehen zu können.</p>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
 
-    <div id="sideMenuBackdrop" class="side-menu-backdrop hidden" aria-hidden="true"></div>
-    <nav id="sideMenu" class="side-menu hidden" aria-label="Navigation">
-      <button class="side-menu-close" type="button" aria-label="Menü schließen">×</button>
-      <button class="side-menu-item" type="button" data-nav="home">
-        <span class="side-menu-icon" aria-hidden="true">⌂</span>
-        <span class="side-menu-label">Home</span>
-      </button>
-    </nav>
-
-    <div id="bleModalBackdrop" class="ble-modal-backdrop hidden" aria-hidden="true"></div>
-    <section id="bleModal" class="ble-modal hidden" role="dialog" aria-modal="true" aria-labelledby="bleModalTitle">
-      <div class="ble-modal-shell">
-        <div class="ble-modal-header">
-          <h3 id="bleModalTitle">Verbinden mit</h3>
-          <button id="bleModalClose" class="icon-close" type="button" aria-label="Dialog schließen">×</button>
-        </div>
-        <div class="ble-device-list">
-          <button id="bleArduinoCard" class="ble-device" type="button">
-            <div class="ble-device-info">
-              <span class="ble-device-name">Arduino Uno R4</span>
-              <span class="ble-device-status">Bereit</span>
-            </div>
-            <div class="ble-device-thumb thumb-arduino">
-              <img src="/assets/images/arduino.png" alt="Arduino Uno R4">
-            </div>
-          </button>
-          <button id="bleCalliopeCard" class="ble-device" type="button">
-            <div class="ble-device-info">
-              <span class="ble-device-name">Calliope Mini</span>
-              <span class="ble-device-status">Bereit</span>
-            </div>
-            <div class="ble-device-thumb thumb-calliope">
-              <img src="/assets/images/calliope.png" alt="Calliope Mini">
-            </div>
-          </button>
-          <button id="bleMicrobitCard" class="ble-device" type="button">
-            <div class="ble-device-info">
-              <span class="ble-device-name">Micro:Bit</span>
-              <span class="ble-device-status">Bereit</span>
-            </div>
-            <div class="ble-device-thumb thumb-microbit">
-              <img src="/assets/images/microbit.png" alt="Micro:Bit">
-            </div>
-          </button>
-        </div>
-      </div>
-    </section>
 
     <!-- Import the bootstrapper that loads either the legacy prototype or the new app -->
     <script type="module" src="/src/bootstrap.js"></script>
