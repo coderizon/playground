@@ -392,11 +392,11 @@
   }
 
   .collect-floating-toolbar {
-    @apply fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3;
+    @apply pointer-events-none fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3;
   }
 
   .collect-floating-toggle {
-    @apply flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-slate-500 shadow-lg shadow-slate-900/15 transition;
+    @apply pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-slate-500 shadow-lg shadow-slate-900/15 transition;
   }
 
   .collect-floating-toggle:disabled {
@@ -408,7 +408,7 @@
   }
 
   .collect-floating-hints {
-    @apply flex max-w-sm flex-col gap-3;
+    @apply pointer-events-auto flex max-w-sm flex-col gap-3;
     width: min(320px, calc(100% - 3rem));
   }
 
