@@ -3,7 +3,7 @@ import { createSampleController } from '../../app/routes/sampleController.js';
 
 const sampleController = createSampleController();
 
-export function SamplePreview({ sample, classId, disabled }) {
+export function SamplePreview({ sample, classId, disabled, selectable = false, selected = false, onSelectToggle }) {
   const [index, setIndex] = useState(0);
   const [scrubbing, setScrubbing] = useState(false);
   const timerRef = useRef(null);
@@ -61,8 +61,32 @@ export function SamplePreview({ sample, classId, disabled }) {
   
   // Need to import sessionStore for annotation
   
+  const toggleSelection = () => {
+    if (!selectable || disabled || typeof onSelectToggle !== 'function') return;
+    onSelectToggle(!selected);
+  };
+
   return (
-    <li onMouseLeave={stop}>
+    <li
+      onMouseLeave={stop}
+      className={[
+        selectable ? 'sample-selectable' : '',
+        selectable && selected ? 'is-selected' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {selectable && (
+        <label className="sample-select-checkbox">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={toggleSelection}
+            disabled={disabled}
+          />
+          <span className="visually-hidden">Sample auswählen</span>
+        </label>
+      )}
       <div className="sample-meta">
         <div className="sample-visual">
           {currentFrame && (

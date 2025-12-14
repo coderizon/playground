@@ -201,6 +201,34 @@ export function createSessionStore(initial = createInitialSessionState()) {
     }));
   };
 
+  const applySampleMutation = (classState, samples) => {
+    const recordedCount = samples.length;
+    const status =
+      recordedCount >= classState.dataset.expectedCount && recordedCount > 0
+        ? DATASET_STATUS.READY
+        : recordedCount > 0
+        ? DATASET_STATUS.RECORDING
+        : DATASET_STATUS.EMPTY;
+    const readinessReason = describeReadiness({
+      ...classState.dataset,
+      recordedCount,
+      samples,
+      status,
+    });
+    const lastUpdatedAt = Date.now();
+    return freezeState({
+      ...classState,
+      dataset: {
+        ...classState.dataset,
+        samples,
+        recordedCount,
+        status,
+        readinessReason,
+        lastUpdatedAt,
+      },
+    });
+  };
+
   const removeDatasetSample = (classId, sampleId) => {
     if (!classId || !sampleId) return;
     if (state.training?.status === TRAINING_STATUS.RUNNING) return;
@@ -209,31 +237,21 @@ export function createSessionStore(initial = createInitialSessionState()) {
       classes: current.classes.map((classState) => {
         if (classState.id !== classId) return classState;
         const samples = (classState.dataset.samples || []).filter((sample) => sample.id !== sampleId);
-        const recordedCount = samples.length;
-        const status =
-          recordedCount >= classState.dataset.expectedCount && recordedCount > 0
-            ? DATASET_STATUS.READY
-            : recordedCount > 0
-            ? DATASET_STATUS.RECORDING
-            : DATASET_STATUS.EMPTY;
-        const readinessReason = describeReadiness({
-          ...classState.dataset,
-          recordedCount,
-          samples,
-          status,
-        });
-        const lastUpdatedAt = Date.now();
-        return freezeState({
-          ...classState,
-          dataset: {
-            ...classState.dataset,
-            samples,
-            recordedCount,
-            status,
-            readinessReason,
-            lastUpdatedAt,
-          },
-        });
+        return applySampleMutation(classState, samples);
+      }),
+    }));
+  };
+
+  const removeDatasetSamples = (classId, sampleIds = []) => {
+    if (!classId || !Array.isArray(sampleIds) || sampleIds.length === 0) return;
+    if (state.training?.status === TRAINING_STATUS.RUNNING) return;
+    const idSet = new Set(sampleIds);
+    setState((current) => ({
+      ...current,
+      classes: current.classes.map((classState) => {
+        if (classState.id !== classId) return classState;
+        const samples = (classState.dataset.samples || []).filter((sample) => !idSet.has(sample.id));
+        return applySampleMutation(classState, samples);
       }),
     }));
   };
@@ -441,6 +459,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
     },
     addDatasetSample,
     removeDatasetSample,
+    removeDatasetSamples,
     updateClass,
     updateDatasetStatus,
     updateDatasetSample,

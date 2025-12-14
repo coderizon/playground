@@ -26,6 +26,23 @@ function createStore(overrides = {}) {
         ),
       };
     },
+    removeDatasetSamples: (classId, sampleIds = []) => {
+      const idSet = new Set(sampleIds);
+      state = {
+        ...state,
+        classes: state.classes.map((cls) =>
+          cls.id === classId
+            ? {
+                ...cls,
+                dataset: {
+                  ...(cls.dataset || {}),
+                  samples: (cls.dataset?.samples || []).filter((sample) => !idSet.has(sample.id)),
+                },
+              }
+            : cls
+        ),
+      };
+    },
   };
 }
 
@@ -75,6 +92,31 @@ test('actions blocked while training is running', () => {
   const didTrigger = controller.removeSampleWithConfirm('c1', { id: 's1' });
   assert.equal(didTrigger, false);
   assert.equal(called, false);
+});
+
+test('removeSamplesWithConfirm handles bulk removal', () => {
+  const store = createStore({
+    classes: [
+      {
+        id: 'c1',
+        name: 'Bulk',
+        dataset: { samples: [{ id: 's1' }, { id: 's2' }] },
+      },
+    ],
+  });
+  let confirmArgs;
+  const controller = createSampleController({
+    store,
+    confirm: (opts) => {
+      confirmArgs = opts;
+    },
+  });
+  const triggered = controller.removeSamplesWithConfirm('c1', ['s1', 's2']);
+  assert.equal(triggered, true);
+  assert.equal(confirmArgs.title, 'Samples löschen?');
+  confirmArgs.onConfirm();
+  const samples = store.getState().classes[0].dataset.samples;
+  assert.equal(samples.length, 0);
 });
 
 function test(name, fn) {

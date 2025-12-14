@@ -72,6 +72,10 @@
     @apply opacity-50 cursor-not-allowed;
   }
 
+  .ghost.danger {
+    @apply text-red-600 hover:bg-red-50;
+  }
+
   .new-app-home,
   .collect-page,
   .train-page,
@@ -506,20 +510,100 @@
     @apply text-sm text-slate-600;
   }
 
-  .sample-list {
-    @apply border-t border-slate-200 pt-4;
+  .sample-album {
+    @apply mt-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm;
   }
 
-  .sample-list ul {
-    @apply flex flex-col gap-3;
+  .sample-album-trigger {
+    @apply flex w-full items-center gap-4 text-left;
   }
 
-  .sample-list li {
+  .sample-album-stack {
+    @apply relative h-24 w-32;
+  }
+
+  .sample-album-card {
+    @apply absolute inset-0 rounded-2xl border border-white bg-slate-100 shadow-lg shadow-slate-900/20;
+  }
+
+  .sample-album-card img {
+    @apply h-full w-full rounded-2xl object-cover;
+  }
+
+  .sample-album-card-0 {
+    @apply z-30;
+  }
+
+  .sample-album-card-1 {
+    @apply z-20 -translate-y-1 translate-x-1 rotate-2;
+  }
+
+  .sample-album-card-2 {
+    @apply z-10 translate-y-1 -translate-x-1 -rotate-3;
+  }
+
+  .sample-album-placeholder {
+    @apply flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-widest text-slate-400;
+  }
+
+  .sample-album-summary {
+    @apply flex flex-col text-left text-slate-700;
+  }
+
+  .sample-album-summary strong {
+    @apply text-2xl text-slate-900;
+  }
+
+  .sample-modal-backdrop {
+    @apply fixed inset-0 z-40 bg-slate-900/60;
+  }
+
+  .sample-modal {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+
+  .sample-modal-shell {
+    @apply w-full max-w-3xl space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl;
+  }
+
+  .sample-modal-header {
+    @apply flex items-start justify-between gap-4;
+  }
+
+  .sample-modal-subline {
+    @apply text-sm text-slate-500;
+  }
+
+  .sample-modal-actions {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .sample-modal-list {
+    @apply flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-2;
+  }
+
+  .sample-modal-list li {
     @apply flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-3 py-2;
   }
 
   .sample-meta {
     @apply flex flex-1 items-center gap-4;
+  }
+
+  .sample-select-checkbox {
+    @apply mr-2 flex items-center;
+  }
+
+  .sample-select-checkbox input {
+    @apply h-4 w-4 rounded border-slate-300 text-indigo-600;
+  }
+
+  .sample-selectable {
+    @apply border border-transparent;
+  }
+
+  .sample-selectable.is-selected {
+    @apply border-indigo-200 bg-indigo-50;
   }
 
   .sample-details {
@@ -735,7 +819,7 @@
   }
 
   .confirm-backdrop {
-    @apply fixed inset-0 z-40 flex items-center justify-center bg-slate-900/60 p-4;
+    @apply fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4;
   }
 
   .confirm-dialog {
