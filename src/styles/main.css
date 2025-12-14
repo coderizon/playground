@@ -241,16 +241,24 @@
     @apply flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4;
   }
 
-  .collect-toolbar__row {
-    @apply flex flex-wrap items-center justify-between gap-3;
+  .collect-toolbar-grid {
+    @apply flex flex-col gap-4 md:flex-row md:items-center md:justify-between;
   }
 
-  .collect-count {
-    @apply text-sm font-medium text-slate-600;
+  .collect-toolbar-grid > button {
+    @apply md:w-auto;
   }
 
-  .collect-count strong {
-    @apply mr-1 text-base font-semibold text-slate-900;
+  .collect-metric-grid {
+    @apply grid flex-1 grid-cols-1 gap-4 md:grid-cols-3 md:max-w-[480px];
+  }
+
+  .collect-metric {
+    @apply text-sm text-slate-600;
+  }
+
+  .collect-metric strong {
+    @apply text-2xl font-semibold text-slate-900;
   }
 
   .collect-empty {

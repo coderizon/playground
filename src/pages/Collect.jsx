@@ -22,25 +22,24 @@ function CollectToolbar({ classCount, onAddClass, trainingLocked, classes, total
 
   return (
     <section className="collect-toolbar">
-      <div className="collect-toolbar__row">
+      <div className="collect-toolbar-grid">
+        <div className="collect-metric-grid">
+          <div className="collect-metric">
+            <p className="eyebrow">Klassen</p>
+            <strong>{classCount}</strong>
+          </div>
+          <div className="collect-metric">
+            <p className="eyebrow">Klassen bereit</p>
+            <strong>{readyClasses}/{classes.length}</strong>
+          </div>
+          <div className="collect-metric">
+            <p className="eyebrow">Samples</p>
+            <strong>{totalSamples}</strong>
+          </div>
+        </div>
         <button type="button" className="primary" onClick={onAddClass} disabled={trainingLocked}>
           Klasse hinzufügen
         </button>
-        <span className="collect-count">
-          <span className="visually-hidden">Anzahl Klassen:</span>
-          <strong>{classCount}</strong>
-          <span>{classCount === 1 ? ' Klasse' : ' Klassen'}</span>
-        </span>
-      </div>
-      <div className="collect-summary-inline">
-        <div className="summary-item">
-          <p className="eyebrow">Klassen bereit</p>
-          <strong>{readyClasses}/{classes.length}</strong>
-        </div>
-        <div className="summary-item">
-          <p className="eyebrow">Samples</p>
-          <strong>{totalSamples}</strong>
-        </div>
       </div>
       {backgroundIssues.length > 0 && (
         <div className="summary-background" role="status" aria-live="polite">
