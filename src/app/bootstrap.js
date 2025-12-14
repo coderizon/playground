@@ -1,7 +1,7 @@
 import { startRouter } from './routes/router.js';
 import { sessionStore } from './store/sessionStore.js';
 import { ensureAlpineStarted } from './setupAlpine.js';
-import { registerAppComponents } from './components/registerComponents.js';
+import { registerAppComponents } from '../components/registerComponents.js';
 
 const LEGACY_ROOT_IDS = ['landing-page', 'app-shell'];
 

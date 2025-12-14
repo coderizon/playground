@@ -5,9 +5,9 @@ This document mirrors the shipped SPA as of Jan 2025 so new contributors can c
 ## Architecture & Stack
 - `index.html` bootstraps `src/bootstrap.js`, which injects TF.js (via `src/utils/loadTf.js`) and mounts the SPA router (`src/app/bootstrap.js` + `routes/router.js`). No legacy landing DOM remains—the SPA is the single UI.
 - State lives in `src/app/store/sessionStore.js` (plus derived selectors). Controllers (`navigationController`, `sessionController`, `classController`, `trainingController`, `inferenceController`, `edgeController`) are the only modules mutating the store; UI components emit intents.
-- Pages (`src/app/pages/{home,collect,train,infer}`) render one step at a time. Guards in `routes/navigationGuards.js` + `historySync.js` keep browser navigation, beforeunload dialogs, and inference-stop confirmations aligned.
-- Components are Alpine stores/modules registered via `src/app/components/registerComponents.js` (class cards, dataset recorders, training panel, edge panel, confirm dialog, notice banners, etc.).
-- ML/media/edge logic sits in `src/app/services` (cameraService, modelBridge, liveInference, edgeService). External resources are pinned via `src/config/externalResources.js`.
+- Pages (`src/pages/{home,collect,train,infer}`) render one step at a time. Guards in `routes/navigationGuards.js` + `historySync.js` keep browser navigation, beforeunload dialogs, and inference-stop confirmations aligned.
+- Components are Alpine stores/modules registered via `src/components/registerComponents.js` (class cards, dataset recorders, training panel, edge panel, confirm dialog, notice banners, etc.).
+- ML/media/edge logic sits in `src/services` (cameraService, modelBridge, liveInference, edgeService). External resources are pinned via `src/config/externalResources.js`.
 - Styling flows through `src/styles/main.css` (Tailwind layer). Shared tokens cover buttons, cards, guardrails, notices, dialogs, and page shells; legacy `.css` files have been removed.
 
 ## Journey Implementation

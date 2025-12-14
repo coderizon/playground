@@ -10,9 +10,9 @@ Use this guide to ramp up on the refactored single-page app and align every chan
 ## 2. Architecture Map
 - **Entry point**: `index.html` loads `src/bootstrap.js`, which injects TF.js (via `src/utils/loadTf.js`) and mounts `src/app/bootstrap.js`.
 - **State**: `src/app/store/sessionStore.js` (plus `selectors.js`) is the single source of truth for session, class, training, inference, and edge data.
-- **Pages**: `src/app/pages/{home,collect,train,infer}` render one step at a time. Navigation flows through `src/app/routes/navigationController.js` and guard helpers in `routes/navigationGuards.js`.
-- **Components**: Registered in `src/app/components/registerComponents.js`. See `docs/components.md` for per-component notes.
-- **Services**: Hardware/ML logic sits under `src/app/services` (camera/media, TF.js training/inference, BLE edge streaming).
+- **Pages**: `src/pages/{home,collect,train,infer}` render one step at a time. Navigation flows through `src/app/routes/navigationController.js` and guard helpers in `routes/navigationGuards.js`.
+- **Components**: Registered in `src/components/registerComponents.js`. See `docs/components.md` for per-component notes.
+- **Services**: Hardware/ML logic sits under `src/services` (camera/media, TF.js training/inference, BLE edge streaming).
 - **Styling**: Tailwind tokens live in `src/styles/main.css`; avoid reintroducing legacy `.css` files.
 
 ## 3. Controllers & Guardrails
@@ -22,7 +22,7 @@ Use this guide to ramp up on the refactored single-page app and align every chan
 
 ## 4. Working a Slice
 1. Read `refactoring-plans/progress.md` (“Remaining Work”) to choose your next task. If an item is already satisfied, update the snapshot/backlog before writing code.
-2. Implement the slice under `src/app/**`, keeping services pure and UI declarative.
+2. Implement the slice under the SPA folders (`src/pages`, `src/components`, `src/services`, `src/app/*` for store/routes/guards), keeping services pure and UI declarative.
 3. Update `refactoring-plans/progress.md` (snapshot + remaining work) and any relevant docs (this file, `docs/components.md`, hardware QA) before considering the slice complete.
 4. Run `npm test`.
 5. Commit with a descriptive message (one slice per commit).

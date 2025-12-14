@@ -1,8 +1,8 @@
 import { sessionStore, STEP } from '../store/sessionStore.js';
-import { renderHomePage } from '../pages/home/index.js';
-import { renderCollectPage } from '../pages/collect/index.js';
-import { renderTrainPage } from '../pages/train/index.js';
-import { renderInferPage } from '../pages/infer/index.js';
+import { renderHomePage } from '../../pages/home/index.js';
+import { renderCollectPage } from '../../pages/collect/index.js';
+import { renderTrainPage } from '../../pages/train/index.js';
+import { renderInferPage } from '../../pages/infer/index.js';
 import { goHome } from './navigationController.js';
 import { initHistorySync } from './historySync.js';
 import { registerNavigationGuards } from './navigationGuards.js';

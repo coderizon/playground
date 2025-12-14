@@ -1,9 +1,9 @@
 import { sessionStore as realStore, TRAINING_STATUS } from '../store/sessionStore.js';
-import { openConfirmDialog } from '../components/common/confirmDialog.js';
+import { openConfirmDialog } from '../../components/common/confirmDialog.js';
 import {
   trainWithRecordedSamples as realTrainWithRecordedSamples,
   abortTraining as realAbortTraining,
-} from '../services/ml/modelBridge.js';
+} from '../../services/ml/modelBridge.js';
 
 export function createTrainingController({
   store = realStore,

@@ -61,7 +61,7 @@ function createDeviceStubs() {
 async function loadEdgeService(overrides, salt = '') {
   globalThis.__EDGE_TEST_OVERRIDES = overrides;
   const module = await import(
-    `../../src/app/services/edge/edgeService.js?ts=${Date.now()}${salt ? `-${salt}` : ''}`
+    `../../src/services/edge/edgeService.js?ts=${Date.now()}${salt ? `-${salt}` : ''}`
   );
   return module;
 }

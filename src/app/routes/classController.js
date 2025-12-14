@@ -1,5 +1,5 @@
 import { sessionStore as realStore, TRAINING_STATUS } from '../store/sessionStore.js';
-import { openConfirmDialog } from '../components/common/confirmDialog.js';
+import { openConfirmDialog } from '../../components/common/confirmDialog.js';
 
 export function createClassController({
   store = realStore,

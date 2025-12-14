@@ -1,8 +1,8 @@
 import { sessionStore as realStore } from '../store/sessionStore.js';
-import { openConfirmDialog } from '../components/common/confirmDialog.js';
-import { showToast as defaultNotify } from '../components/common/toast.js';
+import { openConfirmDialog } from '../../components/common/confirmDialog.js';
+import { showToast as defaultNotify } from '../../components/common/toast.js';
 import { createInferenceController } from './inferenceController.js';
-import { stopLiveInference as realStopLiveInference } from '../services/ml/liveInference.js';
+import { stopLiveInference as realStopLiveInference } from '../../services/ml/liveInference.js';
 
 export function createEdgeController({
   store = realStore,

@@ -1,8 +1,8 @@
 import { sessionStore as realStore, STEP, INFERENCE_STATUS } from '../store/sessionStore.js';
-import { openConfirmDialog } from '../components/common/confirmDialog.js';
-import { showToast } from '../components/common/toast.js';
+import { openConfirmDialog } from '../../components/common/confirmDialog.js';
+import { showToast } from '../../components/common/toast.js';
 import { createInferenceController } from './inferenceController.js';
-import { stopLiveInference } from '../services/ml/liveInference.js';
+import { stopLiveInference } from '../../services/ml/liveInference.js';
 
 function fallbackConfirm(options = {}) {
   const message = options.message || 'Aktion bestätigen?';
