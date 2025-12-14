@@ -104,16 +104,28 @@ export function renderHomePage(root, state = sessionStore.getState()) {
 
   goHomeBtn.addEventListener('click', goHome);
 
-  if (!state?.selectedTaskModel) {
-    stateEl.textContent = 'Keine Session gestartet. Wähle eine Karte.';
-    discardBtn.disabled = true;
-    goHomeBtn.disabled = true;
-  } else {
-    const nextStepCopy = describeStep(state.step);
-    stateEl.textContent = `Session aktiv für ${state.selectedTaskModel.name}. Nächster Schritt: ${nextStepCopy}.`;
+  const syncSessionState = (nextState = sessionStore.getState()) => {
+    if (!nextState?.selectedTaskModel) {
+      stateEl.textContent = 'Keine Session gestartet. Wähle eine Karte.';
+      discardBtn.disabled = true;
+      goHomeBtn.disabled = true;
+      return;
+    }
+    const nextStepCopy = describeStep(nextState.step);
+    stateEl.textContent = `Session aktiv für ${nextState.selectedTaskModel.name}. Nächster Schritt: ${nextStepCopy}.`;
     discardBtn.disabled = false;
-    goHomeBtn.disabled = state.step === STEP.HOME;
-  }
+    goHomeBtn.disabled = nextState.step === STEP.HOME;
+  };
+
+  syncSessionState(state);
+  const unsubscribe = sessionStore.subscribe(syncSessionState);
+  root.addEventListener(
+    'DOMNodeRemoved',
+    () => {
+      unsubscribe?.();
+    },
+    { once: true }
+  );
 }
 
 function describeStep(step) {
