@@ -29,6 +29,7 @@
   - `services/ml/liveInference.js` runs the inference loop.
   - `services/ml/mockTraining.js` + `mockInference.js` remain as fallbacks for future tests.
   - `services/edge/edgeService.js` wraps BLE modules, tracks connection state, streams predictions to Arduino/Micro:bit/Calliope, and flags streaming errors as edge status updates; regression tests in `tests/store/sessionStore.edge.test.mjs` cover edge state persistence/contracts, `tests/services/edgeService.test.mjs` fakes the BLE stack to verify streaming toggles + error propagation end to end, and `docs/ble-hardware-qa.md` captures the release checklist for exercising real devices.
+  - `src/config/externalResources.js` now pins the external TF.js/Mediapipe URLs that both the legacy prototype and SPA share, making version bumps + self-hosting plans explicit.
 
 ## Remaining Work to Fulfill `vision.md`
 

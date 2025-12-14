@@ -1,12 +1,10 @@
 import { MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH } from '../constants.js';
 import { STATUS } from '../domRefs.js';
 import { state } from '../state.js';
+import { TF_MOBILENET_FEATURE_VECTOR_URL } from '../config/externalResources.js';
 
 export async function loadMobileNetFeatureModel() {
-  const URL =
-    'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1';
-
-  state.mobilenet = await tf.loadGraphModel(URL, { fromTFHub: true });
+  state.mobilenet = await tf.loadGraphModel(TF_MOBILENET_FEATURE_VECTOR_URL, { fromTFHub: true });
   if (STATUS) {
     STATUS.innerText = 'MobileNet v3 loaded successfully!';
   }

@@ -4,10 +4,12 @@ import { STOP_DATA_GATHER } from '../constants.js';
 import { state } from '../state.js';
 import { clearOverlay, resizeOverlay } from './overlay.js';
 import { updateExampleCounts } from '../ui/classes.js';
+import {
+  MEDIAPIPE_HAND_LANDMARKER_ASSET_URL,
+  MEDIAPIPE_VISION_BUNDLE_URL,
+  MEDIAPIPE_VISION_WASM_URL,
+} from '../config/externalResources.js';
 
-const HAND_MODEL_URL =
-  'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
-const MP_VERSION = '0.10.8';
 const FEATURE_SIZE = 63; // 21 Landmark-Punkte * 3 (x, y, z)
 const SAMPLE_INTERVAL_MS = 120;
 let gestureLoopHandle = null;
@@ -23,15 +25,11 @@ export async function ensureHandLandmarker() {
 
   state.handInitPromise = (async () => {
     try {
-      const vision = await import(
-        `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}`
-      );
-      const fileset = await vision.FilesetResolver.forVisionTasks(
-        `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`
-      );
+      const vision = await import(MEDIAPIPE_VISION_BUNDLE_URL);
+      const fileset = await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_VISION_WASM_URL);
       const landmarker = await vision.HandLandmarker.createFromOptions(fileset, {
         baseOptions: {
-          modelAssetPath: HAND_MODEL_URL,
+          modelAssetPath: MEDIAPIPE_HAND_LANDMARKER_ASSET_URL,
           delegate: 'CPU',
         },
         numHands: 1,

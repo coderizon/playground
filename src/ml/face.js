@@ -2,6 +2,11 @@ import { GESTURE_OVERLAY, PREVIEW_VIDEO, STATUS } from '../domRefs.js';
 import { state } from '../state.js';
 import { clearOverlay, resizeOverlay } from './overlay.js';
 import { renderProbabilities } from '../ui/probabilities.js';
+import {
+  MEDIAPIPE_VISION_BUNDLE_URL,
+  MEDIAPIPE_VISION_WASM_URL,
+  MEDIAPIPE_FACE_LANDMARKER_ASSET_URL,
+} from '../config/externalResources.js';
 
 const BLENDSHAPE_LABELS_DE = {
   neutral: 'Neutral',
@@ -90,14 +95,11 @@ export async function ensureFaceLandmarker() {
 
   state.faceInitPromise = (async () => {
     try {
-      const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3');
-      const fileset = await vision.FilesetResolver.forVisionTasks(
-        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm'
-      );
+      const vision = await import(MEDIAPIPE_VISION_BUNDLE_URL);
+      const fileset = await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_VISION_WASM_URL);
       const landmarker = await vision.FaceLandmarker.createFromOptions(fileset, {
         baseOptions: {
-          modelAssetPath:
-            'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+          modelAssetPath: MEDIAPIPE_FACE_LANDMARKER_ASSET_URL,
           delegate: 'CPU',
         },
         runningMode: 'VIDEO',

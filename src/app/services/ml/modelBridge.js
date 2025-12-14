@@ -1,9 +1,7 @@
 import { MOBILE_NET_INPUT_HEIGHT, MOBILE_NET_INPUT_WIDTH } from '../../../constants.js';
 import { sessionStore, TRAINING_STATUS, INFERENCE_STATUS } from '../../store/sessionStore.js';
 import { isTrainingReady, getLatestDatasetUpdatedAt } from '../../store/selectors.js';
-
-const FEATURE_MODEL_URL =
-  'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1';
+import { TF_MOBILENET_FEATURE_VECTOR_URL } from '../../../config/externalResources.js';
 
 let featureExtractorPromise = null;
 let featureExtractor = null;
@@ -217,7 +215,9 @@ export async function runInference(videoEl) {
 async function ensureFeatureExtractor() {
   if (featureExtractor) return featureExtractor;
   if (!featureExtractorPromise) {
-    featureExtractorPromise = tf.loadGraphModel(FEATURE_MODEL_URL, { fromTFHub: true });
+    featureExtractorPromise = tf.loadGraphModel(TF_MOBILENET_FEATURE_VECTOR_URL, {
+      fromTFHub: true,
+    });
   }
   featureExtractor = await featureExtractorPromise;
   return featureExtractor;

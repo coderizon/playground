@@ -41,4 +41,9 @@
 - `trainingController`: dispatches start requests to `trainWithRecordedSamples` and confirms `abortTraining` so mid-run cancellations are intentional.
 - `inferenceController`: central “stop inference before destructive action” guard that now also emits toasts when it has to halt a running preview.
 
+## External Resource Map (`src/config/externalResources.js`)
+
+- **Purpose**: single source of truth for TF Hub + Mediapipe URLs/versions used across both the SPA and the legacy modules.
+- **Usage**: ML services (`modelBridge.js`) and legacy gesture/face scripts import constants instead of hard-coding CDN strings, making it easier to pin or self-host per the vision document.
+
 Refer back to `src/app/components/registerComponents.js` for how these are registered in Alpine.
