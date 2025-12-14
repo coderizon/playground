@@ -249,7 +249,11 @@ export function registerDatasetComponents(Alpine) {
           status: PERMISSION_STATUS.GRANTED,
           message: null,
         });
+        await this.$nextTick();
         this.attachPreview(stream);
+        if (!this.$refs[`preview-${this.classId}`]) {
+          throw new Error('Recorder-Vorschau konnte nicht initialisiert werden.');
+        }
         activeRecorderId = this.classId;
         this.recording = true;
         sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.RECORDING, {
@@ -338,7 +342,7 @@ export function registerDatasetComponents(Alpine) {
           const state = sessionStore.getState();
           const video = this.$refs[`preview-${this.classId}`];
           if (!video) {
-            throw new Error('Recorder-Vorschau fehlt.');
+            return;
           }
           const classIndex = state.classes.findIndex((cls) => cls.id === this.classId);
           if (classIndex === -1) {
