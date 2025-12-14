@@ -141,15 +141,18 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
               >
                 <div class="dataset-preview" :class="{'is-audio': isAudioTask}">
                   <template x-if="!isAudioTask">
-                    <template x-if="recording">
-                      <div class="camera-guidance">
-                        <video autoplay muted playsinline :x-ref="'preview-'+classItem.id" class="preview-video"></video>
-                        <p>Halte dein Objekt im Fokus · wir sammeln automatisch Frames</p>
-                      </div>
-                    </template>
-                    <template x-if="!recording">
-                      <div class="preview-placeholder" x-text="previewLabel()"></div>
-                    </template>
+                    <div class="camera-guidance">
+                      <video
+                        autoplay
+                        muted
+                        playsinline
+                        :x-ref="'preview-'+classItem.id"
+                        class="preview-video"
+                        x-show="recording"
+                      ></video>
+                      <p x-show="recording">Halte dein Objekt im Fokus · wir sammeln automatisch Frames</p>
+                      <div class="preview-placeholder" x-show="!recording" x-text="previewLabel()"></div>
+                    </div>
                   </template>
                   <template x-if="isAudioTask">
                 <div class="audio-preview">
