@@ -25,7 +25,7 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
         </div>
       </header>
 
-      <section class="train-body" x-data="trainingPanel()" x-init="init()">
+      <section class="train-body" x-data="trainingPanel()" x-init="init()" @keydown.window="handleHotkey($event)">
         <article class="training-panel">
           <h2>Trainingsstatus</h2>
           <p role="status" aria-live="polite" aria-atomic="true">Status: <strong x-text="statusLabel"></strong></p>
@@ -39,6 +39,10 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
           <div class="training-actions">
             <button type="button" class="primary" @click="startTraining" :disabled="!canStart" x-text="startCtaLabel"></button>
             <button type="button" class="ghost" @click="abortTraining" :disabled="!canAbort">Training abbrechen</button>
+          </div>
+          <div class="training-hotkeys" aria-hidden="true">
+            <span><kbd>T</kbd> Start</span>
+            <span><kbd>A</kbd>/<kbd>Esc</kbd> Abbrechen</span>
           </div>
           <p class="training-hint" x-show="startCtaSubline" x-text="startCtaSubline"></p>
           <div class="training-meta">

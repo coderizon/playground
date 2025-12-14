@@ -172,5 +172,21 @@ export function registerTrainingComponents(Alpine) {
         return '';
       }
     },
+
+    handleHotkey(event) {
+      const tag = event.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      const key = event.key?.toLowerCase();
+      if (!key) return;
+      if (key === 't' && this.canStart) {
+        event.preventDefault();
+        this.startTraining();
+        return;
+      }
+      if ((key === 'escape' || key === 'a') && this.canAbort) {
+        event.preventDefault();
+        this.abortTraining();
+      }
+    },
   }));
 }

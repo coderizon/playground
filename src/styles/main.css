@@ -430,6 +430,14 @@
     @apply flex flex-wrap gap-3;
   }
 
+  .training-hotkeys {
+    @apply flex flex-wrap gap-3 text-xs text-slate-500;
+  }
+
+  .training-hotkeys kbd {
+    @apply rounded-md border border-slate-300 bg-white px-2 py-0.5 font-semibold;
+  }
+
   .training-meta {
     @apply rounded-2xl bg-slate-50 p-4 text-sm text-slate-600;
   }

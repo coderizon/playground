@@ -30,7 +30,7 @@
 
 - **Purpose**: renders the training CTA/progress surface and subscribes to `trainingPanel()` state so UI + controller logic stay in sync.
 - **Data sources**: listens to `getTrainingSummary`, `getDatasetReadinessIssues`, `getAudioBackgroundIssues`, and `getTrainingRetryContext`.
-- **Guidance**: surfaces stale class metadata, dataset blockers, and microphone-specific background warnings (with CTA copy) so learners know what to fix before starting/restarting training.
+- **Guidance**: surfaces stale class metadata, dataset blockers, microphone-specific background warnings (with CTA copy), and keyboard shortcuts (`T` start / `A` or `Esc` abort) so learners know what to fix before restarting and can run training without the mouse.
 
 ## Edge Streaming Context (`src/app/store/selectors.js` & `src/app/components/edge/edgePanel.js`)
 
