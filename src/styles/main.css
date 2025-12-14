@@ -392,15 +392,19 @@
   }
 
   .collect-floating-toolbar {
-    @apply fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3;
+    @apply fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3;
   }
 
   .collect-floating-toggle {
-    @apply flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-slate-700 shadow-lg shadow-slate-900/15 transition;
+    @apply flex h-12 w-12 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-slate-500 shadow-lg shadow-slate-900/15 transition;
   }
 
   .collect-floating-toggle:disabled {
     @apply cursor-not-allowed opacity-40;
+  }
+
+  .collect-floating-toggle.is-active {
+    @apply border-amber-400 text-amber-600;
   }
 
   .collect-floating-hints {
@@ -449,7 +453,7 @@
   }
 
   .collect-class-list {
-    @apply grid gap-5 md:grid-cols-3 xl:grid-cols-4;
+    @apply grid gap-5 md:grid-cols-2 xl:grid-cols-4;
   }
 
   .class-card-v2 {
