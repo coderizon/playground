@@ -380,20 +380,6 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         </div>
       )}
 
-      <div className="class-card-actions">
-        {isAudioTask && (
-          <div className="audio-actions">
-            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'clip' })} disabled={!canStart}>Kurzclip (2s)</button>
-            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'background' })} disabled={!canStart}>Hintergrund (20s)</button>
-          </div>
-        )}
-        {!isAudioTask && (
-          <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Aufnahme starten</button>
-        )}
-        <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
-        <button type="button" className="ghost" onClick={discardDataset} disabled={!canDiscard}>Datensatz verwerfen</button>
-      </div>
-
       <div className="sample-album">
         <p className="eyebrow">Samples</p>
         <button type="button" className="sample-album-trigger" onClick={toggleAlbum}>
@@ -415,6 +401,20 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             <span>{samples.length > 0 ? 'Samples verwalten' : 'Noch keine Samples'}</span>
           </div>
         </button>
+      </div>
+
+      <div className="class-card-actions">
+        {isAudioTask && (
+          <div className="audio-actions">
+            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'clip' })} disabled={!canStart}>Kurzclip (2s)</button>
+            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'background' })} disabled={!canStart}>Hintergrund (20s)</button>
+          </div>
+        )}
+        {!isAudioTask && (
+          <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Aufnahme starten</button>
+        )}
+        <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
+        <button type="button" className="ghost" onClick={discardDataset} disabled={!canDiscard}>Datensatz verwerfen</button>
       </div>
 
       {albumOpen && (
