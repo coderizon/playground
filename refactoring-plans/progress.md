@@ -43,6 +43,7 @@
   - Sample previews now show the latest captured frame instead of stacking thumbnails, reinforcing the album-as-entry affordance while keeping the click target compact.
   - Camera previews now auto-attach as soon as a class card mounts, so the live stream is visible even before recording starts; recording uses its own handle so stopping capture no longer blanks the preview.
   - Live recording guidance copy now renders under the camera preview instead of overlaying the video so learners keep an unobstructed view of the stream.
+  - The Samples card now doubles as the dataset counter: before any captures it shows `x/y Samples aufgenommen`, and once data exists it switches to the `n Samples verwalten` affordance so the class header stays clean.
   - Class cards now flow in a responsive 1/3/4 column grid (mobile/tablet/desktop-xl) so screen real estate is used efficiently without crowding the mobile layout.
   - The camera recorder now captures an initial frame immediately and samples roughly twice per second, keeping the live preview, stacked album, and counters perfectly in sync with the stream so users no longer perceive 1 fps capture delays after pressing “Aufnahme starten”.
   - Class cards now inherit their dataset status color (ready, recording, empty/error) as a faint background wash and badge, so the current readiness is immediately scannable even with many classes on the page.

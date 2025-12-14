@@ -40,6 +40,8 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
   const dataset = classState?.dataset || { recordedCount: 0, expectedCount: 0, status: DATASET_STATUS.EMPTY };
   const samples = dataset.samples || [];
+  const recordedCount = dataset.recordedCount || samples.length || 0;
+  const expectedCount = dataset.expectedCount || 0;
   const isReady = dataset.status === DATASET_STATUS.READY;
   const trainingLocked = trainingStatus === TRAINING_STATUS.RUNNING;
   const isAudioTask = modality === 'microphone';
@@ -401,6 +403,14 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   // Render helpers
   const previewLabel = isReady ? 'Datensatz bereit' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Beispiele` : 'Recorder bereit');
   const previewSample = samples.length ? samples[samples.length - 1] : null;
+  const sampleSummaryCount = samples.length > 0
+    ? `${samples.length}`
+    : expectedCount > 0
+      ? `${recordedCount}/${expectedCount}`
+      : `${recordedCount}`;
+  const sampleSummaryLabel = samples.length > 0
+    ? `${samples.length} Samples verwalten`
+    : 'Samples aufgenommen';
   const modalTitleId = `sampleModalTitle-${classId}`;
 
   return (
@@ -474,8 +484,8 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             )}
           </div>
           <div className="sample-album-summary">
-            <strong>{samples.length}</strong>
-            <span>{samples.length > 0 ? 'Samples verwalten' : 'Noch keine Samples'}</span>
+            <strong>{sampleSummaryCount}</strong>
+            <span>{sampleSummaryLabel}</span>
           </div>
         </button>
       </div>

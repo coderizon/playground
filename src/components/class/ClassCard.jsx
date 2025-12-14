@@ -78,9 +78,9 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
   const datasetSummary = () => {
     const count = classItem.dataset?.recordedCount || 0;
     const expected = classItem.dataset?.expectedCount || 0;
-    if (count >= expected) return 'Datensatz vollständig';
+    if (count >= expected && expected > 0) return 'Datensatz vollständig';
     if (count === 0) return 'Noch keine Daten';
-    return `${count} von ${expected} Samples`;
+    return 'Datensammlung läuft';
   };
 
   const cardToneClass = () => {
