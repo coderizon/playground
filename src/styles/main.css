@@ -391,6 +391,19 @@
     @apply rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900;
   }
 
+  .collect-floating-hints {
+    @apply fixed bottom-6 right-6 z-40 flex max-w-sm flex-col gap-3;
+    width: min(320px, calc(100% - 3rem));
+  }
+
+  @media (max-width: 640px) {
+    .collect-floating-hints {
+      left: 1rem;
+      right: 1rem;
+      width: auto;
+    }
+  }
+
   .collect-summary-inline {
     @apply grid gap-4 md:grid-cols-2;
   }

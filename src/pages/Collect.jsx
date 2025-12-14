@@ -126,6 +126,18 @@ export function Collect({ state }) {
     }
   };
 
+  const floatingHints = [];
+  if (trainingLocked) {
+    floatingHints.push('Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.');
+  } else {
+    if (hasEmptyClass) {
+      floatingHints.push('Fülle zuerst die vorhandenen Klassen mit Daten, bevor du neue hinzufügst.');
+    }
+    if (isAnyClassRecording) {
+      floatingHints.push('Beende zuerst alle laufenden Aufnahmen, bevor du neue Klassen hinzufügst.');
+    }
+  }
+
   return (
     <section className="collect-page">
       <div className="collect-context">
@@ -152,24 +164,6 @@ export function Collect({ state }) {
           classes={classes}
           totalSamples={totalSamples}
         />
-        
-        {trainingLocked && (
-          <p className="collect-lock-hint" role="status" aria-live="polite">
-            Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.
-          </p>
-        )}
-        
-        {hasEmptyClass && !trainingLocked && (
-          <p className="collect-lock-hint" role="status" aria-live="polite">
-            Fülle zuerst die vorhandenen Klassen mit Daten, bevor du neue hinzufügst.
-          </p>
-        )}
-
-        {isAnyClassRecording && !trainingLocked && (
-          <p className="collect-lock-hint" role="status" aria-live="polite">
-            Beende zuerst alle laufenden Aufnahmen, bevor du neue Klassen hinzufügst.
-          </p>
-        )}
       </div>
 
       <section className="collect-body">
@@ -225,5 +219,15 @@ export function Collect({ state }) {
         </div>
       </section>
     </section>
+
+      {floatingHints.length > 0 && (
+        <div className="collect-floating-hints" aria-live="polite">
+          {floatingHints.map((message, index) => (
+            <p key={message} className="collect-lock-hint" role="status">
+              {message}
+            </p>
+          ))}
+        </div>
+      )}
   );
 }
