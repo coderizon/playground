@@ -15,6 +15,10 @@
   - Configured `tailwind.config.js` to scan `.jsx`/`.tsx` files, resolving unstyled components.
   - Updated `postcss.config.js` to modern object syntax for better Vite compatibility.
   - Removed manual CSS link in `index.html` to prevent raw style injection and rely on Vite's bundle.
+- **Feature Restoration**:
+  - Restored "Gestenerkennung" hand landmark visualization during data collection.
+  - Implemented `HandPoseService` to bridge the legacy `hand-pose-detection` asset.
+  - Added `GesturePreview` overlay component to `DatasetRecorder` for real-time skeleton drawing.
 - **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts.
 
 ## Current State Snapshot (Jan 2025)

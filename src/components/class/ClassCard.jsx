@@ -5,7 +5,7 @@ import { DatasetRecorder } from '../dataset/DatasetRecorder.jsx';
 
 const classController = createClassController();
 
-export function ClassCard({ classItem, trainingStatus, modality }) {
+export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) {
   const [name, setName] = useState(classItem.name || '');
   const [error, setError] = useState('');
 
@@ -99,6 +99,7 @@ export function ClassCard({ classItem, trainingStatus, modality }) {
         classState={classItem} 
         trainingStatus={trainingStatus}
         modality={modality}
+        taskModelId={taskModelId}
       />
 
       <div className="class-card-actions">

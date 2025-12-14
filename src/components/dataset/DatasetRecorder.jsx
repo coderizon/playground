@@ -6,6 +6,7 @@ import { requestMicrophoneStream, stopMicrophoneStream, recordAudioSample } from
 import { recordSampleFrame, clearSamplesForClass } from '../../services/ml/modelBridge.js';
 import { showToast } from '../common/toast.js';
 import { SamplePreview } from './SamplePreview.jsx';
+import { GesturePreview } from './GesturePreview.jsx';
 
 const AUDIO_PRESETS = {
   clip: { label: 'Kurzclip', duration: 2000, hint: 'Nimm 2s Clips mit klaren Geräuschen oder Wörtern auf.' },
@@ -16,7 +17,7 @@ const BACKGROUND_MIN_DURATION = 15000;
 // Shared active recorder ID to prevent multiple open streams
 let activeRecorderId = null;
 
-export function DatasetRecorder({ classId, classState, trainingStatus, modality }) {
+export function DatasetRecorder({ classId, classState, trainingStatus, modality, taskModelId }) {
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState(null);
   const [lastPermissionError, setLastPermissionError] = useState('');
@@ -32,6 +33,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality 
   const isReady = dataset.status === DATASET_STATUS.READY;
   const trainingLocked = trainingStatus === TRAINING_STATUS.RUNNING;
   const isAudioTask = modality === 'microphone';
+  const isGestureTask = taskModelId === 'gesture-recognition';
   
   const canStart = !trainingLocked && !recording && classState && !isReady && (!activeRecorderId || activeRecorderId === classId);
   const canStop = recording;
@@ -273,6 +275,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality 
               className="preview-video"
               style={{ display: recording ? 'block' : 'none' }}
             />
+            {isGestureTask && recording && <GesturePreview videoRef={videoRef} />}
             {recording && <p>Halte dein Objekt im Fokus · wir sammeln automatisch Frames</p>}
             {!recording && <div className="preview-placeholder">{previewLabel}</div>}
           </div>

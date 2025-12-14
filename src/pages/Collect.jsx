@@ -171,6 +171,7 @@ export function Collect({ state }) {
                 classItem={classItem} 
                 trainingStatus={state.training?.status}
                 modality={state.selectedTaskModel?.inputModality}
+                taskModelId={state.selectedTaskModel?.id}
               />
             ))
           )}
