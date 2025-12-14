@@ -1,4 +1,5 @@
 import { sessionStore } from '../../store/sessionStore.js';
+import { getTrainingRetryContext, getPermissionIssues } from '../../store/selectors.js';
 import {
   connectDevice,
   disconnectDevice,
@@ -8,6 +9,7 @@ import {
 import arduinoThumb from '../../../assets/images/arduino.png';
 import microbitThumb from '../../../assets/images/microbit.png';
 import calliopeThumb from '../../../assets/images/calliope.png';
+import { showToast } from '../common/toast.js';
 
 const DEVICE_OPTIONS = [
   {
@@ -50,6 +52,9 @@ export function registerEdgeComponents(Alpine) {
     streaming: getEdgeState().streaming,
     modalOpen: false,
     lastFocusedTrigger: null,
+    retryContext: getTrainingRetryContext(sessionStore.getState()),
+    permissionIssues: getPermissionIssues(sessionStore.getState()),
+    unsubscribe: null,
 
     init() {
       if (this.edgeStatus.status === 'error') {
@@ -59,6 +64,8 @@ export function registerEdgeComponents(Alpine) {
         this.edgeStatus = state.edge;
         this.connecting = getEdgeState().connecting;
         this.streaming = getEdgeState().streaming;
+        this.retryContext = getTrainingRetryContext(state);
+        this.permissionIssues = getPermissionIssues(state);
         if (state.edge.status === 'error') {
           this.openModal();
         }
@@ -114,8 +121,46 @@ export function registerEdgeComponents(Alpine) {
     },
 
     toggleStreaming() {
+      if (!this.canStream()) {
+        this.warnStreamingBlocked();
+        return;
+      }
       const next = !getEdgeState().streaming;
       setStreaming(next);
+    },
+
+    canStream() {
+      return !this.streamBlockedByPermissions() && !this.streamBlockedByFreshTraining();
+    },
+
+    streamBlockedByPermissions() {
+      const issues = Array.isArray(this.permissionIssues) ? this.permissionIssues : [];
+      return issues.some((issue) => issue.type === 'camera');
+    },
+
+    streamBlockedByFreshTraining() {
+      return Boolean(this.retryContext?.datasetChangedSinceLastRun);
+    },
+
+    streamingBlockedReason() {
+      if (this.streamBlockedByPermissions()) {
+        return 'Kamerazugriff blockiert – erlaube die Kamera, bevor du Streaming aktivierst.';
+      }
+      if (this.streamBlockedByFreshTraining()) {
+        return 'Datensätze wurden seit dem letzten Training geändert. Trainiere erneut, bevor du an Geräte streamst.';
+      }
+      return '';
+    },
+
+    warnStreamingBlocked() {
+      const reason = this.streamingBlockedReason();
+      if (reason) {
+        showToast({
+          title: 'Streaming deaktiviert',
+          message: reason,
+          tone: 'warning',
+        });
+      }
     },
 
     hasError() {

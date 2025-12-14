@@ -76,7 +76,12 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
             <div class="edge-inline-controls">
               <button type="button" class="ghost" @click="openModal($event)">Gerät wählen</button>
               <label class="stream-toggle">
-                <input type="checkbox" @change="toggleStreaming()" :checked="streamingEnabled()" :disabled="edgeStatus.status !== 'connected'"/>
+                <input
+                  type="checkbox"
+                  @change="toggleStreaming()"
+                  :checked="streamingEnabled()"
+                  :disabled="edgeStatus.status !== 'connected' || !canStream()"
+                />
                 <span>Vorhersagen streamen</span>
               </label>
               <button
@@ -88,6 +93,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                 Trennen
               </button>
             </div>
+            <p class="edge-streaming-hint" x-show="streamingBlockedReason()" x-text="streamingBlockedReason()"></p>
             <div class="ble-modal-backdrop" x-show="modalOpen" @click="closeModal()" x-transition.opacity></div>
             <section
               class="ble-modal"
