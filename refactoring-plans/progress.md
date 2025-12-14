@@ -1,5 +1,18 @@
 # Refactor Progress — ML Playground Vision Alignment
 
+## React Migration (Feb 2025)
+
+- **Framework Switch**: Replaced Alpine.js with React to address persistent DOM race conditions during camera stream initialization (`x-ref` within `x-if` blocks).
+- **Component Architecture**:
+  - Migrated all pages (`Home`, `Collect`, `Train`, `Infer`) to functional React components.
+  - Implemented `useSession` hook to bridge the existing `sessionStore` via `useSyncExternalStore`.
+  - Used `useEffect` and `useRef` for stable video element references and stream lifecycle management.
+- **Key Fixes**:
+  - Resolved "Recorder-Vorschau konnte nicht initialisiert werden" crash by ensuring video elements are mounted before attaching streams.
+  - Fixed empty prediction output in Inference panel by correctly using selectors (`getInferencePredictions`) to map raw probabilities to class names.
+  - Eliminated "toast loop" crashes caused by Alpine.js reactivity cycles.
+- **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts.
+
 ## Current State Snapshot (Jan 2025)
 
 - **Architecture switcher**: `index.html` now loads `/src/bootstrap.js` which immediately boots the SPA (`src/app/bootstrap.js`), hides the old DOM, and mounts the router (`src/app/routes/router.js`). With the legacy Collect/Train/Infer columns, BLE modal, and landing marquee removed, the SPA is now the sole UI—our refactor path is a full rewrite to the SPA described in `vision.md`, so no state mirroring or dual rendering is required.

@@ -38,7 +38,14 @@ export function createClassController({
     return true;
   };
 
+  const addClass = () => {
+    if (isTrainingLocked()) return false;
+    store.addClass();
+    return true;
+  };
+
   return {
+    addClass,
     removeClassWithConfirm,
     discardDatasetWithConfirm,
   };

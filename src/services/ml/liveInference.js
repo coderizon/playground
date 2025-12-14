@@ -13,23 +13,33 @@ export function startLiveInference(videoEl) {
     error: null,
   });
 
-  const loop = async () => {
-    if (sessionStore.getState().inference.status !== INFERENCE_STATUS.RUNNING) {
-      stopLiveInference();
-      return;
-    }
-    try {
-      await runInference(videoEl);
-    } catch (error) {
-      console.error(error);
-      sessionStore.setInferenceStatus(INFERENCE_STATUS.ERROR, { error: error.message });
-      stopLiveInference();
-      return;
-    }
+  const startLoop = () => {
+    const loop = async () => {
+      if (sessionStore.getState().inference.status !== INFERENCE_STATUS.RUNNING) {
+        stopLiveInference();
+        return;
+      }
+      try {
+        await runInference(videoEl);
+      } catch (error) {
+        console.error(error);
+        sessionStore.setInferenceStatus(INFERENCE_STATUS.ERROR, { error: error.message });
+        stopLiveInference();
+        return;
+      }
+      inferenceLoopHandle = window.requestAnimationFrame(loop);
+    };
     inferenceLoopHandle = window.requestAnimationFrame(loop);
   };
 
-  inferenceLoopHandle = window.requestAnimationFrame(loop);
+  if (videoEl.readyState >= 2) {
+    startLoop();
+  } else {
+    videoEl.onloadeddata = () => {
+      startLoop();
+      videoEl.onloadeddata = null;
+    };
+  }
 }
 
 export function stopLiveInference() {

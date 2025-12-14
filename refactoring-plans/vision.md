@@ -397,20 +397,20 @@ session
 
 ## 10. Alpine.js vs React — Final Take
 
-Alpine.js is acceptable **because**:
+React is the chosen framework **because**:
 
-* the flow is linear,
-* state is bounded,
-* persistence is absent.
+* Complex state management (media streams, permissions, training locks) requires a stable component lifecycle.
+* Declarative rendering eliminates race conditions in DOM manipulation (e.g., camera initialization).
+* The ecosystem provides robust tooling for hardware integration (Web Bluetooth, MediaDevices).
 
 ### Non-negotiable constraints
 
-1. Single session store
-2. No business logic in templates
+1. Single session store (via `useSyncExternalStore`)
+2. Functional components with hooks
 3. Explicit step transitions
-4. Event-driven components
+4. Event-driven architecture
 
-If these are violated, migrate to React (or similar).
+Legacy Alpine.js code has been removed.
 
 ---
 

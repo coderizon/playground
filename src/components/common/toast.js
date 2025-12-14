@@ -3,6 +3,11 @@ const TOAST_DURATION_MS = 5000;
 let listeners = new Set();
 let counter = 0;
 
+export function subscribeToToasts(callback) {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+}
+
 export function registerToastComponent(Alpine) {
   Alpine.data('toastCenter', () => ({
     toasts: [],

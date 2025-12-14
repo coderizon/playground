@@ -1,0 +1,191 @@
+import React, { useEffect, useState } from 'react';
+import { sessionStore, STEP } from '../app/store/sessionStore.js';
+import { getAvailableTaskModels } from '../app/data/taskModels.js';
+import { goHome } from '../app/routes/navigationController.js';
+import { discardSessionWithConfirm } from '../app/routes/sessionController.js';
+
+const JOURNEY_STEPS = [
+  {
+    step: 'Home',
+    title: 'Task wählen',
+    description: 'Jede Karte startet eine neue Session mit den passenden Modalitäten und Guardrails.',
+  },
+  {
+    step: 'Collect',
+    title: 'Klassen definieren',
+    description: 'Klassen benennen, Samples aufnehmen, Hintergrund-Abdeckung sicherstellen.',
+  },
+  {
+    step: 'Train',
+    title: 'Modell aktualisieren',
+    description: 'TF.js Trainingslauf starten, Sperren respektieren und Abbruch bestätigen.',
+  },
+  {
+    step: 'Infer',
+    title: 'Live testen & streamen',
+    description: 'Inference nur nach Training starten, Edge-Streaming bewusst aktivieren.',
+  },
+];
+
+const SESSION_RULES = [
+  'Sessions sind flüchtig – Reload oder Verwerfen löscht alle Daten.',
+  'Destruktive Aktionen laufen über die Controller + Dialoge, nie direkt über Stores.',
+  'Inference & Edge-Streaming stoppen bevor Navigation oder Disconnect passiert.',
+];
+
+export function Home({ state }) {
+  const [taskModels] = useState(getAvailableTaskModels());
+
+  const handleTaskSelect = (task) => {
+    if (task.status === 'available') {
+      sessionStore.startSession(task);
+    }
+  };
+
+  const getStepDescription = (step) => {
+    switch (step) {
+      case STEP.COLLECT: return 'Classes & Data Collection';
+      case STEP.TRAIN: return 'Training';
+      case STEP.INFER: return 'Inference';
+      default: return 'Home';
+    }
+  };
+
+  const sessionActive = !!state.selectedTaskModel;
+  const sessionStatusCopy = sessionActive
+    ? `Session aktiv für ${state.selectedTaskModel.name}. Nächster Schritt: ${getStepDescription(state.step)}.`
+    : 'Keine Session gestartet. Wähle eine Karte.';
+
+  return (
+    <section className="new-app-home">
+      <header className="new-app-home__header">
+        <div className="home-hero">
+          <p className="eyebrow">Playground Journey</p>
+          <h1>Starte dein Experiment</h1>
+          <p className="subline">
+            Playground ist eine geführte SPA: Jede Session folgt exakt Home → Collect → Train → Infer.
+            Diese Seite ist der einzige Eintrittspunkt – hier entscheidest du über Modalität, Aufwand und ob BLE-Streaming nötig ist.
+          </p>
+          <ul className="home-journey" role="list">
+            {JOURNEY_STEPS.map((item, index) => (
+              <li key={item.step} className="home-journey__item">
+                <div className="home-journey__index" aria-hidden="true">{index + 1}</div>
+                <div>
+                  <p className="home-journey__step">{item.step}</p>
+                  <p className="home-journey__title">{item.title}</p>
+                  <p className="home-journey__description">{item.description}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="home-guardrails" aria-live="polite">
+          <p className="eyebrow">Session Guardrails</p>
+          <p className="home-guardrails__copy">
+            Alle Sessions sind deterministisch: Guards blockieren destruktive Aktionen während Training oder aktiver Inferenz.
+            Bevor du eine Karte startest, lies dir die Regeln erneut durch.
+          </p>
+          <ul className="home-guardrails__list">
+            {SESSION_RULES.map((rule, index) => (
+              <li key={index}>
+                <span className="home-guardrails__bullet" aria-hidden="true"></span>
+                <p>{rule}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </header>
+
+      <div className="home-main">
+        <div className="home-grid-panel">
+          <p className="task-grid-instructions" id="taskGridHint">
+            Nutze Tab, um Karten zu fokussieren, und bestätige mit Enter oder Leertaste. Verfügbarkeit und Aufwand werden vorgelesen.
+          </p>
+          <div className="task-grid" role="list" aria-describedby="taskGridHint">
+            {taskModels.map((task) => {
+              const disabled = task.status !== 'available';
+              const titleId = `task-${task.id}-title`;
+              const descId = `task-${task.id}-desc`;
+              const metaId = `task-${task.id}-meta`;
+              
+              return (
+                <button
+                  key={task.id}
+                  className={`task-card task-card--${task.status}`}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => handleTaskSelect(task)}
+                  role="listitem"
+                  aria-disabled={disabled}
+                  aria-labelledby={titleId}
+                  aria-describedby={`${descId} ${metaId}`}
+                >
+                  <div className="task-card__meta" id={metaId}>
+                    <span className="task-modality" aria-label={`Modality ${task.inputModality}`}>{task.inputModality}</span>
+                    <span className="task-effort" aria-label={`Aufwand ${task.effortLevel}`}>{task.effortLevel} effort</span>
+                  </div>
+                  <div className="task-card__body">
+                    <h3 id={titleId}>{task.name}</h3>
+                    <p id={descId}>{task.description}</p>
+                  </div>
+                  <dl className="task-summary">
+                    <div>
+                      <dt>Training</dt>
+                      <dd>{task.requiresTraining ? 'Erforderlich' : 'Nicht nötig'}</dd>
+                    </div>
+                    <div>
+                      <dt>Interaktion</dt>
+                      <dd>{task.interactionType}</dd>
+                    </div>
+                    <div>
+                      <dt>BLE</dt>
+                      <dd>{task.bleCapable ? 'Ja' : 'Optional'}</dd>
+                    </div>
+                  </dl>
+                  <div className="task-card__tags">
+                    {task.badges.map((tag) => <span key={tag} className="task-tag">{tag}</span>)}
+                  </div>
+                  {disabled && (
+                    <div className="task-card__status" role="status" aria-live="polite">
+                      {task.status === 'coming-soon' ? 'Demnächst verfügbar' : 'Geplant'}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <aside className="session-state" aria-live="polite">
+          <h2>Session Status</h2>
+          <p>{sessionStatusCopy}</p>
+          <div className="session-controls">
+            <button
+              type="button"
+              className="ghost"
+              disabled={!sessionActive}
+              onClick={discardSessionWithConfirm}
+            >
+              Session verwerfen
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              disabled={!sessionActive || state.step === STEP.HOME}
+              onClick={goHome}
+            >
+              Zu Home zurück
+            </button>
+          </div>
+          <p className="session-shortcuts" role="note" aria-live="polite">
+            Tastatur:
+            <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> Session verwerfen</span>
+            ·
+            <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> Zurück nach Home</span>
+          </p>
+        </aside>
+      </div>
+    </section>
+  );
+}

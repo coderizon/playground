@@ -22,12 +22,12 @@
   "homepage": "https://github.com/coderizon/Ml-playground-#readme",
   "description": "",
   "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.22",
     "postcss": "^8.5.6",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "tailwindcss": "^3.4.15",
     "vite": "^7.2.7"
-  },
-  "dependencies": {
-    "alpinejs": "^3.15.2"
   }
 }
