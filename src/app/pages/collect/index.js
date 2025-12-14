@@ -196,7 +196,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                           </div>
                         </div>
                       </div>
-                      <button type="button" class="ghost" @click="removeSample(sample)" :disabled="!sample.canDelete">Entfernen</button>
+                      <button type="button" class="ghost" @click="deleteSample(sample)" :disabled="!sample.canDelete">Entfernen</button>
                     </li>
                   </template>
                   </ul>

@@ -247,9 +247,15 @@ export function registerDatasetComponents(Alpine) {
 
     annotateSample(sample, value) {
       if (!sample?.id || this.recording || this.trainingLocked) return;
+      const trimmed = value?.trim().slice(0, 80) || '';
+      if (trimmed === sample.annotation) return;
       sessionStore.updateDatasetSample(this.classId, sample.id, {
-        annotation: value?.trim().slice(0, 80) || '',
+        annotation: trimmed,
       });
+    },
+
+    deleteSample(sample) {
+      this.removeSample(sample);
     },
 
     beginSampleLoop() {
