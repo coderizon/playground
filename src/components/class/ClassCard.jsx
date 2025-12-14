@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { sessionStore, DATASET_STATUS } from '../../app/store/sessionStore.js';
 import { createClassController } from '../../app/routes/classController.js';
 import { DatasetRecorder } from '../dataset/DatasetRecorder.jsx';
@@ -9,13 +9,22 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
   const [name, setName] = useState(classItem.name || '');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    setName(classItem.name || '');
+    setError('');
+  }, [classItem.name]);
+
   const handleNameChange = (e) => {
     setName(e.target.value);
   };
 
   const commitName = () => {
     const trimmed = name.trim();
-    if (trimmed === classItem.name) return;
+    if (trimmed === classItem.name) {
+      setError('');
+      setName(trimmed);
+      return;
+    }
     
     // Simple validation (duplicates check should ideally happen in controller or store)
     // Here we just commit. The store/controller will handle logic.
@@ -105,8 +114,10 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
           <span>{datasetLabel()}</span>
         </span>
       </header>
-      <p className="dataset-summary">{datasetSummary()}</p>
-      {error && <p className="field-error">{error}</p>}
+      <p className="dataset-summary">
+        {datasetSummary()}
+        {error && <span className="dataset-summary-error"> ({error})</span>}
+      </p>
       
       <DatasetRecorder 
         classId={classItem.id} 
