@@ -1,54 +1,49 @@
 # Current Implementation Snapshot & Alignment Notes
 
+This document mirrors the shipped SPA as of Jan 2025 so new contributors can connect `vision.md` to the concrete code that now exists in `src/app`.
+
 ## Architecture & Stack
-- Single `index.html` renders both the landing “carousel” and the in-app shell simultaneously; visibility is toggled by `src/landing.js` instead of a router or page components.
-- No framework is used even though Alpine.js is listed as a dependency; all behavior lives in vanilla ES modules under `src/`, orchestrated imperatively through DOM queries.
-- Application state is a mutable singleton exported from `src/state.js`; it mixes session data, training artifacts, BLE flags, gesture caches, and DOM node registries without an explicit session lifecycle.
-- UI is laid out as three side-by-side columns (classes, training, preview) that are always rendered; step switching only toggles CSS attributes via `setMobileStep` to highlight buttons on narrow viewports.
-- Media and ML responsibilities are intertwined with UI logic (e.g., `src/ml/training.js` owns TensorFlow.js loops *and* DOM updates), so there is no separation between state transitions and rendering as required by the vision document.
+- `index.html` bootstraps `src/bootstrap.js`, which injects TF.js (via `src/utils/loadTf.js`) and mounts the SPA router (`src/app/bootstrap.js` + `routes/router.js`). No legacy landing DOM remains—the SPA is the single UI.
+- State lives in `src/app/store/sessionStore.js` (plus derived selectors). Controllers (`navigationController`, `sessionController`, `classController`, `trainingController`, `inferenceController`, `edgeController`) are the only modules mutating the store; UI components emit intents.
+- Pages (`src/app/pages/{home,collect,train,infer}`) render one step at a time. Guards in `routes/navigationGuards.js` + `historySync.js` keep browser navigation, beforeunload dialogs, and inference-stop confirmations aligned.
+- Components are Alpine stores/modules registered via `src/app/components/registerComponents.js` (class cards, dataset recorders, training panel, edge panel, confirm dialog, notice banners, etc.).
+- ML/media/edge logic sits in `src/app/services` (cameraService, modelBridge, liveInference, edgeService). External resources are pinned via `src/config/externalResources.js`.
+- Styling flows through `src/styles/main.css` (Tailwind layer). Shared tokens cover buttons, cards, guardrails, notices, dialogs, and page shells; legacy `.css` files have been removed.
 
 ## Journey Implementation
-### Home / Landing
-- Landing cards (defined inline in `index.html`) show five task “modes” with hero imagery and badges; selecting a card calls `startApp(mode)` in `src/landing.js`, which sets the global mode and hides the landing view.
-- Modes correspond to `image`, `gesture`, `face`, plus a disabled audio card; this loosely maps to the vision’s “task/model grid,” but there is no dynamic data source, validation, or contextual metadata beyond static copy.
-- Session resets are implicit: clicking a new card simply switches the `body[data-mode]` and clears some state in `setMode` without explicit confirmation or session discard affordances.
+### Home
+- `pages/home` renders the `(task, model)` grid from `data/taskModels.js`, inline guidance on keyboard usage, and a hero that restates the declarative journey plus guardrails.
+- Session controls (discard/back-to-home) subscribe to the store; shortcuts `Ctrl+Shift+D/H` are surfaced inline and wired through `routes/keyboardShortcuts.js`.
 
 ### Classes & Data Collection
-- Class cards are hard-coded markup duplicated in HTML; additional cards are injected by `src/ui/classes.js` by cloning DOM templates and wiring event listeners.
-- Naming rules are lax: fields clear on focus but allow empty values, duplicates, and whitespace; there is no validation workflow or dataset status indicator.
-- Data collection is manual “press-and-hold”: buttons emit pointer events to `handleCollectStart/End`, which immediately pipe webcam frames through MobileNet and append tensors per frame. There is no expected sample count, auto-stop, or per-class readiness indicator.
-- A single webcam preview element is moved between cards; dataset recording UI remains open concurrently, so multiple cards can appear “recording” even if only one class is active.
+- `classList` manages creation, naming validation, and dataset readiness badges per class; dataset recorders (audio/camera) encapsulate permissions, recording, per-sample metadata, delete flows, and background-audio checks.
+- Training locks propagate through selectors so destructive actions and recording controls disable themselves when training runs.
+- `collectSummary` surfaces blockers (missing classes, sample counts, missing background noise) plus CTA hints; empty state is its own component with onboarding copy.
 
 ### Training
-- The training card in `index.html` exposes only a “Modell trainieren” button, optional hyper-parameter inputs, and a linear progress bar. There is no dataset summary, gating, or abort option; errors just update a status label.
-- `trainAndPredict` switches behavior based on `state.currentMode` (image vs gesture vs face) but always mutates shared global state. Training locks capture panels only after success; there is no concept of session discard or going back to fix data while preserving samples.
+- `trainingPanel` handles start/abort, progress states, stale-model detection, CTA copy, and keyboard shortcuts (`T` start, `A/Esc` abort).
+- `trainingSummaryPanel` mirrors dataset readiness, audio requirements, and hints referenced by the selectors so the CTA remains clean.
+- `trainingController` orchestrates TF.js runs via `services/ml/modelBridge.js`, enforces confirmations on abort, and ensures dataset/inference locks stay consistent.
 
-### Inference / Preview
-- Preview column always renders a webcam feed plus probability list; inference starts automatically after training completes (`predictLoop`) or immediately for the face mode. Users cannot explicitly start/stop inference as required by the vision contract.
-- BLE panel is a modal triggered by a global “BLE connect” button. Cards for Arduino, Calliope, and Micro:Bit merely change copy after `connect*` resolves; streaming only exists for Arduino via UART writes in `renderProbabilities` once predictions exceed a hard-coded threshold.
-- Device errors surface through `alert()` dialogs and console logs instead of structured status badges.
+### Inference & Edge
+- `inferenceControls` controls permissions, readiness notices, start/stop toggles, keyboard shortcuts (`P` start/`O` stop), and aria-live messaging for streaming status.
+- `predictionPanel` throttles predictions, exposes streaming metadata, and routes BLE streaming toggles through `edgeController`.
+- `edgePanel` is the only BLE UI: it handles device selection, connection lifecycle, streaming toggles guarded by `getEdgeStreamingContext`, and confirmation dialogs for disconnects. Streaming requires inference to stop first via `inferenceController.ensureInferenceStopped`.
 
-### Session & Step Awareness
-- The body `data-step` attribute is only updated opportunistically (e.g., after training), so the UI can show “Preview” while the user is still collecting data; there is no guard preventing action buttons from being used out of order.
-- Destructive flows (resetting, switching modes) happen instantly without confirmation or context about what will be lost, breaking the “safe exit” requirement.
+## Session & Guard Framework
+- Session lifecycle (`STEP.HOME → COLLECT → TRAIN → INFER`) is enforced by `navigationController`; guards confirm when inference is running and block transitions when datasets/training aren’t ready.
+- `sessionController.discardSessionWithConfirm` uses the shared confirm dialog plus inference guard to guarantee safe teardown.
+- Keyboard shortcuts, controllers, and UI buttons all share the same controller helpers so behavior matches regardless of trigger surface.
+- Browser history sync keeps the hash in sync with `session.step`, rehydrates on refresh, and replays guard decisions when popstate events fire.
 
-### Quality & A11y Notes
-- Keyboard handling exists only for landing cards; class cards, BLE modal, and recording controls rely on pointer events and are not keyboard accessible.
-- Status messaging is routed through a single visually hidden `<p id="status">`, but updates are not synchronized with ARIA live regions, so announcements are unreliable.
-- Third-party models are loaded directly from public CDNs at runtime (TensorFlow Hub, jsDelivr) without pinning beyond URL versions, which partially satisfies but does not enforce the “pinned dependencies” requirement.
+## Device & Edge Integration
+- `services/edge/edgeService.js` abstracts BLE/UART interactions. The store tracks device metadata, streaming state, and errors; selectors expose whether streaming is allowed (permissions, training freshness, inference status).
+- BLE hardware QA expectations live in `docs/ble-hardware-qa.md`. Edge tests fake BLE stacks to cover connection, streaming, and error propagation.
 
-## Where the Prototype Already Aligns with the Vision
-- **Linear intent**: The prototype hints at the Home → Collect → Train → Preview flow, and mobile step buttons replicate the three-step journey described in the vision.
-- **Task/model selection**: Even though static, the landing grid conveys modality, training requirement, and BLE support via chips, fulfilling the vision’s communication goals for Home.
-- **Class-centric collection**: Data gathering revolves around per-class cards with live camera previews, mirroring the “create classes and record samples” core learning surface.
-- **Training feedback**: Progress UI, accuracy readouts, and disabled controls during training deliver clear momentum cues once the action starts.
-- **Inference surface**: Users see live camera feed, per-class probabilities, and BLE connection options in one place, satisfying the vision’s requirement for an inference-focused page with optional edge streaming hooks.
-- **Ephemeral session**: There is no persistence, log-in, or background recording; refreshing the page drops the session, matching the non-goals in the vision document.
+## Quality & A11y Notes
+- All relevant notices expose `role="status"` + `aria-live="polite"`; confirm dialog traps focus while open and supports Escape/backdrop close.
+- Permission failures propagate through `sessionStore.permissions` so Collect, Train, and Infer surfaces stay in sync.
+- Keyboard parity is enforced for dataset recorders (R/S/D), training (T/A/Esc), inference (P/O), and session shortcuts (Ctrl+Shift+D/H).
+- Tests live under `tests/**` and run via `npm test` (see `tests/run-tests.mjs`). Controllers, store modules, and selectors each have targeted suites.
 
-## Notable Gaps to Carry Into the Refactor
-- No explicit session object or state machine (vision §2 & §6) — global mutable bag cannot enforce invariants.
-- Steps are co-located instead of dedicated pages, so backward navigation, gating, and validation rules are unenforced.
-- Dataset lifecycle lacks validation, readiness indicators, expected counts, or discard flows described under “Classes & Data Collection.”
-- Training cannot be aborted, and inference cannot be explicitly started/stopped, diverging from §§4.3–4.4 rules.
-- Device/edge UX is modal-only, not the structured edge panel specified in §4.4, and streaming occurs silently from inference logic rather than through a controlled pipeline.
-- Accessibility, permission handling, and dependency pinning fall short of the quality bar in §9.
+Refer to `refactoring-plans/progress.md` for the historical migration narrative and outstanding tasks (if any). This document only reflects the current SPA behavior.
