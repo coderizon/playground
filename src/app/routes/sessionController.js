@@ -1,5 +1,6 @@
 import { sessionStore as realStore, STEP, INFERENCE_STATUS } from '../store/sessionStore.js';
 import { openConfirmDialog } from '../components/common/confirmDialog.js';
+import { showToast } from '../components/common/toast.js';
 import { createInferenceController } from './inferenceController.js';
 import { stopLiveInference } from '../services/ml/liveInference.js';
 
@@ -24,6 +25,7 @@ export function createSessionController(options = {}) {
       store,
       confirm,
       stopLiveInference,
+      notify: showToast,
     });
 
   const runDiscardConfirm = () => {
@@ -45,7 +47,9 @@ export function createSessionController(options = {}) {
   return {
     discard() {
       if (!store.getState().selectedTaskModel) return false;
-      guard.ensureInferenceStopped(runDiscardConfirm);
+      guard.ensureInferenceStopped(runDiscardConfirm, {
+        toastMessage: 'Inference gestoppt, bevor die Session verworfen wird.',
+      });
       return true;
     },
   };

@@ -54,6 +54,7 @@ const DEVICE_OPTIONS = [
 const inferenceController = createInferenceController({
   confirm: openConfirmDialog,
   stopLiveInference,
+  notify: showToast,
 });
 
 export function registerEdgeComponents(Alpine) {
@@ -110,9 +111,14 @@ export function registerEdgeComponents(Alpine) {
     },
 
     disconnect() {
-      inferenceController.ensureInferenceStopped(() => {
-        disconnectDevice();
-      });
+      inferenceController.ensureInferenceStopped(
+        () => {
+          disconnectDevice();
+        },
+        {
+          toastMessage: 'Inference gestoppt, bevor die Edge-Verbindung getrennt wurde.',
+        }
+      );
     },
 
     statusLabel() {

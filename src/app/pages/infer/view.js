@@ -5,10 +5,12 @@ import { openConfirmDialog } from '../../components/common/confirmDialog.js';
 import { goTrain } from '../../routes/navigationController.js';
 import { createInferenceController } from '../../routes/inferenceController.js';
 import { stopLiveInference } from '../../services/ml/liveInference.js';
+import { showToast } from '../../components/common/toast.js';
 
 const inferenceController = createInferenceController({
   confirm: openConfirmDialog,
   stopLiveInference,
+  notify: showToast,
 });
 
 export function renderInferencePage(root, state = sessionStore.getState()) {
@@ -164,7 +166,9 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
   });
 
   root.querySelector('[data-back-train]')?.addEventListener('click', () => {
-    inferenceController.ensureInferenceStopped(() => goTrain());
+    inferenceController.ensureInferenceStopped(() => goTrain(), {
+      toastMessage: 'Inference gestoppt, bevor du zur Trainingsseite zurückkehrst.',
+    });
   });
   root.querySelector('[data-discard-session]')?.addEventListener('click', () => {
     inferenceController.ensureInferenceStopped(() =>
@@ -176,7 +180,10 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
         onConfirm: () => {
           sessionStore.discardSession();
         },
-      })
+      }),
+      {
+        toastMessage: 'Inference gestoppt, bevor die Session gelöscht wird.',
+      }
     );
   });
 }

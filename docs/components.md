@@ -33,5 +33,6 @@
 - `classController`: wraps per-class destructive actions with confirmations.
 - `sampleController`: guards per-sample deletes (blocked during training) and runs them through the shared confirm dialog so Collect UI never mutates the store directly.
 - `trainingController`: dispatches start requests to `trainWithRecordedSamples` and confirms `abortTraining` so mid-run cancellations are intentional.
+- `inferenceController`: central “stop inference before destructive action” guard that now also emits toasts when it has to halt a running preview.
 
 Refer back to `src/app/components/registerComponents.js` for how these are registered in Alpine.

@@ -1,6 +1,11 @@
 import { sessionStore as realStore, INFERENCE_STATUS } from '../store/sessionStore.js';
 
-export function createInferenceController({ store = realStore, confirm, stopLiveInference } = {}) {
+export function createInferenceController({
+  store = realStore,
+  confirm,
+  stopLiveInference,
+  notify,
+} = {}) {
   if (typeof confirm !== 'function') {
     throw new Error('[inferenceController] confirm function required');
   }
@@ -8,7 +13,17 @@ export function createInferenceController({ store = realStore, confirm, stopLive
     throw new Error('[inferenceController] stopLiveInference function required');
   }
 
-  const ensureInferenceStopped = (next) => {
+  const sendToast = (options = {}) => {
+    if (typeof notify !== 'function') return;
+    if (!options.message) return;
+    notify({
+      title: options.title || 'Inference gestoppt',
+      message: options.message,
+      tone: options.tone || 'info',
+    });
+  };
+
+  const ensureInferenceStopped = (next, options = {}) => {
     const running = store.getState().inference.status === INFERENCE_STATUS.RUNNING;
     if (!running) {
       next?.();
@@ -21,6 +36,11 @@ export function createInferenceController({ store = realStore, confirm, stopLive
       destructive: true,
       onConfirm: () => {
         stopLiveInference();
+        sendToast({
+          title: options.toastTitle,
+          message: options.toastMessage,
+          tone: options.toastTone,
+        });
         next?.();
       },
     });

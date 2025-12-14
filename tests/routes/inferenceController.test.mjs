@@ -57,6 +57,34 @@ test('ensureInferenceStopped opens confirm when running', () => {
   assert.equal(stopCalled, true);
 });
 
+test('ensureInferenceStopped emits toast when notify + message provided', () => {
+  const store = createStore({
+    inference: { status: INFERENCE_STATUS.RUNNING },
+  });
+  let toastPayload = null;
+  const controller = createInferenceController({
+    store,
+    confirm: (options) => {
+      options.onConfirm();
+    },
+    stopLiveInference: () => {},
+    notify: (payload) => {
+      toastPayload = payload;
+    },
+  });
+  controller.ensureInferenceStopped(
+    () => {},
+    {
+      toastMessage: 'Inference beendet.',
+      toastTitle: 'Hinweis',
+      toastTone: 'warning',
+    }
+  );
+  assert.equal(toastPayload.message, 'Inference beendet.');
+  assert.equal(toastPayload.title, 'Hinweis');
+  assert.equal(toastPayload.tone, 'warning');
+});
+
 function test(name, fn) {
   try {
     fn();
