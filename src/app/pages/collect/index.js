@@ -91,9 +91,25 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
         </section>
         <div class="collect-class-list">
           <template x-if="classes.length === 0">
-            <div class="collect-empty">
-              <h3>Noch keine Klassen</h3>
-              <p>Füge mindestens zwei Klassen hinzu, benenne sie und sammle Beispiele.</p>
+            <div class="collect-empty" x-data="collectEmpty()" x-init="init()">
+              <div>
+                <p class="eyebrow">Schritt 1</p>
+                <h3>Lege mindestens zwei Klassen an</h3>
+                <p>Benötigst du Inspiration? Überlege dir Gegensätze (z. B. „Katze vs. Hund“ oder „Applaus vs. Stille“), benenne die Klassen und sammle pro Klasse mehrere Beispiele.</p>
+              </div>
+              <ul>
+                <li>⚡️ Mindestens 10 Beispiele pro Klasse erfassen.</li>
+                <li>🎙️ Audio-Sessions: Vergiss die 20s Hintergrundaufnahme nicht.</li>
+                <li>🎯 Kamerasessions: Variiere Perspektive und Licht.</li>
+              </ul>
+              <button
+                type="button"
+                class="primary"
+                @click="addFirstClass()"
+                :disabled="trainingLocked"
+              >
+                Erste Klasse hinzufügen
+              </button>
             </div>
           </template>
           <template x-for="classItem in classes" :key="classItem.id">

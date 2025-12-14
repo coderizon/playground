@@ -8,7 +8,7 @@ export function registerClassCard(Alpine) {
     classId,
     classState: null,
     trainingLocked: sessionStore.getState().training?.status === TRAINING_STATUS.RUNNING,
-    validationErrors: {},
+    nameError: '',
     unsubscribe: null,
 
     init() {
@@ -23,7 +23,6 @@ export function registerClassCard(Alpine) {
     sync(state) {
       this.classState = state.classes.find((cls) => cls.id === this.classId) || null;
       this.trainingLocked = state.training?.status === TRAINING_STATUS.RUNNING;
-      this.validationErrors = state.validationErrors || {};
     },
 
     get dataset() {
@@ -39,11 +38,12 @@ export function registerClassCard(Alpine) {
     },
 
     datasetChipClass() {
+      const status = this.dataset.status || DATASET_STATUS.EMPTY;
       return {
         'dataset-chip': true,
-        'dataset-chip--ready': this.dataset.status === DATASET_STATUS.READY,
-        'dataset-chip--recording': this.dataset.status === DATASET_STATUS.RECORDING,
-        'dataset-chip--error': this.dataset.status === DATASET_STATUS.ERROR,
+        'dataset-chip--ready': status === DATASET_STATUS.READY,
+        'dataset-chip--recording': status === DATASET_STATUS.RECORDING,
+        'dataset-chip--error': status === DATASET_STATUS.ERROR,
       };
     },
 
@@ -61,7 +61,14 @@ export function registerClassCard(Alpine) {
     },
 
     commitName(nextValue) {
-      classController.commitName?.(this.classState, nextValue);
+      const sanitized = sanitize(nextValue);
+      const error = validateName(this.classId, sanitized);
+      if (error) {
+        this.nameError = error;
+        return;
+      }
+      this.nameError = '';
+      sessionStore.setClassName(this.classId, sanitized);
     },
 
     deleteClass() {
@@ -69,7 +76,21 @@ export function registerClassCard(Alpine) {
     },
 
     errorMessage() {
-      return this.validationErrors?.[this.classId] || '';
+      return this.nameError;
     },
   }));
+}
+
+function sanitize(value) {
+  return typeof value === 'string' ? value.trim().slice(0, 60) : '';
+}
+
+function validateName(id, value) {
+  if (!value) return 'Name erforderlich';
+  const classes = sessionStore.getState().classes || [];
+  const duplicate = classes.some(
+    (cls) => cls.id !== id && (cls.name || '').toLowerCase() === value.toLowerCase()
+  );
+  if (duplicate) return 'Name bereits vergeben';
+  return '';
 }
