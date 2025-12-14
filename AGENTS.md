@@ -23,3 +23,5 @@ Use this as a personal scratchpad so every task stays aligned with the contract 
 
 6. **Commit discipline**
    - After each task: run tests, commit with a descriptive message, then pick the next backlog item. Never leave work uncommitted for the next step.
+7. **Self-directed slices**
+   - When finishing a task, choose the next slice yourself from `refactoring-plans/progress.md` (Remaining Work) until the entire `vision.md` contract is satisfied. Do not wait for explicit instructions between slices.
