@@ -645,7 +645,7 @@
   }
 
   .sample-album-card-latest {
-    @apply z-20;
+    @apply z-10;
   }
 
   .sample-album-placeholder {
