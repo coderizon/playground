@@ -128,21 +128,21 @@ export function Collect({ state }) {
 
   return (
     <section className="collect-page">
-      <header className="collect-header">
-        <div>
-          <p className="eyebrow">Schritt 2 · Classes & Data Collection</p>
-          <h1>Definiere deine Klassen</h1>
-          <p className="subline">
-            Erstelle Klassen, sammle Beispiele und mache den Trainingsschritt bereit.
-          </p>
-        </div>
-        <div className="collect-header__actions">
-          <button type="button" className="ghost" onClick={goHome}>Zurück zur Auswahl</button>
-          <button type="button" className="secondary" onClick={handleGoTrain} disabled={!trainingReady}>Weiter zu Training</button>
-        </div>
-      </header>
+      <div className="collect-context">
+        <header className="collect-header">
+          <div>
+            <p className="eyebrow">Schritt 2 · Classes & Data Collection</p>
+            <h1>Definiere deine Klassen</h1>
+            <p className="subline">
+              Erstelle Klassen, sammle Beispiele und mache den Trainingsschritt bereit.
+            </p>
+          </div>
+          <div className="collect-header__actions">
+            <button type="button" className="ghost" onClick={goHome}>Zurück zur Auswahl</button>
+            <button type="button" className="secondary" onClick={handleGoTrain} disabled={!trainingReady}>Weiter zu Training</button>
+          </div>
+        </header>
 
-      <section className="collect-body">
         {trainingHint && <NoticeBanner tone="info" title="Training-Hinweis" message={trainingHint} />}
         
         <CollectToolbar 
@@ -170,6 +170,9 @@ export function Collect({ state }) {
             Beende zuerst alle laufenden Aufnahmen, bevor du neue Klassen hinzufügst.
           </p>
         )}
+      </div>
+
+      <section className="collect-body">
         <div className="collect-class-list">
           {classes.length === 0 ? (
             <CollectEmpty onAddFirst={handleAddClass} trainingLocked={addClassDisabled} />
@@ -184,6 +187,41 @@ export function Collect({ state }) {
               />
             ))
           )}
+        </div>
+
+        <div className="collect-mobile-toolbar" aria-live="polite">
+          <div className="collect-mobile-stats">
+            <div>
+              <p className="eyebrow">Klassen</p>
+              <strong>{classes.length}</strong>
+            </div>
+            <div>
+              <p className="eyebrow">Bereit</p>
+              <strong>{classes.filter(c => c.dataset?.status === DATASET_STATUS.READY).length}/{classes.length}</strong>
+            </div>
+            <div>
+              <p className="eyebrow">Samples</p>
+              <strong>{totalSamples}</strong>
+            </div>
+          </div>
+          <div className="collect-mobile-actions">
+            <button
+              type="button"
+              className="primary"
+              onClick={handleAddClass}
+              disabled={addClassDisabled}
+            >
+              Klasse hinzufügen
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              onClick={handleGoTrain}
+              disabled={!trainingReady}
+            >
+              Zu Training
+            </button>
+          </div>
         </div>
       </section>
     </section>
