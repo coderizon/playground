@@ -20,7 +20,28 @@
 - **Permissions**: updates `sessionStore.permissions` so `permissionAlerts` and edge streaming know when cameras/mics are blocked.
 - **Follow-up**: Scrub slider + metadata counters and the background-noise guidance pill are in place; next focus is polishing per-sample annotations/metadata UX (see `progress.md` backlog).
 
-## Inference Controls (`src/app/components/inference/inferenceControls.js`)
+## Home Task Grid (`src/app/pages/home/index.js`)
+
+- **Purpose**: SPA entry point for selecting a `(task, model)` combination. Mirrors the landing-grid requirements from `vision.md`.
+- **Wiring**: Renders cards from `getAvailableTaskModels()` and calls `sessionStore.startSession(task)` on click. The session sidebar subscribes to the store to show the current task/step, and `Ctrl+Shift+D/H` shortcuts are surfaced inline for discoverability.
+- **UX polish**: The hero now renders an explicit journey checklist plus a guardrail panel that restates the session invariants (ephemeral data, controller-only destructive paths, inference stop requirements) so we can drop the legacy landing copy entirely.
+- **Accessibility**: cards expose `aria-labelledby`/`aria-describedby`, modality/effort badges have `aria-label`s, and the grid advertises keyboard instructions via `aria-describedby="taskGridHint"`.
+
+## Collect Empty State (`src/app/components/class/collectEmpty.js`)
+
+- **Purpose**: Encourages first-time users to add classes (with tips + CTA) whenever the class list is empty.
+- **Wiring**: Registers as `collectEmpty`; subscribes to training lock state and dispatches `sessionStore.addClass()` when the CTA is pressed.
+- **Styling**: Uses `.collect-empty` Tailwind tokens so the panel stays visually consistent with the rest of the Collect page.
+
+## Class Card (`src/app/components/class/classCard.js`)
+
+- **Purpose**: Wraps per-class state (name, dataset chip/status, delete intent) so `pages/collect/index.js` only concerns layout.
+- **State/guards**:
+  - Subscribes to the store to read `classState` and training lock flags.
+  - Validates names locally before calling `sessionStore.setClassName`.
+  - Calls `classController.removeClassWithConfirm` for destructive actions.
+
+## Dataset Recorder Controls (`src/app/components/dataset/datasetRecorder.js`)
 
 - **Purpose**: prepares the preview stream, exposes start/stop actions, and reports inference status + FPS hints to learners.
 - **Guard usage**: delegates destructive navigation to `inferenceController.ensureInferenceStopped` (see `pages/infer/view.js`).
@@ -37,6 +58,12 @@
 - **Purpose**: `getEdgeStreamingContext` centralizes whether streaming is allowed (camera permission + training freshness). `edgePanel` consumes it to disable toggles and surface reasons.
 - **Guard usage**: edge disconnect + session discard go through `inferenceController.ensureInferenceStopped`.
 - **Tests**: `tests/store/selectors.retry.test.mjs` for selector logic, `tests/routes/sessionController.test.mjs`/`tests/routes/inferenceController.test.mjs` for guards.
+
+## Training Summary Panel (`src/app/components/training/trainingSummaryPanel.js`)
+
+- **Purpose**: Renders the readiness/issue sidebar on the Train page, keeping dataset blockers + audio checks in sync with selectors.
+- **State**: subscribes to `getTrainingSummary`, `getDatasetReadinessIssues`, and `getAudioBackgroundIssues`.
+- **Usage**: Mounted once in `pages/train/index.js`; keeps CTA logic (`trainingPanel`) focused on actions.
 
 ## Navigation/Session Controllers
 

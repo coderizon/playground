@@ -20,7 +20,7 @@
   - Edge panel component connects BLE devices, toggles streaming, mirrors connection/streaming state on the inference page, persists the last selected device/error in `sessionStore.edge`, auto-opens the BLE modal on failures, highlights the selected device with inline error copy, shows device thumbnails plus quick-start steps for Arduino, Micro:bit und Calliope, and now provides a11y affordances (focus trap, Escape handling, labeled dialog) so keyboard-only users can recover from BLE errors. The panel defers all destructive actions (disconnect, streaming toggles) to the inference guard + new `getEdgeStreamingContext` selector so inference must stop before disconnecting and streaming stays disabled until camera permissions are restored and stale datasets retrained. BLE disconnects now route through a dedicated `edgeController` that confirms the action, uses the inference guard to stop live predictions first, and emits toasts so learners always understand why the hardware session stopped.
 - **Styling + accessibility foundation**: Tailwind entry point lives in `src/styles/main.css` (with `@tailwind base/components/utilities` plus a `@layer components` block). That sheet now defines the SPA’s shared tokens (buttons, notices, modals) and page layouts for Home/Collect/Train/Infer, so the new journey renders with consistent spacing/typography without the orphaned `collect.css`. The same layer ships the shared `.visually-hidden` helper, consistent focus-visible rings, and Tailwind overrides for the landing hero cards + side menu, aligning the legacy landing with the SPA palette while we finish the migration.
 - **Flow coverage**:
-  - **Home**: task/model grid wired to the store, session discard/back-to-home controls. The legacy landing view now only showcases the experience; all data collection/training/inference UI lives inside the SPA.
+  - **Home**: task/model grid wired to the store, session discard/back-to-home controls, and a dedicated hero that restates the declarative journey + guardrails so the SPA itself now carries the onboarding messaging (legacy landing copy is no longer required).
   - **Collect**: classes + recording previews, dataset readiness gating, summary panel with per-class blockers, training progression guard.
   - **Train**: MobileNet feature extraction + real classifier training via `modelBridge.js`, progress bar, guard-driven navigation, blocker list fed by dataset readiness metadata.
   - **Infer**: Live camera inference loop, FPS-aware start/stop guard via `inferenceControls` (with before-unload protection + confirmations), throttled prediction display, explicit streaming toggle/notice. The legacy preview column and BLE modal were removed so the SPA edge panel remains the sole implementation.
@@ -34,11 +34,9 @@
 
 ## Remaining Work to Fulfill `vision.md`
 
-The edge-streaming parity/QA slice is complete (store persistence, modal UX, tests, and hardware checklist). To reach the full contract, tackle the remaining pillars in this order:
+Edge-streaming parity is complete and the SPA Home hero now satisfies the onboarding/polish requirements from `vision.md`. The outstanding pillar is:
 
-1. **UX polish & structure**
-   - Continue migrating legacy utility classes to Tailwind and extract Home/Collect/Train/Infer logic into focused controllers/components so the SPA matches the architecture described in `vision.md`. All legacy columns/modals are now gone; the remaining work is polishing the SPA Home experience (hero grid, onboarding copy) so we can drop the last landing assets.
-2. **Documentation & onboarding**
-   - Keep this progress file up to date per sprint and expand the component/guard docs (`docs/components.md`) once the final structure settles so new contributors have a clear reference.
+1. **Documentation & onboarding**
+   - Keep this progress file current and expand the onboarding docs (component map, guard overview, quick-start contributor notes) so new contributors can navigate the SPA architecture without relying on institutional knowledge.
 
 Keep referencing `refactoring-plans/vision.md` as the contract; this file tracks implementation status and outstanding work.

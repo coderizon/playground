@@ -3,39 +3,88 @@ import { getAvailableTaskModels } from '../../data/taskModels.js';
 import { goHome } from '../../routes/navigationController.js';
 import { discardSessionWithConfirm } from '../../routes/sessionController.js';
 
+const JOURNEY_STEPS = [
+  {
+    step: 'Home',
+    title: 'Task wählen',
+    description: 'Jede Karte startet eine neue Session mit den passenden Modalitäten und Guardrails.',
+  },
+  {
+    step: 'Collect',
+    title: 'Klassen definieren',
+    description: 'Klassen benennen, Samples aufnehmen, Hintergrund-Abdeckung sicherstellen.',
+  },
+  {
+    step: 'Train',
+    title: 'Modell aktualisieren',
+    description: 'TF.js Trainingslauf starten, Sperren respektieren und Abbruch bestätigen.',
+  },
+  {
+    step: 'Infer',
+    title: 'Live testen & streamen',
+    description: 'Inference nur nach Training starten, Edge-Streaming bewusst aktivieren.',
+  },
+];
+
+const SESSION_RULES = [
+  'Sessions sind flüchtig – Reload oder Verwerfen löscht alle Daten.',
+  'Destruktive Aktionen laufen über die Controller + Dialoge, nie direkt über Stores.',
+  'Inference & Edge-Streaming stoppen bevor Navigation oder Disconnect passiert.',
+];
+
 export function renderHomePage(root, state = sessionStore.getState()) {
   if (!root) return;
 
   root.innerHTML = `
     <section class="new-app-home">
       <header class="new-app-home__header">
-        <p class="eyebrow">Playground Journey</p>
-        <h1>Wähle deine Aufgabe</h1>
-        <p class="subline">
-          Jede Karte startet eine frische Session entsprechend der autorisierten Journey
-          (Home → Collect → Train → Infer).
-        </p>
+        <div class="home-hero">
+          <p class="eyebrow">Playground Journey</p>
+          <h1>Starte dein Experiment</h1>
+          <p class="subline">
+            Playground ist eine geführte SPA: Jede Session folgt exakt Home → Collect → Train → Infer.
+            Diese Seite ist der einzige Eintrittspunkt – hier entscheidest du über Modalität, Aufwand und ob BLE-Streaming nötig ist.
+          </p>
+          <ul class="home-journey" role="list">
+            ${renderJourneySteps()}
+          </ul>
+        </div>
+
+        <div class="home-guardrails" aria-live="polite">
+          <p class="eyebrow">Session Guardrails</p>
+          <p class="home-guardrails__copy">
+            Alle Sessions sind deterministisch: Guards blockieren destruktive Aktionen während Training oder aktiver Inferenz.
+            Bevor du eine Karte startest, lies dir die Regeln erneut durch.
+          </p>
+          <ul class="home-guardrails__list">
+            ${renderSessionRules()}
+          </ul>
+        </div>
       </header>
 
-      <p class="task-grid-instructions" id="taskGridHint">
-        Nutze Tab, um Karten zu fokussieren, und bestätige mit Enter oder Leertaste. Verfügbarkeit und Aufwand werden vorgelesen.
-      </p>
-      <div class="task-grid" data-home-grid role="list" aria-describedby="taskGridHint"></div>
-
-      <aside class="session-state" aria-live="polite">
-        <h2>Session Status</h2>
-        <p data-session-state>Keine Session gestartet.</p>
-        <div class="session-controls">
-          <button type="button" data-discard-session class="ghost" disabled>Session verwerfen</button>
-          <button type="button" data-go-home class="secondary" disabled>Zu Home zurück</button>
+      <div class="home-main">
+        <div class="home-grid-panel">
+          <p class="task-grid-instructions" id="taskGridHint">
+            Nutze Tab, um Karten zu fokussieren, und bestätige mit Enter oder Leertaste. Verfügbarkeit und Aufwand werden vorgelesen.
+          </p>
+          <div class="task-grid" data-home-grid role="list" aria-describedby="taskGridHint"></div>
         </div>
-        <p class="session-shortcuts" role="note" aria-live="polite">
-          Tastatur:
-          <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> Session verwerfen</span>
-          ·
-          <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> Zurück nach Home</span>
-        </p>
-      </aside>
+
+        <aside class="session-state" aria-live="polite">
+          <h2>Session Status</h2>
+          <p data-session-state>Keine Session gestartet.</p>
+          <div class="session-controls">
+            <button type="button" data-discard-session class="ghost" disabled>Session verwerfen</button>
+            <button type="button" data-go-home class="secondary" disabled>Zu Home zurück</button>
+          </div>
+          <p class="session-shortcuts" role="note" aria-live="polite">
+            Tastatur:
+            <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> Session verwerfen</span>
+            ·
+            <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> Zurück nach Home</span>
+          </p>
+        </aside>
+      </div>
     </section>
   `;
 
@@ -150,4 +199,30 @@ function getAvailabilityCopy(status) {
     default:
       return '';
   }
+}
+
+function renderJourneySteps() {
+  return JOURNEY_STEPS.map(
+    (item, index) => `
+      <li class="home-journey__item">
+        <div class="home-journey__index" aria-hidden="true">${index + 1}</div>
+        <div>
+          <p class="home-journey__step">${item.step}</p>
+          <p class="home-journey__title">${item.title}</p>
+          <p class="home-journey__description">${item.description}</p>
+        </div>
+      </li>
+    `
+  ).join('');
+}
+
+function renderSessionRules() {
+  return SESSION_RULES.map(
+    (item) => `
+      <li>
+        <span class="home-guardrails__bullet" aria-hidden="true"></span>
+        <p>${item}</p>
+      </li>
+    `
+  ).join('');
 }
