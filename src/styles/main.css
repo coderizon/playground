@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .collect-grid {
+    @apply grid gap-4;
+  }
+
+  .class-card {
+    @apply border border-gray-300 rounded-2xl bg-white p-4 shadow-sm;
+  }
+
+  .class-card header {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .class-card input[type='text'] {
+    @apply border border-gray-300 rounded-lg px-3 py-2 text-base flex-1;
+  }
+
+  .dataset-chip {
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  .dataset-chip--ready {
+    @apply bg-emerald-100 text-emerald-800;
+  }
+
+  .dataset-chip--recording {
+    @apply bg-amber-100 text-amber-800;
+  }
+
+  .dataset-chip--error {
+    @apply bg-red-100 text-red-800;
+  }
+
+  .dataset-preview {
+    @apply mt-4 border border-gray-200 rounded-xl overflow-hidden min-h-[140px] grid place-items-center bg-black;
+  }
+
+  .dataset-preview.is-audio {
+    @apply bg-slate-900 text-slate-100 p-4;
+  }
+
+  .dataset-hint {
+    @apply mt-2 text-sm text-slate-600;
+  }
+
+  .class-card-actions {
+    @apply flex gap-3 mt-3;
+  }
+
+  .dataset-recorder {
+    @apply outline-none;
+  }
+
+  .dataset-recorder:focus-visible {
+    @apply shadow-[0_0_0_3px_rgba(63,115,255,0.3)];
+  }
+
+  .dataset-hotkeys {
+    @apply flex gap-3 text-xs text-slate-500 my-2;
+  }
+
+  .dataset-hotkeys span {
+    @apply inline-flex items-center gap-1;
+  }
+
+  .dataset-hotkeys kbd {
+    @apply font-['Space_Grotesk'] text-[11px] border border-gray-300 rounded px-2 py-0.5 bg-white;
+  }
+}
