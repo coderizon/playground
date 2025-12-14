@@ -127,6 +127,10 @@ export function Collect({ state }) {
   };
 
   const floatingHints = [];
+  if (trainingHint) {
+    floatingHints.push(trainingHint);
+  }
+
   if (trainingLocked) {
     floatingHints.push('Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.');
   } else {
@@ -155,8 +159,6 @@ export function Collect({ state }) {
           </div>
         </header>
 
-        {trainingHint && <NoticeBanner tone="info" title="Training-Hinweis" message={trainingHint} />}
-        
         <CollectToolbar 
           classCount={classes.length} 
           onAddClass={handleAddClass} 
@@ -218,16 +220,16 @@ export function Collect({ state }) {
           </div>
         </div>
       </section>
-    </section>
 
       {floatingHints.length > 0 && (
         <div className="collect-floating-hints" aria-live="polite">
-          {floatingHints.map((message, index) => (
+          {floatingHints.map((message) => (
             <p key={message} className="collect-lock-hint" role="status">
               {message}
             </p>
           ))}
         </div>
       )}
+    </section>
   );
 }
