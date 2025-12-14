@@ -128,10 +128,13 @@ export function registerDatasetComponents(Alpine) {
     },
 
     sampleList() {
-      return (this.dataset.samples || []).map((sample, index) => ({
+      const samples = this.dataset.samples || [];
+      return samples.map((sample, index) => ({
         ...sample,
-        label: `Sample ${index + 1}`,
+        label: sample.label || `Sample ${index + 1}`,
         canDelete: !this.recording && !this.trainingLocked,
+        displayLabel: this.sampleLabel(sample, index),
+        displayDuration: this.sampleDuration(sample),
       }));
     },
 
@@ -414,6 +417,41 @@ export function registerDatasetComponents(Alpine) {
     audioBackgroundStatus() {
       if (!this.isAudioTask) return '';
       return this.hasBackgroundSample()
+        ? 'Hintergrund erfasst – kombiniere ihn mit Kurzclips für klare Signale.'
+        : 'Füge eine 20s Hintergrundaufnahme hinzu, damit das Modell Stille erkennt.';
+    },
+
+    hasBackgroundSample() {
+      const samples = this.dataset.samples || [];
+      return samples.some((sample) => (sample.durationMs || 0) >= BACKGROUND_MIN_DURATION);
+    },
+
+    sampleLabel(sample, index = 0) {
+      if ((sample.durationMs || 0) >= BACKGROUND_MIN_DURATION || sample.preset === 'background') {
+        return 'Hintergrund';
+      }
+      return sample.label || `Sample ${index + 1}`;
+    },
+
+    sampleDuration(sample) {
+      if (!sample.durationMs) return sample.source || '';
+      return `${(sample.durationMs / 1000).toFixed(1)}s`;
+    },
+
+    audioPresetHint() {
+      if (!this.isAudioTask) return '';
+      const preset = AUDIO_PRESETS[this.activePreset] || AUDIO_PRESETS.clip;
+      return preset.hint;
+    },
+
+    activePresetLabel() {
+      const preset = AUDIO_PRESETS[this.activePreset] || AUDIO_PRESETS.clip;
+      return preset.label;
+    },
+
+    audioBackgroundStatus() {
+      if (!this.isAudioTask) return '';
+      return this.hasBackgroundSample()
         ? 'Hintergrund erfasst · kombiniere mit Kurzclips.'
         : 'Füge eine 20s Hintergrundaufnahme hinzu, damit das Modell Stille kennt.';
     },
@@ -462,4 +500,13 @@ export function registerDatasetComponents(Alpine) {
       this.audioProgress = 0;
     },
   }));
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }

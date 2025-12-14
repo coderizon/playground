@@ -420,6 +420,36 @@ body[data-mode="face"] .preview-column {
   padding: 18px;
 }
 
+.dataset-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #4a5564;
+}
+
+.audio-preset-hint {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #f4f7fb;
+  font-size: 13px;
+  color: #253041;
+}
+
+.audio-preset-hint strong {
+  margin-right: 4px;
+}
+
+.audio-background-status {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #5a6475;
+}
+
+.sample-audio-player {
+  width: 100%;
+  margin-top: 8px;
+}
+
 .audio-preview {
   width: 100%;
 }

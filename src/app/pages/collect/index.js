@@ -96,16 +96,16 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                     </template>
                   </template>
                   <template x-if="isAudioTask">
-                    <div class="audio-preview">
-                      <div class="audio-meter" :class="{'is-active': recording}"></div>
-                      <div class="audio-guidance">
-                        <p x-text="audioStatusLabel()"></p>
-                        <small>Sprich zügig durch · 2s pro Sample</small>
-                        <div class="audio-progress-bar">
-                          <div class="audio-progress-fill" :style="{'width': audioProgress + '%'}"></div>
-                        </div>
-                      </div>
+                <div class="audio-preview">
+                  <div class="audio-meter" :class="{'is-active': recording}"></div>
+                  <div class="audio-guidance">
+                    <p x-text="audioStatusLabel()"></p>
+                    <small x-text="audioPresetHint()"></small>
+                    <div class="audio-progress-bar">
+                      <div class="audio-progress-fill" :style="{'width': audioProgress + '%'}"></div>
                     </div>
+                  </div>
+                </div>
                   </template>
                 </div>
                 <p class="field-error" x-show="error" x-text="error"></p>
@@ -146,6 +146,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                   </p>
                   <p class="audio-background-status" x-text="audioBackgroundStatus()"></p>
                 </div>
+                <div class="audio-preset-hint" x-show="isAudioTask">
+                  <p>
+                    <strong x-text="activePresetLabel()"></strong>
+                    <span x-text="audioPresetHint()"></span>
+                  </p>
+                  <p class="audio-background-status" x-text="audioBackgroundStatus()"></p>
+                </div>
                 <p class="dataset-hint" x-text="statusHint()"></p>
                 <div class="sample-list" x-show="sampleList().length">
                   <p class="eyebrow">Samples</p>
@@ -157,8 +164,16 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                             <img :src="sample.thumbnail" alt="Sample Vorschau" class="sample-thumb">
                           </template>
                           <div>
-                            <strong x-text="sample.label"></strong>
-                            <span x-text="sample.durationMs ? (sample.durationMs / 1000) + 's' : sample.source"></span>
+                            <strong x-text="sample.displayLabel"></strong>
+                            <span x-text="sample.displayDuration"></span>
+                            <template x-if="sample.audioUrl">
+                              <audio
+                                class="sample-audio-player"
+                                controls
+                                :src="sample.audioUrl"
+                                preload="metadata"
+                              ></audio>
+                            </template>
                           </div>
                         </div>
                         <button type="button" class="ghost" @click="removeSample(sample)" :disabled="!sample.canDelete">Entfernen</button>
