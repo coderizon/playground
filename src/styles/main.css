@@ -635,7 +635,7 @@
   }
 
   .inference-video {
-    @apply overflow-hidden rounded-3xl border border-slate-200 bg-slate-900;
+    @apply relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900;
   }
 
   .inference-video video {

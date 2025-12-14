@@ -51,7 +51,7 @@
   - **Home**: task/model grid wired to the store, session discard/back-to-home controls, and a dedicated hero that restates the declarative journey + guardrails so the SPA itself now carries the onboarding messaging (legacy landing copy is no longer required).
   - **Collect**: classes + recording previews, dataset readiness gating, summary panel with per-class blockers, training progression guard.
   - **Train**: MobileNet feature extraction + real classifier training via `modelBridge.js`, progress bar, guard-driven navigation, blocker list fed by dataset readiness metadata.
-  - **Infer**: Live camera inference loop, FPS-aware start/stop guard via `inferenceControls` (with before-unload protection + confirmations), throttled prediction display, explicit streaming toggle/notice. The legacy preview column and BLE modal were removed so the SPA edge panel remains the sole implementation.
+  - **Infer**: Live camera inference loop, FPS-aware start/stop guard via `inferenceControls` (with before-unload protection + confirmations), throttled prediction display, explicit streaming toggle/notice. Die „Gesichtsvorschau“-Aufgabe nutzt jetzt den Mediapipe Face Landmarker mit Canvas-Overlay und zeigt die Blendshape-Wahrscheinlichkeiten ohne Training direkt in der Vorhersageliste an. The legacy preview column and BLE modal were removed so the SPA edge panel remains the sole implementation.
 - **Services**:
   - `services/media/cameraService.js` centralizes camera stream handling.
   - `services/ml/modelBridge.js` uses TF.js to capture embeddings, train, and infer.
