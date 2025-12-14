@@ -7,6 +7,7 @@ import { registerTrainingComponents } from './training/trainingPanel.js';
 import { registerInferenceComponents } from './inference/predictionPanel.js';
 import { registerInferenceControls } from './inference/inferenceControls.js';
 import { registerToastComponent } from './common/toast.js';
+import { registerPermissionAlerts } from './common/permissionAlerts.js';
 
 export function registerAppComponents(Alpine) {
   registerClassComponents(Alpine);
@@ -18,4 +19,5 @@ export function registerAppComponents(Alpine) {
   registerInferenceComponents(Alpine);
   registerInferenceControls(Alpine);
   registerToastComponent(Alpine);
+  registerPermissionAlerts(Alpine);
 }

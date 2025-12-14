@@ -34,12 +34,19 @@ const EDGE_STATUS = Object.freeze({
   ERROR: 'error',
 });
 
+const PERMISSION_STATUS = Object.freeze({
+  UNKNOWN: 'unknown',
+  GRANTED: 'granted',
+  BLOCKED: 'blocked',
+});
+
 export {
   STEP,
   DATASET_STATUS,
   TRAINING_STATUS,
   INFERENCE_STATUS,
   EDGE_STATUS,
+  PERMISSION_STATUS,
 };
 
 export function createInitialSessionState(overrides = {}) {
@@ -77,6 +84,7 @@ export function createInitialSessionState(overrides = {}) {
       error: null,
       selectedDevice: null,
     },
+    permissions: createPermissionState(),
   };
 
   return {
@@ -388,6 +396,29 @@ export function createSessionStore(initial = createInitialSessionState()) {
     });
   };
 
+  const setPermissionState = (type, patch = {}) => {
+    if (!type) return;
+    setState((current) => {
+      const permissions = current.permissions || createPermissionState();
+      const existing = permissions[type];
+      if (!existing) return current;
+      const nextStatus = validatePermissionStatus(patch.status) || existing.status;
+      const nextEntry = freezeState({
+        ...existing,
+        ...patch,
+        status: nextStatus,
+        updatedAt: patch.updatedAt ?? Date.now(),
+      });
+      return {
+        ...current,
+        permissions: {
+          ...permissions,
+          [type]: nextEntry,
+        },
+      };
+    });
+  };
+
   const setStep = (step) => {
     if (!Object.values(STEP).includes(step)) return;
     setState((current) => ({
@@ -416,6 +447,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
     setTrainingStatus,
     setInferenceStatus,
     setEdgeStatus,
+    setPermissionState,
     setInferenceStreaming,
     setStep,
     removeClass: (classId) => {
@@ -432,6 +464,19 @@ export function createSessionStore(initial = createInitialSessionState()) {
 }
 
 export const sessionStore = createSessionStore();
+
+function createPermissionState(overrides = {}) {
+  const now = Date.now();
+  const defaultEntry = {
+    status: PERMISSION_STATUS.UNKNOWN,
+    message: null,
+    updatedAt: now,
+  };
+  return {
+    camera: { ...defaultEntry, ...(overrides.camera || {}) },
+    microphone: { ...defaultEntry, ...(overrides.microphone || {}) },
+  };
+}
 
 function createClassState(options = {}) {
   const id = options.id || createId();
@@ -494,6 +539,10 @@ function validateInferenceStatus(status) {
 
 function validateEdgeStatus(status) {
   return Object.values(EDGE_STATUS).includes(status) ? status : null;
+}
+
+function validatePermissionStatus(status) {
+  return Object.values(PERMISSION_STATUS).includes(status) ? status : null;
 }
 
 function sanitizeClassNameInput(name) {

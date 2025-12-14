@@ -2,6 +2,7 @@ import {
   sessionStore,
   DATASET_STATUS,
   TRAINING_STATUS,
+  PERMISSION_STATUS,
 } from '../../store/sessionStore.js';
 import { createClassController } from '../../routes/classController.js';
 import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
@@ -201,6 +202,10 @@ export function registerDatasetComponents(Alpine) {
         const stream = await requestCameraStream();
         this.error = null;
         this.lastPermissionError = '';
+        sessionStore.setPermissionState('camera', {
+          status: PERMISSION_STATUS.GRANTED,
+          message: null,
+        });
         this.attachPreview(stream);
         activeRecorderId = this.classId;
         this.recording = true;
@@ -212,6 +217,10 @@ export function registerDatasetComponents(Alpine) {
         console.error(err);
         this.error = 'Kamera konnte nicht gestartet werden.';
         this.lastPermissionError = err?.message || 'Bitte erlaube den Zugriff und versuche es erneut.';
+        sessionStore.setPermissionState('camera', {
+          status: PERMISSION_STATUS.BLOCKED,
+          message: this.lastPermissionError,
+        });
         showToast({
           title: 'Kamera blockiert',
           message: this.lastPermissionError,
@@ -336,6 +345,10 @@ export function registerDatasetComponents(Alpine) {
         await requestMicrophoneStream();
         this.error = null;
         this.lastPermissionError = '';
+        sessionStore.setPermissionState('microphone', {
+          status: PERMISSION_STATUS.GRANTED,
+          message: null,
+        });
         activeRecorderId = this.classId;
         this.recording = true;
         this.audioStopRequested = false;
@@ -351,6 +364,10 @@ export function registerDatasetComponents(Alpine) {
         console.error(error);
         this.error = error?.message || 'Mikrofon konnte nicht gestartet werden.';
         this.lastPermissionError = this.error;
+        sessionStore.setPermissionState('microphone', {
+          status: PERMISSION_STATUS.BLOCKED,
+          message: this.error,
+        });
         showToast({
           title: 'Mikrofon blockiert',
           message: this.error,

@@ -28,6 +28,17 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
       </header>
       <section class="collect-body" x-data="classList()" x-init="init()">
         ${trainingHint ? `<div class="notice notice--info">${trainingHint}</div>` : ''}
+        <section class="permission-notices" x-data="permissionAlerts()" x-init="init()" x-show="issues.length">
+          <template x-for="issue in issues" :key="issue.id">
+            <div class="notice notice--warning">
+              <div class="notice-body">
+                <strong x-text="issue.title"></strong>
+                <p x-text="issue.message"></p>
+                <p class="notice-hint" x-text="issue.hint"></p>
+              </div>
+            </div>
+          </template>
+        </section>
         <div class="collect-toolbar">
           <button type="button" class="primary" @click="addClass" :disabled="trainingLocked">Klasse hinzufügen</button>
           <span class="collect-count" x-text="classes.length + ' Klassen angelegt'"></span>

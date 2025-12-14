@@ -1,4 +1,4 @@
-import { DATASET_STATUS, TRAINING_STATUS, INFERENCE_STATUS } from './sessionStore.js';
+import { DATASET_STATUS, TRAINING_STATUS, INFERENCE_STATUS, PERMISSION_STATUS } from './sessionStore.js';
 
 export function isTrainingReady(state) {
   if (!state) return false;
@@ -95,4 +95,46 @@ export function getTrainingRetryContext(state) {
       latestDatasetUpdate > (lastRun.datasetUpdatedAt || 0),
     staleClasses,
   };
+}
+
+export function getPermissionIssues(state) {
+  const permissions = state?.permissions || {};
+  return Object.entries(permissions)
+    .map(([type, meta]) => {
+      const status = meta?.status || PERMISSION_STATUS.UNKNOWN;
+      const copy = permissionCopy(type);
+      return {
+        id: type,
+        type,
+        status,
+        title: copy.title,
+        hint: copy.hint,
+        message: meta?.message || copy.message,
+        updatedAt: meta?.updatedAt || null,
+      };
+    })
+    .filter((issue) => issue.status === PERMISSION_STATUS.BLOCKED);
+}
+
+function permissionCopy(type) {
+  switch (type) {
+    case 'camera':
+      return {
+        title: 'Kamerazugriff blockiert',
+        hint: 'Erlaube die Kamera in der Browser-Leiste und lade die Seite neu, falls nötig.',
+        message: 'Die Kamera wurde blockiert. Bitte überprüfe deine Browser-Berechtigungen.',
+      };
+    case 'microphone':
+      return {
+        title: 'Mikrofon blockiert',
+        hint: 'Erteile dem Browser Zugriff auf das Mikrofon oder wähle ein funktionierendes Gerät.',
+        message: 'Das Mikrofon wurde blockiert. Bitte überprüfe deine Browser-Berechtigungen.',
+      };
+    default:
+      return {
+        title: 'Zugriff blockiert',
+        hint: 'Prüfe deine Geräteberechtigungen.',
+        message: 'Ein Gerät wurde blockiert.',
+      };
+  }
 }

@@ -1,4 +1,4 @@
-import { sessionStore, INFERENCE_STATUS } from '../../store/sessionStore.js';
+import { sessionStore, INFERENCE_STATUS, PERMISSION_STATUS } from '../../store/sessionStore.js';
 import { startLiveInference, stopLiveInference } from '../../services/ml/liveInference.js';
 import { requestCameraStream } from '../../services/media/cameraService.js';
 
@@ -38,10 +38,18 @@ export function registerInferenceControls(Alpine) {
           this.$refs.preview.srcObject = stream;
           this.previewReady = true;
         }
+        sessionStore.setPermissionState('camera', {
+          status: PERMISSION_STATUS.GRANTED,
+          message: null,
+        });
       } catch (error) {
         console.error(error);
         this.cameraError = 'Kamera konnte nicht gestartet werden.';
         sessionStore.setInferenceStatus(INFERENCE_STATUS.ERROR, { error: this.cameraError });
+        sessionStore.setPermissionState('camera', {
+          status: PERMISSION_STATUS.BLOCKED,
+          message: error?.message || this.cameraError,
+        });
       }
     },
 

@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DATASET_STATUS, TRAINING_STATUS } from '../../src/app/store/sessionStore.js';
+import { DATASET_STATUS, TRAINING_STATUS, PERMISSION_STATUS } from '../../src/app/store/sessionStore.js';
 import {
   getLatestDatasetUpdatedAt,
   getClassesUpdatedSince,
   getTrainingRetryContext,
+  getPermissionIssues,
 } from '../../src/app/store/selectors.js';
 
 test('getLatestDatasetUpdatedAt returns newest dataset timestamp', () => {
@@ -46,4 +47,26 @@ test('getClassesUpdatedSince filters classes and retry context surfaces metadata
   const emptyContext = getTrainingRetryContext({ classes: [], training: {} });
   assert.equal(emptyContext.datasetChangedSinceLastRun, false);
   assert.equal(emptyContext.staleClasses.length, 0);
+});
+
+test('getPermissionIssues returns blocked entries with copy fallback', () => {
+  const state = {
+    permissions: {
+      camera: {
+        status: PERMISSION_STATUS.BLOCKED,
+        message: 'Kamera deaktiviert',
+        updatedAt: 10,
+      },
+      microphone: {
+        status: PERMISSION_STATUS.GRANTED,
+        message: null,
+        updatedAt: 5,
+      },
+    },
+  };
+  const issues = getPermissionIssues(state);
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].type, 'camera');
+  assert.equal(issues[0].message, 'Kamera deaktiviert');
+  assert.equal(issues[0].title.includes('Kamera'), true);
 });

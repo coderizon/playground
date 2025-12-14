@@ -33,6 +33,17 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
       </header>
       <section class="infer-body">
         <div id="inferNotice"></div>
+        <section class="permission-notices" x-data="permissionAlerts()" x-init="init()" x-show="issues.length">
+          <template x-for="issue in issues" :key="issue.id">
+            <div class="notice notice--warning">
+              <div class="notice-body">
+                <strong x-text="issue.title"></strong>
+                <p x-text="issue.message"></p>
+                <p class="notice-hint" x-text="issue.hint"></p>
+              </div>
+            </div>
+          </template>
+        </section>
         <article class="inference-panel" x-data="inferenceControls()" x-init="init()">
           <h2>Inference</h2>
           <p class="inference-status" x-text="statusCopy()"></p>
