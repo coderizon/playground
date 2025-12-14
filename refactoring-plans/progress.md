@@ -4,6 +4,7 @@
 
 - **Architecture switcher**: `index.html` now loads `/src/bootstrap.js`, which flips between the legacy prototype and the new SPA via `VITE_PLAYGROUND_APP`. `src/app/bootstrap.js` hides the old DOM, boots Alpine, and mounts the router (`src/app/routes/router.js`).
 - **Session store & selectors**: `src/app/store/sessionStore.js` holds the full session model (classes, training, inference, edge state). Derived helpers live in `src/app/store/selectors.js`. Guards (`src/app/guards/navigation.js`) enforce the journey invariants and pages subscribe to the store to enable/disable controls in real time.
+- **Navigation controller**: `src/app/routes/navigationController.js` now wraps all `sessionStore.setStep` calls with guard-aware helpers (`goHome/goCollect/goTrain/goInfer`), and `tests/routes/navigationController.test.mjs` ensures transitions only fire when invariants hold. Pages (collect/train/infer) use these helpers so routing logic stays centralized.
 - **Alpine component layer**:
   - `classList` now focuses on class creation, naming, and dataset status messaging.
   - `datasetRecorder` components own camera permissions, microphone-based clip capture (MediaRecorder), readiness hints, and destructive discards while piping embeddings into the TF.js bridge; toast notifications surface permission failures inline.
@@ -27,6 +28,8 @@
 
 ## Remaining Work to Fulfill `vision.md`
 
+The edge-streaming parity/QA slice is complete (store persistence, modal UX, tests, and hardware checklist). The focus now shifts to the remaining pillars below:
+
 1. **UX polish & structure**
    - Gradually replace legacy utility classes with Tailwind utility/`@apply` patterns now that `src/styles/main.css` is the source of truth.
    - Extract collect/train/infer logic into dedicated controllers + sub-components (e.g., `pages/infer/view.js` now renders the full page).
@@ -38,7 +41,7 @@
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
 4. **Guards & routing**
    - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js` with node-based unit tests under `tests/guards/navigation.test.mjs`.
-   - Increase coverage of step transitions by centralizing navigation calls (`navigationController`, `stepTransitions`) and adding richer routing tests.
+   - Extend routing coverage beyond step guards (e.g., browser history/back-stack sync, blocking navigation while inference is running) and add integration tests for discard/session-reset flows leveraging the navigation controller.
 5. **Quality bar**
    - Accessibility pass: focus traps for modals, keyboard shortcuts for recording, ARIA live regions for status text.
    - Pin external dependencies (tf.js, mediapipe) as described in the vision (self-host or lock versions).

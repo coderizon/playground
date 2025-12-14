@@ -1,5 +1,6 @@
-import { sessionStore, STEP } from '../../store/sessionStore.js';
+import { sessionStore } from '../../store/sessionStore.js';
 import { canAccessTraining, canAccessInference } from '../../guards/navigation.js';
+import { goCollect, goInfer } from '../../routes/navigationController.js';
 
 export function renderTrainPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -69,7 +70,7 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
   `;
 
   root.querySelector('[data-back-collect]')?.addEventListener('click', () => {
-    sessionStore.setStep(STEP.COLLECT);
+    goCollect();
   });
   const goInferBtn = root.querySelector('[data-go-infer]');
   const updateInferButton = () => {
@@ -78,7 +79,7 @@ export function renderTrainPage(root, state = sessionStore.getState()) {
   if (goInferBtn) {
     goInferBtn.addEventListener('click', () => {
       if (canAccessInference(sessionStore.getState())) {
-        sessionStore.setStep(STEP.INFER);
+        goInfer();
       }
     });
     const unsubscribe = sessionStore.subscribe(updateInferButton);
@@ -102,7 +103,7 @@ function renderAccessDenied(root) {
     </section>
   `;
   root.querySelector('[data-go-collect]')?.addEventListener('click', () => {
-    sessionStore.setStep(STEP.COLLECT);
+    goCollect();
   });
 }
 

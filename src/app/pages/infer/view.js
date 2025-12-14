@@ -3,6 +3,7 @@ import { canAccessInference } from '../../guards/navigation.js';
 import { stopLiveInference } from '../../services/ml/liveInference.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
 import { openConfirmDialog } from '../../components/common/confirmDialog.js';
+import { goTrain } from '../../routes/navigationController.js';
 
 export function renderInferencePage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -140,7 +141,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
   });
 
   root.querySelector('[data-back-train]')?.addEventListener('click', () => {
-    ensureInferenceStopped(() => sessionStore.setStep(STEP.TRAIN));
+    ensureInferenceStopped(() => goTrain());
   });
   root.querySelector('[data-discard-session]')?.addEventListener('click', () => {
     ensureInferenceStopped(() =>
@@ -167,7 +168,7 @@ function renderBlocked(root) {
     </section>
   `;
   root.querySelector('[data-go-train]')?.addEventListener('click', () => {
-    sessionStore.setStep(STEP.TRAIN);
+    goTrain();
   });
 }
 

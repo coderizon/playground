@@ -1,4 +1,4 @@
-import { sessionStore, STEP, DATASET_STATUS } from '../../store/sessionStore.js';
+import { sessionStore, DATASET_STATUS } from '../../store/sessionStore.js';
 import { canGoToCollect, canGoToTraining } from '../../guards/navigation.js';
 import { goHome, goTrain } from '../../routes/navigationController.js';
 
@@ -230,7 +230,7 @@ function renderUnavailable(root) {
     </section>
   `;
   root.querySelector('[data-go-home]')?.addEventListener('click', () => {
-    sessionStore.setStep(STEP.HOME);
+    goHome();
   });
 }
 

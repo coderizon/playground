@@ -3,6 +3,7 @@ import { renderHomePage } from '../pages/home/index.js';
 import { renderCollectPage } from '../pages/collect/index.js';
 import { renderTrainPage } from '../pages/train/index.js';
 import { renderInferPage } from '../pages/infer/index.js';
+import { goHome } from './navigationController.js';
 
 const routeHandlers = {
   [STEP.HOME]: renderHomePage,
@@ -39,9 +40,7 @@ function renderFallback(root) {
       <button type="button" class="ghost" data-back-home>Zurück zur Auswahl</button>
     </section>
   `;
-  root.querySelector('[data-back-home]')?.addEventListener('click', () => {
-    sessionStore.setStep(STEP.HOME);
-  });
+  root.querySelector('[data-back-home]')?.addEventListener('click', goHome);
 }
 
 function ensureToastHost() {
