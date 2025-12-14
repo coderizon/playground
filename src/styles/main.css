@@ -416,7 +416,7 @@
   }
 
   .collect-class-list {
-    @apply grid gap-5 lg:grid-cols-2;
+    @apply grid gap-5 md:grid-cols-3 xl:grid-cols-4;
   }
 
   .class-card-v2 {
@@ -440,7 +440,15 @@
   }
 
   .class-card-v2 header {
+    @apply flex flex-col gap-3;
+  }
+
+  .class-card-header-main {
     @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .class-card-header-actions {
+    @apply flex justify-end;
   }
 
   .class-name-input {

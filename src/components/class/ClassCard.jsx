@@ -99,20 +99,32 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
 
   return (
     <article className={cardToneClass()}>
-      <header>
-        <input
-          type="text"
-          className="class-name-input"
-          value={name}
-          maxLength={60}
-          aria-label="Klassenname eingeben"
-          onChange={handleNameChange}
-          onBlur={commitName}
-          onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
-        />
-        <span className={datasetChipClass()}>
-          <span>{datasetLabel()}</span>
-        </span>
+      <header className="class-card-header">
+        <div className="class-card-header-actions">
+          <button
+            type="button"
+            className="ghost danger class-delete-button"
+            onClick={handleDelete}
+            disabled={trainingStatus === 'running'}
+          >
+            Klasse entfernen
+          </button>
+        </div>
+        <div className="class-card-header-main">
+          <input
+            type="text"
+            className="class-name-input"
+            value={name}
+            maxLength={60}
+            aria-label="Klassenname eingeben"
+            onChange={handleNameChange}
+            onBlur={commitName}
+            onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+          />
+          <span className={datasetChipClass()}>
+            <span>{datasetLabel()}</span>
+          </span>
+        </div>
       </header>
       <p className="dataset-summary">
         {datasetSummary()}
@@ -127,11 +139,6 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
         taskModelId={taskModelId}
       />
 
-      <div className="class-card-actions">
-        <button type="button" className="ghost" onClick={handleDelete} disabled={trainingStatus === 'running'}>
-          Klasse entfernen
-        </button>
-      </div>
     </article>
   );
 }
