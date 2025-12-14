@@ -141,6 +141,7 @@ export function registerDatasetComponents(Alpine) {
             : sample.source === 'camera'
             ? 'Kamera'
             : 'Sample';
+        const isBackground = this.isBackgroundSample(sample);
         return {
           ...sample,
           label: sample.label || `Sample ${index + 1}`,
@@ -154,6 +155,7 @@ export function registerDatasetComponents(Alpine) {
           annotationLength: annotation.length,
           capturedLabel,
           sourceLabel,
+          isBackground,
         };
       });
     },
@@ -491,18 +493,21 @@ export function registerDatasetComponents(Alpine) {
 
     audioBackgroundStatus() {
       if (!this.isAudioTask) return '';
-      return this.hasBackgroundSample()
-        ? 'Hintergrund erfasst – kombiniere ihn mit Kurzclips für klare Signale.'
-        : 'Füge eine 20s Hintergrundaufnahme hinzu, damit das Modell Stille erkennt.';
+      const info = this.backgroundSampleInfo();
+      if (!info.present) {
+        return 'Hintergrundaufnahme fehlt – nimm eine 20s Aufnahme auf, damit das Modell Stille kennt.';
+      }
+      const timestamp = info.lastCapturedAt ? this.formatSampleTimestamp(info.lastCapturedAt) : '';
+      const countCopy = info.count === 1 ? '1 Aufnahme' : `${info.count} Aufnahmen`;
+      return timestamp ? `${countCopy} · zuletzt ${timestamp}` : countCopy;
     },
 
     hasBackgroundSample() {
-      const samples = this.dataset.samples || [];
-      return samples.some((sample) => (sample.durationMs || 0) >= BACKGROUND_MIN_DURATION);
+      return this.backgroundSampleInfo().present;
     },
 
     sampleLabel(sample, index = 0) {
-      if ((sample.durationMs || 0) >= BACKGROUND_MIN_DURATION || sample.preset === 'background') {
+      if (this.isBackgroundSample(sample)) {
         return 'Hintergrund';
       }
       return sample.label || `Sample ${index + 1}`;
@@ -577,29 +582,6 @@ export function registerDatasetComponents(Alpine) {
       return `Variation über ${spreadSec}s`;
     },
 
-    audioPresetHint() {
-      if (!this.isAudioTask) return '';
-      const preset = AUDIO_PRESETS[this.activePreset] || AUDIO_PRESETS.clip;
-      return preset.hint;
-    },
-
-    activePresetLabel() {
-      const preset = AUDIO_PRESETS[this.activePreset] || AUDIO_PRESETS.clip;
-      return preset.label;
-    },
-
-    audioBackgroundStatus() {
-      if (!this.isAudioTask) return '';
-      return this.hasBackgroundSample()
-        ? 'Hintergrund erfasst · kombiniere mit Kurzclips.'
-        : 'Füge eine 20s Hintergrundaufnahme hinzu, damit das Modell Stille kennt.';
-    },
-
-    hasBackgroundSample() {
-      const samples = this.classState?.dataset?.samples || [];
-      return samples.some((sample) => (sample.durationMs || 0) >= BACKGROUND_MIN_DURATION);
-    },
-
     captureFrameSnapshot(video) {
       try {
         const canvas = document.createElement('canvas');
@@ -662,3 +644,28 @@ function blobToDataUrl(blob) {
     reader.readAsDataURL(blob);
   });
 }
+    isBackgroundSample(sample) {
+      if (!sample) return false;
+      return (
+        sample.preset === 'background' ||
+        (sample.durationMs || 0) >= BACKGROUND_MIN_DURATION
+      );
+    },
+
+    backgroundSamples() {
+      if (!this.isAudioTask) return [];
+      return (this.dataset.samples || []).filter((sample) => this.isBackgroundSample(sample));
+    },
+
+    backgroundSampleInfo() {
+      const samples = this.backgroundSamples();
+      if (!samples.length) {
+        return { present: false, count: 0, lastCapturedAt: null };
+      }
+      const last = samples[samples.length - 1];
+      return {
+        present: true,
+        count: samples.length,
+        lastCapturedAt: last?.capturedAt || null,
+      };
+    },

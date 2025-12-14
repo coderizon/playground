@@ -261,6 +261,10 @@
     @apply flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-900/80 p-4 text-white;
   }
 
+  .audio-preset-hint {
+    @apply mt-4 space-y-2 text-sm text-slate-600;
+  }
+
   .audio-meter {
     @apply h-2 w-full rounded-full bg-white/20;
   }
@@ -279,6 +283,22 @@
 
   .audio-progress-fill {
     @apply h-full rounded-full bg-white;
+  }
+
+  .audio-background-pill {
+    @apply flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900;
+  }
+
+  .audio-background-pill.is-missing {
+    @apply border-amber-200 bg-amber-50 text-amber-900;
+  }
+
+  .audio-background-status {
+    @apply text-xs text-inherit;
+  }
+
+  .ghost--tiny {
+    @apply px-2 py-1 text-xs;
   }
 
   .dataset-hotkeys {

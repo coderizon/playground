@@ -174,14 +174,26 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
                     <strong x-text="activePresetLabel()"></strong>
                     <span x-text="audioPresetHint()"></span>
                   </p>
-                  <p class="audio-background-status" x-text="audioBackgroundStatus()"></p>
-                </div>
-                <div class="audio-preset-hint" x-show="isAudioTask">
-                  <p>
-                    <strong x-text="activePresetLabel()"></strong>
-                    <span x-text="audioPresetHint()"></span>
-                  </p>
-                  <p class="audio-background-status" x-text="audioBackgroundStatus()"></p>
+                  <div
+                    class="audio-background-pill"
+                    :class="{'is-missing': !hasBackgroundSample()}"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    <div>
+                      <strong x-text="hasBackgroundSample() ? 'Hintergrund vorhanden' : 'Hintergrund fehlt'"></strong>
+                      <p class="audio-background-status" x-text="audioBackgroundStatus()"></p>
+                    </div>
+                    <button
+                      type="button"
+                      class="ghost ghost--tiny"
+                      @click="startRecording({ preset: 'background' })"
+                      :disabled="!canStart"
+                    >
+                      Hintergrund aufnehmen
+                    </button>
+                  </div>
                 </div>
                 <p class="dataset-hint" x-text="statusHint()" role="status" aria-live="polite" aria-atomic="true"></p>
                 <div class="sample-list" x-show="sampleList().length">
