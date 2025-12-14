@@ -241,13 +241,36 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
         </div>
       </section>
     </section>
-    <div x-data="confirmDialog()" x-show="open" class="confirm-backdrop" x-cloak @click.self="close()">
-      <div class="confirm-dialog" :class="{'is-destructive': destructive}">
-        <h3 x-text="title"></h3>
+    <div
+      x-data="confirmDialog()"
+      x-show="open"
+      class="confirm-backdrop"
+      x-cloak
+      @click.self="close()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirmDialogTitle"
+      @keydown.window="handleKeydown($event)"
+    >
+      <div class="confirm-dialog" :class="{'is-destructive': destructive}" tabindex="-1" x-ref="dialog">
+        <h3 id="confirmDialogTitle" x-text="title"></h3>
         <p x-text="message"></p>
         <div class="confirm-actions">
-          <button type="button" class="ghost" @click="close()" x-text="cancelLabel"></button>
-          <button type="button" class="primary" :class="{'danger': destructive}" @click="confirm()" x-text="confirmLabel"></button>
+          <button
+            type="button"
+            class="ghost"
+            @click="close()"
+            x-text="cancelLabel"
+            data-dialog-focusable
+          ></button>
+          <button
+            type="button"
+            class="primary"
+            :class="{'danger': destructive}"
+            @click="confirm()"
+            x-text="confirmLabel"
+            data-dialog-focusable
+          ></button>
         </div>
       </div>
     </div>

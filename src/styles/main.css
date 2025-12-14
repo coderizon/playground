@@ -828,6 +828,11 @@ body[data-mode="face"] .preview-column {
   gap: 12px;
 }
 
+.confirm-backdrop:focus,
+.confirm-dialog:focus {
+  outline: none;
+}
+
 .confirm-dialog .primary.danger {
   background: #dc2626;
   border-color: #dc2626;
