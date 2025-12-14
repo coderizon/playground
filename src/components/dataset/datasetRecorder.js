@@ -160,6 +160,32 @@ export function registerDatasetComponents(Alpine) {
       });
     },
 
+    isBackgroundSample(sample) {
+      if (!sample) return false;
+      return (
+        sample.preset === 'background' ||
+        (sample.durationMs || 0) >= BACKGROUND_MIN_DURATION
+      );
+    },
+
+    backgroundSamples() {
+      if (!this.isAudioTask) return [];
+      return (this.dataset.samples || []).filter((sample) => this.isBackgroundSample(sample));
+    },
+
+    backgroundSampleInfo() {
+      const samples = this.backgroundSamples();
+      if (!samples.length) {
+        return { present: false, count: 0, lastCapturedAt: null };
+      }
+      const last = samples[samples.length - 1];
+      return {
+        present: true,
+        count: samples.length,
+        lastCapturedAt: last?.capturedAt || null,
+      };
+    },
+
     audioStats() {
       const samples = this.dataset.samples || [];
       const audioSamples = samples.filter((sample) => sample.source === 'microphone');
@@ -644,28 +670,3 @@ function blobToDataUrl(blob) {
     reader.readAsDataURL(blob);
   });
 }
-    isBackgroundSample(sample) {
-      if (!sample) return false;
-      return (
-        sample.preset === 'background' ||
-        (sample.durationMs || 0) >= BACKGROUND_MIN_DURATION
-      );
-    },
-
-    backgroundSamples() {
-      if (!this.isAudioTask) return [];
-      return (this.dataset.samples || []).filter((sample) => this.isBackgroundSample(sample));
-    },
-
-    backgroundSampleInfo() {
-      const samples = this.backgroundSamples();
-      if (!samples.length) {
-        return { present: false, count: 0, lastCapturedAt: null };
-      }
-      const last = samples[samples.length - 1];
-      return {
-        present: true,
-        count: samples.length,
-        lastCapturedAt: last?.capturedAt || null,
-      };
-    },

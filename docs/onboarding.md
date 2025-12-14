@@ -4,7 +4,8 @@ Use this guide to ramp up on the refactored single-page app and align every chan
 
 ## 1. Getting Started
 - `npm install`
-- `npm run dev` to launch Vite (the SPA is mounted via `src/bootstrap.js`).
+- `npm run dev` to launch Vite with live reload (always use this instead of opening `index.html` directly so asset imports resolve correctly).
+- `npm run build` to produce the deployment bundle and catch bundler errors before shipping.
 - `npm test` to run the guard/service regression suite (`tests/run-tests.mjs`). Run this before every commit, especially after touching controllers, the session store, or edge logic.
 
 ## 2. Architecture Map
