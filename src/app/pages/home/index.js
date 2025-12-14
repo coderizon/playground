@@ -1,6 +1,7 @@
 import { sessionStore, STEP } from '../../store/sessionStore.js';
 import { getAvailableTaskModels } from '../../data/taskModels.js';
 import { goHome } from '../../routes/navigationController.js';
+import { discardSessionWithConfirm } from '../../routes/sessionController.js';
 
 export function renderHomePage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -82,13 +83,7 @@ export function renderHomePage(root, state = sessionStore.getState()) {
   });
 
   discardBtn.addEventListener('click', () => {
-    if (!sessionStore.getState().selectedTaskModel) return;
-    const confirmDiscard = window.confirm(
-      'Aktuelle Session verwerfen? Alle nicht gespeicherten Daten gehen verloren.'
-    );
-    if (confirmDiscard) {
-      sessionStore.discardSession();
-    }
+    discardSessionWithConfirm();
   });
 
   goHomeBtn.addEventListener('click', goHome);

@@ -2,9 +2,9 @@
 
 ## Current State Snapshot (Jan 2025)
 
-- **Architecture switcher**: `index.html` now loads `/src/bootstrap.js`, which flips between the legacy prototype and the new SPA via `VITE_PLAYGROUND_APP`. `src/app/bootstrap.js` hides the old DOM, boots Alpine, and mounts the router (`src/app/routes/router.js`).
+- **Architecture switcher**: `index.html` now loads `/src/bootstrap.js`, which flips between the legacy prototype and the new SPA via `VITE_PLAYGROUND_APP`. `src/app/bootstrap.js` hides the old DOM, boots Alpine, and mounts the router (`src/app/routes/router.js`). The legacy shell is no longer treated as a co-equal UI—our refactor path is a full rewrite to the SPA described in `vision.md`, so no state mirroring or dual rendering is required.
 - **Session store & selectors**: `src/app/store/sessionStore.js` holds the full session model (classes, training, inference, edge state). Derived helpers live in `src/app/store/selectors.js`. Guards (`src/app/guards/navigation.js`) enforce the journey invariants and pages subscribe to the store to enable/disable controls in real time.
-- **Navigation controller**: `src/app/routes/navigationController.js` now wraps all `sessionStore.setStep` calls with guard-aware helpers (`goHome/goCollect/goTrain/goInfer`) that consult an inference-running confirmation before navigating, and `tests/routes/navigationController.test.mjs` ensures transitions only fire when invariants hold (including decline paths). Pages (collect/train/infer) use these helpers so routing logic stays centralized.
+- **Navigation controller**: `src/app/routes/navigationController.js` wraps all `sessionStore.setStep` calls with guard-aware helpers (`goHome/goCollect/goTrain/goInfer`) that consult an inference-running confirmation before navigating, and `tests/routes/navigationController.test.mjs` ensures transitions only fire when invariants hold (including decline paths). A `sessionController` companion manages destructive actions (e.g., `discardSessionWithConfirm`) with tests under `tests/routes/sessionController.test.mjs`, so confirmations and resets flow through a single, guard-aware layer.
 - **Browser history + leave guards**: `src/app/routes/historySync.js` keeps `window.history`/hash in lockstep with session steps, restores the right page on refresh/back, and falls back safely when guards block navigation. `src/app/routes/navigationGuards.js` registers a global `beforeunload` warning and reuses the confirmation helper. `tests/routes/historySync.test.mjs` stubs the browser to cover initial hash hydration, pushState, and popstate failure recovery.
 - **Alpine component layer**:
   - `classList` now focuses on class creation, naming, and dataset status messaging.
@@ -41,8 +41,8 @@ The edge-streaming parity/QA slice is complete (store persistence, modal UX, tes
    - Persist readiness/error metadata for retries (e.g., remember why a class is blocked) and expose retry affordances after aborts.
    - Surface permission failure details (camera/mic) via dedicated banners/toast components and add unit tests for inference confirmation flows.
 4. **Guards & routing**
-   - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js` with node-based unit tests under `tests/guards/navigation.test.mjs`.
-   - History/back-stack sync + leave confirmations are in place. Next up: add integration tests for discard/session-reset flows (confirm dialog wiring across controllers) and mirror navigation state to the legacy shell if it remains a fallback.
+   - Guard helpers (collect/training/inference + discard/start checks) now live in `src/app/guards/navigation.js`, with unit suites for navigation, history sync, session discard, and edge streaming under `tests/`.
+   - Remaining work: extend routing tests to cover the global confirm dialog (e.g., inference view’s `openConfirmDialog` flow) and ensure all destructive actions (class deletion, dataset reset) run through the shared guard helpers.
 5. **Quality bar**
    - Accessibility pass: focus traps for modals, keyboard shortcuts for recording, ARIA live regions for status text.
    - Pin external dependencies (tf.js, mediapipe) as described in the vision (self-host or lock versions).
