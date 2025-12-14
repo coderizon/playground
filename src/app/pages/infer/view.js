@@ -91,6 +91,17 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
                         <span class="ble-device-name" x-text="device.name"></span>
                         <span class="ble-device-status" x-text="deviceStatusCopy(device.id)"></span>
                       </div>
+                      <div class="ble-device-instructions">
+                        <p>Vor dem Verbinden</p>
+                        <ul>
+                          <template x-for="tip in device.tips" :key="tip">
+                            <li x-text="tip"></li>
+                          </template>
+                        </ul>
+                      </div>
+                      <div :class="thumbClass(device.id)">
+                        <img :src="device.thumb" :alt="device.name" loading="lazy"/>
+                      </div>
                     </button>
                   </template>
                 </div>

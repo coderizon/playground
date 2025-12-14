@@ -5,11 +5,41 @@ import {
   getEdgeState,
   setStreaming,
 } from '../../services/edge/edgeService.js';
+import arduinoThumb from '../../../assets/images/arduino.png';
+import microbitThumb from '../../../assets/images/microbit.png';
+import calliopeThumb from '../../../assets/images/calliope.png';
 
 const DEVICE_OPTIONS = [
-  { id: 'arduino', name: 'Arduino Uno R4' },
-  { id: 'microbit', name: 'Micro:bit' },
-  { id: 'calliope', name: 'Calliope Mini' },
+  {
+    id: 'arduino',
+    name: 'Arduino Uno R4',
+    thumb: arduinoThumb,
+    tips: [
+      'Bluetooth einschalten und Gerät einmal mit Strom versorgen.',
+      'Im Browser Web-Bluetooth-Zugriff erlauben.',
+      'LED sollte blau blinken, bevor du verbindest.',
+    ],
+  },
+  {
+    id: 'microbit',
+    name: 'Micro:bit',
+    thumb: microbitThumb,
+    tips: [
+      'Firmware mit Web-Bluetooth-Support flashen.',
+      'Gerät per USB starten, dann Batterie anschließen.',
+      'Taste A gedrückt halten, bis Bluetooth-Symbol aufleuchtet.',
+    ],
+  },
+  {
+    id: 'calliope',
+    name: 'Calliope Mini',
+    thumb: calliopeThumb,
+    tips: [
+      'Neueste Calliope-BLE-Firmware installieren.',
+      'Gerät mit USB verbinden, danach Batterien aktivieren.',
+      'Taste links oben drücken, um BLE-Pairing zu aktivieren.',
+    ],
+  },
 ];
 
 export function registerEdgeComponents(Alpine) {
@@ -106,6 +136,10 @@ export function registerEdgeComponents(Alpine) {
       return {
         'is-connected': this.edgeStatus.selectedDevice === id,
       };
+    },
+
+    thumbClass(id) {
+      return `ble-device-thumb thumb-${id}`;
     },
 
     deviceStatusCopy(id) {
