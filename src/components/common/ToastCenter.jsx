@@ -20,7 +20,8 @@ export function ToastCenter() {
   };
 
   return (
-    <div className="toast-center">
+    <div className="toast-root">
+      <div className="toast-center">
       {toasts.map((toast) => (
         <div key={toast.id} className={`toast toast--${toast.tone}`}>
           <strong>{toast.title}</strong>
@@ -34,6 +35,7 @@ export function ToastCenter() {
           </button>
         </div>
       ))}
+      </div>
     </div>
   );
 }
