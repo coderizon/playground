@@ -10,13 +10,14 @@ import {
   getEdgeState,
   setStreaming,
 } from '../../services/edge/edgeService.js';
-import arduinoThumb from '../../assets/images/arduino.png';
-import microbitThumb from '../../assets/images/microbit.png';
-import calliopeThumb from '../../assets/images/calliope.png';
 import { showToast } from '../common/toast.js';
 import { openConfirmDialog } from '../common/confirmDialog.js';
 import { stopLiveInference } from '../../services/ml/liveInference.js';
 import { createEdgeController } from '../../app/routes/edgeController.js';
+
+const arduinoThumb = '/src/assets/images/arduino.png';
+const microbitThumb = '/src/assets/images/microbit.png';
+const calliopeThumb = '/src/assets/images/calliope.png';
 
 const DEVICE_OPTIONS = [
   {
