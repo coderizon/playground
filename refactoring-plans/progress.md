@@ -11,6 +11,10 @@
   - Resolved "Recorder-Vorschau konnte nicht initialisiert werden" crash by ensuring video elements are mounted before attaching streams.
   - Fixed empty prediction output in Inference panel by correctly using selectors (`getInferencePredictions`) to map raw probabilities to class names.
   - Eliminated "toast loop" crashes caused by Alpine.js reactivity cycles.
+- **Styling Fixes**:
+  - Configured `tailwind.config.js` to scan `.jsx`/`.tsx` files, resolving unstyled components.
+  - Updated `postcss.config.js` to modern object syntax for better Vite compatibility.
+  - Removed manual CSS link in `index.html` to prevent raw style injection and rely on Vite's bundle.
 - **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts.
 
 ## Current State Snapshot (Jan 2025)
