@@ -76,6 +76,10 @@
     @apply text-red-600 hover:bg-red-50;
   }
 
+  .ghost.warning {
+    @apply text-amber-600 hover:bg-amber-50;
+  }
+
   .new-app-home,
   .collect-page,
   .train-page,
@@ -495,8 +499,12 @@
     @apply relative flex min-h-[180px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 text-white;
   }
 
-  .dataset-preview video {
-    @apply h-full w-full object-cover;
+  .dataset-preview .preview-video {
+    @apply h-full w-full object-cover opacity-0 transition-opacity duration-300;
+  }
+
+  .preview-video.is-visible {
+    @apply opacity-100;
   }
 
   .preview-placeholder {
@@ -505,6 +513,10 @@
 
   .camera-guidance {
     @apply flex h-full w-full flex-col items-center justify-center gap-3 px-3 text-center text-sm text-white/80;
+  }
+
+  .recording-hint {
+    @apply text-center text-sm text-slate-600;
   }
 
   .audio-preview {
@@ -583,6 +595,10 @@
     @apply mt-2 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm md:mt-4;
   }
 
+  .sample-album-header {
+    @apply flex items-center justify-between gap-3;
+  }
+
   .sample-album-trigger {
     @apply flex w-full items-center gap-4 text-left;
   }
@@ -599,16 +615,8 @@
     @apply h-full w-full rounded-2xl object-cover;
   }
 
-  .sample-album-card-0 {
-    @apply z-30;
-  }
-
-  .sample-album-card-1 {
-    @apply z-20 -translate-y-1 translate-x-1 rotate-2;
-  }
-
-  .sample-album-card-2 {
-    @apply z-10 translate-y-1 -translate-x-1 -rotate-3;
+  .sample-album-card-latest {
+    @apply z-20;
   }
 
   .sample-album-placeholder {

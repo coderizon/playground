@@ -27,12 +27,16 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const [activePreset, setActivePreset] = useState('clip');
   const [albumOpen, setAlbumOpen] = useState(false);
   const [selectedSampleIds, setSelectedSampleIds] = useState([]);
+  const [previewReady, setPreviewReady] = useState(false);
   
   const videoRef = useRef(null);
   const sampleIntervalRef = useRef(null);
   const audioProgressHandleRef = useRef(null);
   const stopRequestedRef = useRef(false);
   const albumModalRef = useRef(null);
+  const previewHandleRef = useRef(false);
+  const recordingHandleRef = useRef(false);
+  const borrowedPreviewRef = useRef(false);
 
   const dataset = classState?.dataset || { recordedCount: 0, expectedCount: 0, status: DATASET_STATUS.EMPTY };
   const samples = dataset.samples || [];
@@ -53,7 +57,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       stopRecordingCleanup();
       if (activeRecorderId === classId) {
         if (isAudioTask) stopMicrophoneStream();
-        else stopCameraStream();
+        else if (recordingHandleRef.current) {
+          stopCameraStream();
+          recordingHandleRef.current = false;
+        }
         activeRecorderId = null;
       }
     };
@@ -69,6 +76,47 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       stopRecordingCleanup();
     }
   }, [trainingLocked, recording, activeRecorderId]);
+
+  useEffect(() => {
+    if (isAudioTask) return undefined;
+    let cancelled = false;
+    const attachPreview = async () => {
+      try {
+        const stream = await requestCameraStream();
+        previewHandleRef.current = true;
+        borrowedPreviewRef.current = false;
+        if (cancelled) {
+          stopCameraStream();
+          previewHandleRef.current = false;
+          borrowedPreviewRef.current = false;
+          return;
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setPreviewReady(true);
+        sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.GRANTED, message: null });
+        setLastPermissionError('');
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError('Kamera konnte nicht gestartet werden.');
+        setLastPermissionError(err?.message || 'Bitte erlaube den Zugriff.');
+        sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.BLOCKED, message: err?.message });
+        setPreviewReady(false);
+      }
+    };
+    attachPreview();
+    return () => {
+      cancelled = true;
+      setPreviewReady(false);
+      if (previewHandleRef.current) {
+        stopCameraStream();
+        previewHandleRef.current = false;
+        borrowedPreviewRef.current = false;
+      }
+    };
+  }, [isAudioTask]);
 
   const stopRecordingCleanup = () => {
     if (sampleIntervalRef.current) {
@@ -98,6 +146,12 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       
       activeRecorderId = classId;
       setRecording(true);
+      recordingHandleRef.current = true;
+      if (!previewHandleRef.current) {
+        previewHandleRef.current = true;
+        borrowedPreviewRef.current = true;
+      }
+      setPreviewReady(true);
       
       // React refs are stable, so we can attach immediately (or in useEffect, but stream is here)
       if (videoRef.current) {
@@ -112,6 +166,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       setLastPermissionError(err?.message || 'Bitte erlaube den Zugriff.');
       sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.BLOCKED, message: err?.message });
       showToast({ title: 'Kamera blockiert', message: err?.message, tone: 'warning' });
+      if (recordingHandleRef.current) {
+        stopCameraStream();
+        recordingHandleRef.current = false;
+      }
     }
   };
 
@@ -174,9 +232,14 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     stopRequestedRef.current = true;
     if (isAudioTask) {
       stopMicrophoneStream();
-    } else {
-      stopCameraStream();
-      if (videoRef.current) videoRef.current.srcObject = null;
+    } else if (recordingHandleRef.current) {
+      if (!borrowedPreviewRef.current) {
+        stopCameraStream();
+      }
+      recordingHandleRef.current = false;
+      if (!previewHandleRef.current && videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
     }
     setRecording(false);
     stopRecordingCleanup();
@@ -337,7 +400,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
   // Render helpers
   const previewLabel = isReady ? 'Datensatz bereit' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Beispiele` : 'Recorder bereit');
-  const stackSamples = samples.slice(0, 3);
+  const previewSample = samples.length ? samples[samples.length - 1] : null;
   const modalTitleId = `sampleModalTitle-${classId}`;
 
   return (
@@ -345,17 +408,15 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''}`}>
         {!isAudioTask && (
           <div className="camera-guidance">
-             <video
+            <video
               autoPlay
               muted
               playsInline
               ref={videoRef}
-              className="preview-video"
-              style={{ display: recording ? 'block' : 'none' }}
+              className={`preview-video ${previewReady ? 'is-visible' : ''}`}
             />
             {isGestureTask && recording && <GesturePreview videoRef={videoRef} />}
-            {recording && <p>Halte dein Objekt im Fokus · wir sammeln automatisch Frames</p>}
-            {!recording && <div className="preview-placeholder">{previewLabel}</div>}
+            {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
           </div>
         )}
         {isAudioTask && (
@@ -380,16 +441,32 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         </div>
       )}
 
+      {!isAudioTask && recording && (
+        <p className="recording-hint">Halte dein Objekt im Fokus · wir sammeln automatisch Frames</p>
+      )}
+
       <div className="sample-album">
-        <p className="eyebrow">Samples</p>
+        <div className="sample-album-header">
+          <p className="eyebrow">Samples</p>
+          <button
+            type="button"
+            className="ghost warning"
+            onClick={discardDataset}
+            disabled={!canDiscard}
+          >
+            Datensatz verwerfen
+          </button>
+        </div>
         <button type="button" className="sample-album-trigger" onClick={toggleAlbum}>
           <div className="sample-album-stack" aria-hidden="true">
-            {stackSamples.length > 0 ? (
-              stackSamples.map((sample, index) => (
-                <span key={sample.id} className={`sample-album-card sample-album-card-${index}`}>
-                  {sample.thumbnail ? <img src={sample.thumbnail} alt="" /> : <span className="sample-album-placeholder"></span>}
-                </span>
-              ))
+            {previewSample ? (
+              <span className="sample-album-card sample-album-card-latest">
+                {previewSample.thumbnail ? (
+                  <img src={previewSample.thumbnail} alt="" />
+                ) : (
+                  <span className="sample-album-placeholder"></span>
+                )}
+              </span>
             ) : (
               <span className="sample-album-card sample-album-card-empty">
                 <span className="sample-album-placeholder">Keine Samples</span>
@@ -414,7 +491,6 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
           <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Aufnahme starten</button>
         )}
         <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
-        <button type="button" className="ghost" onClick={discardDataset} disabled={!canDiscard}>Datensatz verwerfen</button>
       </div>
 
       {albumOpen && (
