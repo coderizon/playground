@@ -14,6 +14,7 @@ const AUDIO_PRESETS = {
   background: { label: 'Hintergrund', duration: 20000, hint: 'Halte 20s Umgebungsgeräusche fest, damit das Modell Stille erkennt.' },
 };
 const BACKGROUND_MIN_DURATION = 15000;
+const SAMPLE_CAPTURE_INTERVAL_MS = 450;
 
 // Shared active recorder ID to prevent multiple open streams
 let activeRecorderId = null;
@@ -71,7 +72,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
   const stopRecordingCleanup = () => {
     if (sampleIntervalRef.current) {
-      clearInterval(sampleIntervalRef.current);
+      clearTimeout(sampleIntervalRef.current);
       sampleIntervalRef.current = null;
     }
     if (audioProgressHandleRef.current) {
@@ -193,12 +194,13 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
   const beginSampleLoop = () => {
     stopRecordingCleanup();
-    sampleIntervalRef.current = window.setInterval(async () => {
+
+    const captureOnce = () => {
       try {
         const state = sessionStore.getState();
         if (!videoRef.current) return;
-        
-        const clsIndex = state.classes.findIndex(c => c.id === classId);
+
+        const clsIndex = state.classes.findIndex((c) => c.id === classId);
         if (clsIndex === -1) {
           stopRecording();
           return;
@@ -206,15 +208,17 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
         const capture = captureFrameSnapshot(videoRef.current);
         if (capture) {
-          await recordSampleFrame(videoRef.current, classId, clsIndex, state.classes.length || 1);
+          recordSampleFrame(videoRef.current, classId, clsIndex, state.classes.length || 1).catch((fnErr) => {
+            console.error('recordSampleFrame error', fnErr);
+          });
           sessionStore.addDatasetSample(classId, {
             source: 'camera',
             thumbnail: capture.thumbnail,
-            previewFrames: capture.frames || []
+            previewFrames: capture.frames || [],
           });
         }
 
-        const updated = sessionStore.getState().classes.find(c => c.id === classId);
+        const updated = sessionStore.getState().classes.find((c) => c.id === classId);
         if (updated?.dataset?.recordedCount >= (updated?.dataset?.expectedCount || 0)) {
           stopRecording();
         }
@@ -223,11 +227,25 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         showToast({ title: 'Fehler', message: 'Aufnahme fehlgeschlagen', tone: 'error' });
         stopRecording();
       }
-    }, 1200);
+    };
+
+    const scheduleNext = () => {
+      if (activeRecorderId !== classId) return;
+      sampleIntervalRef.current = window.setTimeout(() => {
+        captureOnce();
+        scheduleNext();
+      }, SAMPLE_CAPTURE_INTERVAL_MS);
+    };
+
+    captureOnce();
+    scheduleNext();
   };
 
   const captureFrameSnapshot = (video) => {
     try {
+      if (!video || video.readyState < 2) {
+        return null;
+      }
       const canvas = document.createElement('canvas');
       canvas.width = 160;
       canvas.height = 120;
