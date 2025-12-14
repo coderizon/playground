@@ -403,11 +403,9 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   // Render helpers
   const previewLabel = isReady ? 'Datensatz bereit' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Beispiele` : 'Recorder bereit');
   const previewSample = samples.length ? samples[samples.length - 1] : null;
-  const sampleSummaryCount = samples.length > 0
-    ? `${samples.length}`
-    : expectedCount > 0
-      ? `${recordedCount}/${expectedCount}`
-      : `${recordedCount}`;
+  const sampleSummaryCount = expectedCount > 0
+    ? `${recordedCount}/${expectedCount}`
+    : `${recordedCount}`;
   const sampleSummaryLabel = samples.length > 0
     ? `${samples.length} Samples verwalten`
     : 'Samples aufgenommen';
