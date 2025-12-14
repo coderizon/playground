@@ -249,13 +249,16 @@ export function registerDatasetComponents(Alpine) {
           status: PERMISSION_STATUS.GRANTED,
           message: null,
         });
+        activeRecorderId = this.classId;
+        this.recording = true;
+        await this.$nextTick();
         const previewAttached = this.attachPreview(stream);
         if (!previewAttached) {
+          this.recording = false;
+          activeRecorderId = null;
           stopCameraStream();
           throw new Error('Recorder-Vorschau konnte nicht initialisiert werden.');
         }
-        activeRecorderId = this.classId;
-        this.recording = true;
         sessionStore.updateDatasetStatus(this.classId, DATASET_STATUS.RECORDING, {
           error: null,
         });
