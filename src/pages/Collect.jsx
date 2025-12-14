@@ -234,13 +234,13 @@ export function Collect({ state }) {
         )}
         <button
           type="button"
-          className="collect-floating-toggle"
+          className={`collect-floating-toggle ${showHints ? 'is-active' : ''} ${!showHints && floatingHints.length > 0 ? 'animate-pulse' : ''}`}
           onClick={() => setShowHints((prev) => !prev)}
           disabled={floatingHints.length === 0}
           aria-label="Hinweise anzeigen oder ausblenden"
           aria-pressed={showHints}
         >
-          i
+          {showHints ? '×' : 'i'}
         </button>
       </div>
     </section>
