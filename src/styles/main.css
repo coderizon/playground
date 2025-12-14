@@ -383,7 +383,23 @@
   }
 
   .class-card-v2 {
-    @apply space-y-4 rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm transition hover:border-indigo-100;
+    @apply space-y-4 rounded-3xl border border-slate-200 p-5 shadow-sm transition hover:border-indigo-100;
+  }
+
+  .class-card-v2--neutral {
+    @apply bg-white;
+  }
+
+  .class-card-v2--ready {
+    @apply bg-emerald-50/60;
+  }
+
+  .class-card-v2--recording {
+    @apply bg-amber-50/60;
+  }
+
+  .class-card-v2--error {
+    @apply bg-red-50/60;
   }
 
   .class-card-v2 header {
@@ -404,6 +420,10 @@
 
   .dataset-chip--recording {
     @apply bg-amber-100 text-amber-800;
+  }
+
+  .dataset-chip--neutral {
+    @apply bg-slate-100 text-slate-600;
   }
 
   .dataset-chip--error {
@@ -584,6 +604,14 @@
 
   .sample-modal-list li {
     @apply flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-3 py-2;
+  }
+
+  .sample-modal-empty {
+    @apply rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500;
+  }
+
+  .sample-modal-empty-title {
+    @apply text-base font-semibold text-slate-700;
   }
 
   .sample-meta {

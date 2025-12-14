@@ -376,80 +376,84 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         <button type="button" className="ghost" onClick={discardDataset} disabled={!canDiscard}>Datensatz verwerfen</button>
       </div>
 
-      {samples.length > 0 && (
-        <>
-          <div className="sample-album">
-            <p className="eyebrow">Samples</p>
-            <button type="button" className="sample-album-trigger" onClick={toggleAlbum}>
-              <div className="sample-album-stack" aria-hidden="true">
-                {stackSamples.map((sample, index) => (
-                  <span key={sample.id} className={`sample-album-card sample-album-card-${index}`}>
-                    {sample.thumbnail ? <img src={sample.thumbnail} alt="" /> : <span className="sample-album-placeholder"></span>}
-                  </span>
-                ))}
-                {stackSamples.length === 0 && (
-                  <span className="sample-album-card sample-album-card-empty">
-                    <span className="sample-album-placeholder"></span>
-                  </span>
-                )}
-              </div>
-              <div className="sample-album-summary">
-                <strong>{samples.length}</strong>
-                <span>Samples verwalten</span>
-              </div>
-            </button>
+      <div className="sample-album">
+        <p className="eyebrow">Samples</p>
+        <button type="button" className="sample-album-trigger" onClick={toggleAlbum}>
+          <div className="sample-album-stack" aria-hidden="true">
+            {stackSamples.length > 0 ? (
+              stackSamples.map((sample, index) => (
+                <span key={sample.id} className={`sample-album-card sample-album-card-${index}`}>
+                  {sample.thumbnail ? <img src={sample.thumbnail} alt="" /> : <span className="sample-album-placeholder"></span>}
+                </span>
+              ))
+            ) : (
+              <span className="sample-album-card sample-album-card-empty">
+                <span className="sample-album-placeholder">Keine Samples</span>
+              </span>
+            )}
           </div>
+          <div className="sample-album-summary">
+            <strong>{samples.length}</strong>
+            <span>{samples.length > 0 ? 'Samples verwalten' : 'Noch keine Samples'}</span>
+          </div>
+        </button>
+      </div>
 
-          {albumOpen && (
-            <>
-              <div className="sample-modal-backdrop" onClick={closeAlbum}></div>
-              <section
-                className="sample-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby={modalTitleId}
-                ref={albumModalRef}
-                tabIndex={-1}
-              >
-                <div className="sample-modal-shell">
-                  <div className="sample-modal-header">
-                    <div>
-                      <p className="eyebrow">Samples</p>
-                      <h3 id={modalTitleId}>{classState.name || 'Unbenannte Klasse'}</h3>
-                      <p className="sample-modal-subline">Wähle Samples aus, um Details zu prüfen oder mehrere auf einmal zu löschen.</p>
-                    </div>
-                    <button type="button" className="icon-close" aria-label="Samples schließen" onClick={closeAlbum}>
-                      ×
-                    </button>
-                  </div>
-                  <div className="sample-modal-actions">
-                    <button type="button" className="ghost" onClick={selectAllSamples} disabled={allSelected}>
-                      Alle auswählen
-                    </button>
-                    <button type="button" className="ghost" onClick={clearSelection} disabled={!selectedCount}>
-                      Auswahl aufheben
-                    </button>
-                    <button type="button" className="ghost danger" onClick={handleBulkRemove} disabled={!selectedCount}>
-                      {selectedCount > 0 ? `${selectedCount} entfernen` : 'Entfernen'}
-                    </button>
-                  </div>
-                  <ul className="sample-modal-list">
-                    {samples.map((sample, idx) => (
-                      <SamplePreview
-                        key={sample.id}
-                        sample={{ ...sample, label: sample.label || `Sample ${idx + 1}` }}
-                        classId={classId}
-                        disabled={recording || trainingLocked}
-                        selectable
-                        selected={selectedSampleIds.includes(sample.id)}
-                        onSelectToggle={() => toggleSampleSelection(sample.id)}
-                      />
-                    ))}
-                  </ul>
+      {albumOpen && (
+        <>
+          <div className="sample-modal-backdrop" onClick={closeAlbum}></div>
+          <section
+            className="sample-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={modalTitleId}
+            ref={albumModalRef}
+            tabIndex={-1}
+          >
+            <div className="sample-modal-shell">
+              <div className="sample-modal-header">
+                <div>
+                  <p className="eyebrow">Samples</p>
+                  <h3 id={modalTitleId}>{classState.name || 'Unbenannte Klasse'}</h3>
+                  <p className="sample-modal-subline">Wähle Samples aus, um Details zu prüfen oder mehrere auf einmal zu löschen.</p>
                 </div>
-              </section>
-            </>
-          )}
+                <button type="button" className="icon-close" aria-label="Samples schließen" onClick={closeAlbum}>
+                  ×
+                </button>
+              </div>
+              <div className="sample-modal-actions">
+                <button type="button" className="ghost" onClick={selectAllSamples} disabled={allSelected || samples.length === 0}>
+                  Alle auswählen
+                </button>
+                <button type="button" className="ghost" onClick={clearSelection} disabled={!selectedCount}>
+                  Auswahl aufheben
+                </button>
+                <button type="button" className="ghost danger" onClick={handleBulkRemove} disabled={!selectedCount}>
+                  {selectedCount > 0 ? `${selectedCount} entfernen` : 'Entfernen'}
+                </button>
+              </div>
+              {samples.length === 0 ? (
+                <div className="sample-modal-empty">
+                  <p className="sample-modal-empty-title">Noch keine Samples</p>
+                  <p className="sample-modal-empty-copy">Klicke auf „Aufnahme starten“, um Beispiele für diese Klasse zu sammeln.</p>
+                </div>
+              ) : (
+                <ul className="sample-modal-list">
+                  {samples.map((sample, idx) => (
+                    <SamplePreview
+                      key={sample.id}
+                      sample={{ ...sample, label: sample.label || `Sample ${idx + 1}` }}
+                      classId={classId}
+                      disabled={recording || trainingLocked}
+                      selectable
+                      selected={selectedSampleIds.includes(sample.id)}
+                      onSelectToggle={() => toggleSampleSelection(sample.id)}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
         </>
       )}
     </section>

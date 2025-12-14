@@ -58,11 +58,11 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
 
   const datasetChipClass = () => {
     switch (classItem.dataset?.status) {
-      case DATASET_STATUS.READY: return 'chip chip--success';
-      case DATASET_STATUS.RECORDING: return 'chip chip--warning';
-      case DATASET_STATUS.EMPTY: return 'chip chip--neutral';
-      case DATASET_STATUS.ERROR: return 'chip chip--danger';
-      default: return 'chip';
+      case DATASET_STATUS.READY: return 'dataset-chip dataset-chip--ready';
+      case DATASET_STATUS.RECORDING: return 'dataset-chip dataset-chip--recording';
+      case DATASET_STATUS.EMPTY: return 'dataset-chip dataset-chip--error';
+      case DATASET_STATUS.ERROR: return 'dataset-chip dataset-chip--error';
+      default: return 'dataset-chip dataset-chip--neutral';
     }
   };
 
@@ -74,8 +74,22 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
     return `${count} von ${expected} Samples`;
   };
 
+  const cardToneClass = () => {
+    switch (classItem.dataset?.status) {
+      case DATASET_STATUS.READY:
+        return 'class-card-v2 class-card-v2--ready';
+      case DATASET_STATUS.RECORDING:
+        return 'class-card-v2 class-card-v2--recording';
+      case DATASET_STATUS.ERROR:
+      case DATASET_STATUS.EMPTY:
+        return 'class-card-v2 class-card-v2--error';
+      default:
+        return 'class-card-v2 class-card-v2--neutral';
+    }
+  };
+
   return (
-    <article className="class-card-v2">
+    <article className={cardToneClass()}>
       <header>
         <input
           type="text"
