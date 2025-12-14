@@ -135,6 +135,7 @@ export function registerDatasetComponents(Alpine) {
         canDelete: !this.recording && !this.trainingLocked,
         displayLabel: this.sampleLabel(sample, index),
         displayDuration: this.sampleDuration(sample),
+        thumbnail: this.resolveThumbnail(sample),
       }));
     },
 
@@ -162,6 +163,7 @@ export function registerDatasetComponents(Alpine) {
       return {
         count: frameSamples.length,
         warning: frameSamples.length < this.expectedCount / 2,
+        coverage: this.cameraCoverage(frameSamples),
       };
     },
 
@@ -436,6 +438,38 @@ export function registerDatasetComponents(Alpine) {
     sampleDuration(sample) {
       if (!sample.durationMs) return sample.source || '';
       return `${(sample.durationMs / 1000).toFixed(1)}s`;
+    },
+
+    resolveThumbnail(sample) {
+      if (sample.thumbnail) return sample.thumbnail;
+      if (sample.source === 'camera') {
+        return this.generateCameraPreview();
+      }
+      return null;
+    },
+
+    generateCameraPreview() {
+      const video = this.$refs[`preview-${this.classId}`];
+      if (!video) return null;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 160;
+        canvas.height = 120;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', 0.7);
+      } catch (error) {
+        console.warn('Vorschau konnte nicht erstellt werden', error);
+        return null;
+      }
+    },
+
+    cameraCoverage(frameSamples) {
+      if (!frameSamples.length) return 'Nutzereingabe benötigt';
+      const latest = frameSamples.at(-1)?.capturedAt || Date.now();
+      const earliest = frameSamples[0]?.capturedAt || latest;
+      const spreadSec = Math.max(Math.round((latest - earliest) / 1000), 1);
+      return `Variation über ${spreadSec}s`;
     },
 
     audioPresetHint() {
