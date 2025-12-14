@@ -223,6 +223,15 @@ export function Collect({ state }) {
       </section>
 
       <div className="collect-floating-toolbar">
+        {showHints && floatingHints.length > 0 && (
+          <div className="collect-floating-hints" aria-live="polite">
+            {floatingHints.map((message) => (
+              <p key={message} className="collect-lock-hint" role="status">
+                {message}
+              </p>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           className="collect-floating-toggle"
@@ -233,15 +242,6 @@ export function Collect({ state }) {
         >
           i
         </button>
-        {showHints && floatingHints.length > 0 && (
-          <div className="collect-floating-hints" aria-live="polite">
-            {floatingHints.map((message) => (
-              <p key={message} className="collect-lock-hint" role="status">
-                {message}
-              </p>
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
