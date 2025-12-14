@@ -143,7 +143,7 @@ This page is the **core learning surface** of the app.
 
 * **Discard session and return Home**
 * **Discard all classes**
-* **Add class**
+* **Add class** (disabled if any existing class has an empty dataset)
 * **Go to Training** (disabled until requirements are met)
 
 Disabled controls must always explain *why*.

@@ -106,6 +106,10 @@ export function Collect({ state }) {
   const totalSamples = classes.reduce((acc, c) => acc + (c.dataset?.recordedCount || 0), 0);
   const trainingReady = canGoToTraining(state);
   
+  // Disable adding new classes if any existing class has 0 samples
+  const hasEmptyClass = classes.some(c => (c.dataset?.recordedCount || 0) === 0);
+  const addClassDisabled = trainingLocked || hasEmptyClass;
+  
   // Training Gate Hint
   const trainingHint = (() => {
     if (classes.length < 2) return 'Mindestens zwei Klassen sind erforderlich, bevor du weiter trainieren kannst.';
@@ -115,7 +119,9 @@ export function Collect({ state }) {
   })();
 
   const handleAddClass = () => {
-    classController.addClass();
+    if (!addClassDisabled) {
+      classController.addClass();
+    }
   };
 
   const handleGoTrain = () => {
@@ -146,12 +152,18 @@ export function Collect({ state }) {
         <CollectToolbar 
           classCount={classes.length} 
           onAddClass={handleAddClass} 
-          trainingLocked={trainingLocked} 
+          trainingLocked={addClassDisabled} 
         />
         
         {trainingLocked && (
           <p className="collect-lock-hint" role="status" aria-live="polite">
             Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.
+          </p>
+        )}
+        
+        {hasEmptyClass && !trainingLocked && (
+          <p className="collect-lock-hint" role="status" aria-live="polite">
+            Fülle zuerst die vorhandenen Klassen mit Daten, bevor du neue hinzufügst.
           </p>
         )}
 
@@ -163,7 +175,7 @@ export function Collect({ state }) {
 
         <div className="collect-class-list">
           {classes.length === 0 ? (
-            <CollectEmpty onAddFirst={handleAddClass} trainingLocked={trainingLocked} />
+            <CollectEmpty onAddFirst={handleAddClass} trainingLocked={addClassDisabled} />
           ) : (
             classes.map(classItem => (
               <ClassCard 
