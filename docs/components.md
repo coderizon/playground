@@ -1,6 +1,7 @@
 # Component & Guard Notes — ML Playground SPA
 
 > Working doc for contributors. Summaries stay short and link back to source files/tests.
+> New to the project? Start with `docs/onboarding.md` for the architecture/workflow overview.
 
 ## Confirm Dialog (`src/app/components/common/confirmDialog.js`)
 

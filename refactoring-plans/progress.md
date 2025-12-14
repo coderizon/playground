@@ -31,12 +31,10 @@
   - `services/ml/mockTraining.js` + `mockInference.js` remain as fallbacks for future tests.
   - `services/edge/edgeService.js` wraps BLE modules, tracks connection state, streams predictions to Arduino/Micro:bit/Calliope, and flags streaming errors as edge status updates; regression tests in `tests/store/sessionStore.edge.test.mjs` cover edge state persistence/contracts, `tests/services/edgeService.test.mjs` fakes the BLE stack to verify streaming toggles + error propagation end to end, and `docs/ble-hardware-qa.md` captures the release checklist for exercising real devices.
   - `src/config/externalResources.js` now pins the external TF.js/Mediapipe URLs that both the legacy prototype and SPA share, making version bumps + self-hosting plans explicit. `src/utils/loadTf.js` consumes that config so `/src/bootstrap.js` injects the pinned TF.js script exactly once, which means swapping to a self-hosted bundle only requires flipping the config constant.
+- **Documentation & onboarding**: `docs/onboarding.md` captures the development workflow (setup, architecture map, controllers/guardrails, testing expectations) so new contributors can ramp up without institutional knowledge. Component-specific notes continue to live in `docs/components.md`, which now points back to the onboarding guide.
 
 ## Remaining Work to Fulfill `vision.md`
 
-Edge-streaming parity is complete and the SPA Home hero now satisfies the onboarding/polish requirements from `vision.md`. The outstanding pillar is:
-
-1. **Documentation & onboarding**
-   - Keep this progress file current and expand the onboarding docs (component map, guard overview, quick-start contributor notes) so new contributors can navigate the SPA architecture without relying on institutional knowledge.
+All pillars in `vision.md` are now satisfied. Continue treating this file + `docs/onboarding.md` as living documents whenever new features or slices are added.
 
 Keep referencing `refactoring-plans/vision.md` as the contract; this file tracks implementation status and outstanding work.
