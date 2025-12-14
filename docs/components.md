@@ -59,6 +59,6 @@
 ## External Resource Map (`src/config/externalResources.js`)
 
 - **Purpose**: single source of truth for TF Hub + Mediapipe URLs/versions used across both the SPA and the legacy modules.
-- **Usage**: ML services (`modelBridge.js`) and legacy gesture/face scripts import constants instead of hard-coding CDN strings, making it easier to pin or self-host per the vision document.
+- **Usage**: ML services (`modelBridge.js`) and legacy gesture/face scripts import constants instead of hard-coding CDN strings, making it easier to pin or self-host per the vision document. The TF.js runtime is now loaded via `src/utils/loadTf.js`, which consumes the same config and injects the script once during bootstrap.
 
 Refer back to `src/app/components/registerComponents.js` for how these are registered in Alpine.

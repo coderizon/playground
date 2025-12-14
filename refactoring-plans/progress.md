@@ -30,7 +30,7 @@
   - `services/ml/liveInference.js` runs the inference loop.
   - `services/ml/mockTraining.js` + `mockInference.js` remain as fallbacks for future tests.
   - `services/edge/edgeService.js` wraps BLE modules, tracks connection state, streams predictions to Arduino/Micro:bit/Calliope, and flags streaming errors as edge status updates; regression tests in `tests/store/sessionStore.edge.test.mjs` cover edge state persistence/contracts, `tests/services/edgeService.test.mjs` fakes the BLE stack to verify streaming toggles + error propagation end to end, and `docs/ble-hardware-qa.md` captures the release checklist for exercising real devices.
-  - `src/config/externalResources.js` now pins the external TF.js/Mediapipe URLs that both the legacy prototype and SPA share, making version bumps + self-hosting plans explicit.
+  - `src/config/externalResources.js` now pins the external TF.js/Mediapipe URLs that both the legacy prototype and SPA share, making version bumps + self-hosting plans explicit. `src/utils/loadTf.js` consumes that config so `/src/bootstrap.js` injects the pinned TF.js script exactly once, which means swapping to a self-hosted bundle only requires flipping the config constant.
 
 ## Remaining Work to Fulfill `vision.md`
 
@@ -38,11 +38,9 @@ The edge-streaming parity/QA slice is complete (store persistence, modal UX, tes
 
 1. **Accessibility + interaction standards (Quality bar)**
    - Focus traps, Escape handling, global discard/home shortcuts, live notice banners, in-product shortcut hints, and task-card ARIA metadata are in place. Next steps: finish auditing Home/Collect card focus outlines plus remaining task metadata labels, then capture any additional shortcuts/gestures that emerge from QA before sign-off.
-2. **Dependency pinning/self-hosting**
-   - With `src/config/externalResources.js` in place, pin or mirror TF.js/Mediapipe assets per the vision so we control external drift and can satisfy offline/self-hosted requirements.
-3. **UX polish & structure**
+2. **UX polish & structure**
    - Continue migrating legacy utility classes to Tailwind and extract Home/Collect/Train/Infer logic into focused controllers/components so the SPA matches the architecture described in `vision.md`.
-4. **Documentation & onboarding**
+3. **Documentation & onboarding**
    - Keep this progress file up to date per sprint and expand the component/guard docs (`docs/components.md`) once the final structure settles so new contributors have a clear reference.
 
 Keep referencing `refactoring-plans/vision.md` as the contract; this file tracks implementation status and outstanding work.

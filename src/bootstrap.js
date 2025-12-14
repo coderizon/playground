@@ -1,3 +1,7 @@
+import { ensureTfLoaded } from './utils/loadTf.js';
+
+await ensureTfLoaded();
+
 const useNewAppFlag = (import.meta.env?.VITE_PLAYGROUND_APP || '').toLowerCase();
 const useNewApp = useNewAppFlag === 'next' || useNewAppFlag === 'new';
 
