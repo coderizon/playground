@@ -40,9 +40,13 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
             </div>
           </template>
         </section>
-        <div class="collect-toolbar">
+        <div class="collect-toolbar" x-data="collectToolbar()" x-init="init()">
           <button type="button" class="primary" @click="addClass" :disabled="trainingLocked">Klasse hinzufügen</button>
-          <span class="collect-count" x-text="classes.length + ' Klassen angelegt'"></span>
+          <span class="collect-count">
+            <span class="visually-hidden">Anzahl Klassen:</span>
+            <strong x-text="classCount"></strong>
+            <span x-text="classCountCopy()"></span>
+          </span>
         </div>
         <p
           class="collect-lock-hint"

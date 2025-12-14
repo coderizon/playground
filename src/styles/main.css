@@ -177,6 +177,14 @@
     @apply flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4;
   }
 
+  .collect-count {
+    @apply text-sm font-medium text-slate-600;
+  }
+
+  .collect-count strong {
+    @apply mr-1 text-base font-semibold text-slate-900;
+  }
+
   .collect-lock-hint {
     @apply rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900;
   }

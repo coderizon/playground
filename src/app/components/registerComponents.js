@@ -1,5 +1,6 @@
 import { registerClassComponents } from './class/classList.js';
 import { registerCollectSummary } from './class/collectSummary.js';
+import { registerCollectToolbar } from './class/collectToolbar.js';
 import { registerConfirmDialog } from './common/confirmDialog.js';
 import { registerEdgeModal } from './edge/edgeModal.js';
 import { registerDatasetComponents } from './dataset/datasetRecorder.js';
@@ -12,6 +13,7 @@ import { registerPermissionAlerts } from './common/permissionAlerts.js';
 export function registerAppComponents(Alpine) {
   registerClassComponents(Alpine);
   registerCollectSummary(Alpine);
+  registerCollectToolbar(Alpine);
   registerConfirmDialog(Alpine);
   registerEdgeModal(Alpine);
   registerDatasetComponents(Alpine);
