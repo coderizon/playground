@@ -185,6 +185,95 @@
     @apply mr-1 text-base font-semibold text-slate-900;
   }
 
+  .landing-shell {
+    @apply mx-auto flex min-h-screen flex-col gap-6 px-6 py-10 text-slate-900 lg:max-w-5xl lg:px-8;
+  }
+
+  .landing-header {
+    @apply flex items-center justify-between;
+  }
+
+  .landing-identity {
+    @apply flex items-center gap-3 text-4xl font-semibold text-slate-900;
+  }
+
+  .identity-logo {
+    @apply h-10 w-10;
+  }
+
+  .search-pill {
+    @apply inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2;
+  }
+
+  .model-marquee {
+    @apply mt-6 overflow-hidden rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl;
+  }
+
+  .model-track {
+    @apply flex animate-[marquee_60s_linear_infinite] gap-6;
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .model-card {
+    @apply flex min-w-[260px] flex-col gap-4 rounded-3xl border border-slate-200 bg-white/95 p-5 text-left shadow-sm transition hover:border-indigo-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500;
+  }
+
+  .model-card.has-hero .model-card-hero {
+    @apply overflow-hidden rounded-2xl bg-slate-100;
+  }
+
+  .model-card-hero img {
+    @apply h-40 w-full object-cover;
+  }
+
+  .model-card-body h3 {
+    @apply text-lg font-semibold text-slate-900;
+  }
+
+  .model-card-description {
+    @apply text-sm text-slate-600;
+  }
+
+  .model-card-actions {
+    @apply mt-2 flex flex-wrap gap-2 text-xs font-semibold uppercase text-slate-500;
+  }
+
+  .md-tag {
+    @apply rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600;
+  }
+
+  .md-tag.primary {
+    @apply bg-indigo-100 text-indigo-700;
+  }
+
+  .model-card.is-disabled {
+    @apply opacity-40;
+  }
+
+  .side-menu-backdrop {
+    @apply fixed inset-0 bg-slate-900/70 backdrop-blur-sm;
+  }
+
+  .side-menu {
+    @apply fixed left-0 top-0 h-full w-72 translate-x-[-100%] bg-white p-6 shadow-2xl transition;
+  }
+
+  .side-menu:not(.hidden) {
+    @apply translate-x-0;
+  }
+
+  .side-menu-item {
+    @apply flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-100;
+  }
+
   .collect-lock-hint {
     @apply rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900;
   }
