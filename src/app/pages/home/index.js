@@ -17,7 +17,10 @@ export function renderHomePage(root, state = sessionStore.getState()) {
         </p>
       </header>
 
-      <div class="task-grid" data-home-grid></div>
+      <p class="task-grid-instructions" id="taskGridHint">
+        Nutze Tab, um Karten zu fokussieren, und bestätige mit Enter oder Leertaste. Verfügbarkeit und Aufwand werden vorgelesen.
+      </p>
+      <div class="task-grid" data-home-grid role="list" aria-describedby="taskGridHint"></div>
 
       <aside class="session-state" aria-live="polite">
         <h2>Session Status</h2>
@@ -26,6 +29,12 @@ export function renderHomePage(root, state = sessionStore.getState()) {
           <button type="button" data-discard-session class="ghost" disabled>Session verwerfen</button>
           <button type="button" data-go-home class="secondary" disabled>Zu Home zurück</button>
         </div>
+        <p class="session-shortcuts" role="note" aria-live="polite">
+          Tastatur:
+          <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> Session verwerfen</span>
+          ·
+          <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> Zurück nach Home</span>
+        </p>
       </aside>
     </section>
   `;
@@ -43,14 +52,21 @@ export function renderHomePage(root, state = sessionStore.getState()) {
     card.type = 'button';
     card.setAttribute('data-task-id', task.id);
     card.disabled = disabled;
+    card.setAttribute('role', 'listitem');
+    card.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    const titleId = `task-${task.id}-title`;
+    const descId = `task-${task.id}-desc`;
+    const metaId = `task-${task.id}-meta`;
+    card.setAttribute('aria-labelledby', `${titleId}`);
+    card.setAttribute('aria-describedby', `${descId} ${metaId}`);
     card.innerHTML = `
-      <div class="task-card__meta">
-        <span class="task-modality">${task.inputModality}</span>
-        <span class="task-effort">${task.effortLevel} effort</span>
+      <div class="task-card__meta" id="${metaId}">
+        <span class="task-modality" aria-label="Modality ${task.inputModality}">${task.inputModality}</span>
+        <span class="task-effort" aria-label="Aufwand ${task.effortLevel}">${task.effortLevel} effort</span>
       </div>
       <div class="task-card__body">
-        <h3>${task.name}</h3>
-        <p>${task.description}</p>
+        <h3 id="${titleId}">${task.name}</h3>
+        <p id="${descId}">${task.description}</p>
       </div>
       <dl class="task-summary">
         <div>
@@ -71,7 +87,7 @@ export function renderHomePage(root, state = sessionStore.getState()) {
       </div>
       ${
         disabled
-          ? `<div class="task-card__status"> ${getAvailabilityCopy(task.status)} </div>`
+          ? `<div class="task-card__status" role="status" aria-live="polite">${getAvailabilityCopy(task.status)}</div>`
           : ''
       }
     `;

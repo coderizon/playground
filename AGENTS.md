@@ -25,3 +25,5 @@ Use this as a personal scratchpad so every task stays aligned with the contract 
    - After each task: run tests, commit with a descriptive message, then pick the next backlog item. Never leave work uncommitted for the next step.
 7. **Self-directed slices**
    - When finishing a task, choose the next slice yourself from `refactoring-plans/progress.md` (Remaining Work) until the entire `vision.md` contract is satisfied. Do not wait for explicit instructions between slices.
+8. **Backlog hygiene**
+   - Before starting a new slice, scan `refactoring-plans/progress.md` to confirm each remaining item is still unresolved in the codebase. If an item is already complete, update the snapshot/remaining sections immediately so the backlog never drifts from reality.

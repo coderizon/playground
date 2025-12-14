@@ -47,6 +47,15 @@
 - `trainingController`: dispatches start requests to `trainWithRecordedSamples` and confirms `abortTraining` so mid-run cancellations are intentional.
 - `inferenceController`: central “stop inference before destructive action” guard that now also emits toasts when it has to halt a running preview.
 
+### Global Keyboard Shortcuts (`src/app/routes/keyboardShortcuts.js`)
+
+- **Purpose**: provides journey-wide access to critical destructive/navigation actions so keyboard-only testers can manage sessions without hunting for buttons.
+- **Bindings**:
+  - `Ctrl+Shift+D` (or `Cmd+Shift+D` on macOS) → `sessionController.discard()`, only when a session exists.
+  - `Ctrl+Shift+H` → `navigationController.goHome()`, only when not already on Home.
+- **Guards**: shortcuts bail when focus is inside editable fields and reuse the same controllers/toasts as the on-screen buttons, so confirmations + inference guards still run.
+- **Tests**: `tests/routes/keyboardShortcuts.test.mjs` covers modifier handling, focus guards, and noop scenarios.
+
 ## External Resource Map (`src/config/externalResources.js`)
 
 - **Purpose**: single source of truth for TF Hub + Mediapipe URLs/versions used across both the SPA and the legacy modules.

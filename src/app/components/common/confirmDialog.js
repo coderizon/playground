@@ -49,6 +49,7 @@ export function registerConfirmDialog(Alpine) {
     },
 
     handleKeydown(event) {
+      if (!this.open) return;
       if (event.key !== 'Tab') return;
       const focusables = this.focusableElements();
       if (!focusables.length) return;

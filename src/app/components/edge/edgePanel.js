@@ -10,13 +10,13 @@ import {
   getEdgeState,
   setStreaming,
 } from '../../services/edge/edgeService.js';
-import { createInferenceController } from '../../routes/inferenceController.js';
-import { openConfirmDialog } from '../common/confirmDialog.js';
-import { stopLiveInference } from '../../services/ml/liveInference.js';
 import arduinoThumb from '../../../assets/images/arduino.png';
 import microbitThumb from '../../../assets/images/microbit.png';
 import calliopeThumb from '../../../assets/images/calliope.png';
 import { showToast } from '../common/toast.js';
+import { openConfirmDialog } from '../common/confirmDialog.js';
+import { stopLiveInference } from '../../services/ml/liveInference.js';
+import { createEdgeController } from '../../routes/edgeController.js';
 
 const DEVICE_OPTIONS = [
   {
@@ -51,10 +51,12 @@ const DEVICE_OPTIONS = [
   },
 ];
 
-const inferenceController = createInferenceController({
+const edgeController = createEdgeController({
+  store: sessionStore,
   confirm: openConfirmDialog,
-  stopLiveInference,
+  disconnect: disconnectDevice,
   notify: showToast,
+  stopLiveInference,
 });
 
 export function registerEdgeComponents(Alpine) {
@@ -111,14 +113,7 @@ export function registerEdgeComponents(Alpine) {
     },
 
     disconnect() {
-      inferenceController.ensureInferenceStopped(
-        () => {
-          disconnectDevice();
-        },
-        {
-          toastMessage: 'Inference gestoppt, bevor die Edge-Verbindung getrennt wurde.',
-        }
-      );
+      edgeController.disconnectWithConfirm();
     },
 
     statusLabel() {

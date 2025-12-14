@@ -1,4 +1,4 @@
-import { sessionStore, STEP } from '../../store/sessionStore.js';
+import { sessionStore } from '../../store/sessionStore.js';
 import { canAccessInference } from '../../guards/navigation.js';
 import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
 import { openConfirmDialog } from '../../components/common/confirmDialog.js';
@@ -6,6 +6,7 @@ import { goTrain } from '../../routes/navigationController.js';
 import { createInferenceController } from '../../routes/inferenceController.js';
 import { stopLiveInference } from '../../services/ml/liveInference.js';
 import { showToast } from '../../components/common/toast.js';
+import { discardSessionWithConfirm } from '../../routes/sessionController.js';
 
 const inferenceController = createInferenceController({
   confirm: openConfirmDialog,
@@ -167,6 +168,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
     tone: state.edge.status === 'error' ? 'warning' : 'info',
     title: 'Streamingstatus',
     message: inferNoticeMessage(state),
+    assertive: state.edge.status === 'error',
   });
 
   root.querySelector('[data-back-train]')?.addEventListener('click', () => {
@@ -175,20 +177,7 @@ export function renderInferencePage(root, state = sessionStore.getState()) {
     });
   });
   root.querySelector('[data-discard-session]')?.addEventListener('click', () => {
-    inferenceController.ensureInferenceStopped(() =>
-      openConfirmDialog({
-        title: 'Session verwerfen?',
-        message: 'Alle gesammelten Daten gehen verloren. Willst du fortfahren?',
-        destructive: true,
-        confirmLabel: 'Session verwerfen',
-        onConfirm: () => {
-          sessionStore.discardSession();
-        },
-      }),
-      {
-        toastMessage: 'Inference gestoppt, bevor die Session gelöscht wird.',
-      }
-    );
+    discardSessionWithConfirm();
   });
 }
 

@@ -10,4 +10,6 @@ import './routes/classController.test.mjs';
 import './routes/sampleController.test.mjs';
 import './routes/trainingController.test.mjs';
 import './routes/inferenceController.test.mjs';
+import './routes/edgeController.test.mjs';
+import './routes/keyboardShortcuts.test.mjs';
 import './store/selectors.retry.test.mjs';

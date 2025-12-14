@@ -6,6 +6,7 @@ import { renderInferPage } from '../pages/infer/index.js';
 import { goHome } from './navigationController.js';
 import { initHistorySync } from './historySync.js';
 import { registerNavigationGuards } from './navigationGuards.js';
+import { registerKeyboardShortcuts } from './keyboardShortcuts.js';
 
 const routeHandlers = {
   [STEP.HOME]: renderHomePage,
@@ -22,6 +23,7 @@ export function startRouter(root) {
   ensureToastHost();
   ensureConfirmDialogHost();
   registerNavigationGuards();
+  registerKeyboardShortcuts();
   initHistorySync();
 
   const render = () => {
@@ -81,14 +83,21 @@ function ensureConfirmDialogHost() {
       class="confirm-backdrop"
       x-cloak
       @click.self="close()"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirmDialogTitle"
       @keydown.window="handleKeydown($event)"
+      @keydown.escape.prevent.stop="open && close()"
     >
-      <div class="confirm-dialog" :class="{'is-destructive': destructive}" tabindex="-1" x-ref="dialog">
+      <div
+        class="confirm-dialog"
+        :class="{'is-destructive': destructive}"
+        tabindex="-1"
+        x-ref="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmDialogTitle"
+        aria-describedby="confirmDialogMessage"
+      >
         <h3 id="confirmDialogTitle" x-text="title"></h3>
-        <p x-text="message"></p>
+        <p id="confirmDialogMessage" x-text="message"></p>
         <div class="confirm-actions">
           <button
             type="button"

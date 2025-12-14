@@ -1,6 +1,7 @@
 import { sessionStore, DATASET_STATUS } from '../../store/sessionStore.js';
 import { canGoToCollect, canGoToTraining } from '../../guards/navigation.js';
 import { goHome, goTrain } from '../../routes/navigationController.js';
+import { renderNoticeBanner } from '../../components/common/noticeBanner.js';
 
 export function renderCollectPage(root, state = sessionStore.getState()) {
   if (!root) return;
@@ -27,7 +28,7 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
         </div>
       </header>
       <section class="collect-body" x-data="classList()" x-init="init()">
-        ${trainingHint ? `<div class="notice notice--info">${trainingHint}</div>` : ''}
+        <div id="collectTrainingHint"></div>
         <section class="permission-notices" x-data="permissionAlerts()" x-init="init()" x-show="issues.length">
           <template x-for="issue in issues" :key="issue.id">
             <div class="notice notice--warning">
@@ -309,6 +310,16 @@ export function renderCollectPage(root, state = sessionStore.getState()) {
       </section>
     </section>
   `;
+  const trainingHintContainer = root.querySelector('#collectTrainingHint');
+  if (trainingHint && trainingHintContainer) {
+    renderNoticeBanner(trainingHintContainer, {
+      tone: 'info',
+      title: 'Training-Hinweis',
+      message: trainingHint,
+    });
+  } else if (trainingHintContainer) {
+    trainingHintContainer.remove();
+  }
 
   root.querySelector('[data-back-home]')?.addEventListener('click', goHome);
   const goTrainBtn = root.querySelector('[data-go-train]');
