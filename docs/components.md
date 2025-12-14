@@ -32,5 +32,6 @@
 - `sessionController`: discards sessions through the confirm dialog and ensures inference is stopped first.
 - `classController`: wraps per-class destructive actions with confirmations.
 - `sampleController`: guards per-sample deletes (blocked during training) and runs them through the shared confirm dialog so Collect UI never mutates the store directly.
+- `trainingController`: dispatches start requests to `trainWithRecordedSamples` and confirms `abortTraining` so mid-run cancellations are intentional.
 
 Refer back to `src/app/components/registerComponents.js` for how these are registered in Alpine.

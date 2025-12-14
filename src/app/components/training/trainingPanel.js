@@ -9,9 +9,9 @@ import {
   getTrainingRetryContext,
 } from '../../store/selectors.js';
 import {
-  trainWithRecordedSamples,
-  abortTraining,
-} from '../../services/ml/modelBridge.js';
+  startTrainingWithController,
+  abortTrainingWithController,
+} from '../../routes/trainingController.js';
 
 export function registerTrainingComponents(Alpine) {
   const initialState = sessionStore.getState();
@@ -148,12 +148,12 @@ export function registerTrainingComponents(Alpine) {
 
     startTraining() {
       if (!this.canStart) return;
-      trainWithRecordedSamples();
+      startTrainingWithController();
     },
 
     abortTraining() {
       if (!this.canAbort) return;
-      abortTraining();
+      abortTrainingWithController();
     },
 
     formatTimestamp(value) {
