@@ -61,7 +61,7 @@ export function Infer({ state }) {
         </div>
         <div className="infer-header__actions">
           <button type="button" className="ghost" onClick={handleBackToTrain}>Zurück zu Training</button>
-          <button type="button" className="secondary" onClick={handleDiscard}>Session verwerfen</button>
+          <button type="button" className="primary danger" onClick={handleDiscard}>Session verwerfen</button>
         </div>
       </header>
       
