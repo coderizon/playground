@@ -537,7 +537,7 @@
   }
 
   .dataset-preview .preview-video {
-    @apply h-full w-full object-cover opacity-0 transition-opacity duration-300;
+    @apply absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300;
   }
 
   .preview-video.is-visible {
