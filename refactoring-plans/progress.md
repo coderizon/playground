@@ -27,7 +27,7 @@
   - Improved visibility of the "Session verwerfen" button on the Inference page by applying `primary danger` styling, highlighting its destructive nature.
 - **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts.
 
-## Current State Snapshot (Jan 2025)
+## Current State Snapshot (Dec 2025)
 
 - **Architecture switcher**: `index.html` now loads `/src/bootstrap.js` which immediately boots the SPA (`src/app/bootstrap.js`), hides the old DOM, and mounts the router (`src/app/routes/router.js`). With the legacy Collect/Train/Infer columns, BLE modal, and landing marquee removed, the SPA is now the sole UI—our refactor path is a full rewrite to the SPA described in `vision.md`, so no state mirroring or dual rendering is required.
 - **Structure parity**: The source tree mirrors `vision.md` §11 — `src/app` holds store/routes/guards/bootstrap, while `src/pages`, `src/components`, `src/services`, `src/styles`, and `src/assets` are sibling directories. Legacy prototype folders/files (`bluetooth`, `camera`, `ml`, `ui`, `state.js`, `constants.js`, `domRefs.js`) were removed, and BLE device modules now live under `src/services/edge/devices`.
@@ -37,6 +37,7 @@
 - **Alpine component layer**:
   - `classList` now focuses on class creation, naming, and dataset status messaging.
   - `datasetRecorder` components own camera permissions, microphone-based clip capture (MediaRecorder), readiness hints, and destructive discards while piping embeddings into the TF.js bridge; toast notifications surface permission failures inline. Per-sample deletes and dataset resets now route through dedicated controllers/confirm dialogs so training locks can block the action consistently, and audio recorders now surface a background-noise guidance pill that reports how many 20s clips exist (with timestamps) plus a one-click CTA to capture another background take.
+  - **Fix**: `DatasetRecorder` now correctly detaches the camera stream and hides the live preview when the dataset is in the 'READY' state, preventing unnecessary resource usage and visual clutter while retaining the "Datensatz bereit" status.
   - Dataset sample management now renders as a stacked album trigger instead of a long inline list. Clicking the stack opens a focus-trapped modal that shows every sample, supports hover scrubbing, and exposes multi-select bulk deletion through `sampleController`, so densely populated classes stay compact while advanced cleanup remains one click away. The stack + modal are visible even before the first recording so classes never jump in height, and empty-state copy surfaces guidance rather than hiding the controls.
   - Recorder controls now sit below the sample stack, keeping the album and counter immediately visible before the user decides to start/stop recording or discard data.
   - The dataset discard CTA now sits inside the Samples panel header (warning button) so deleting data stays contextually grouped with sample management, while per-class delete remains in the card header (red, right aligned) for quick access.

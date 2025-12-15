@@ -80,7 +80,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   }, [trainingLocked, recording, activeRecorderId]);
 
   useEffect(() => {
-    if (isAudioTask) return undefined;
+    if (isAudioTask || isReady) return undefined;
     let cancelled = false;
     const attachPreview = async () => {
       try {
@@ -118,7 +118,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         borrowedPreviewRef.current = false;
       }
     };
-  }, [isAudioTask]);
+  }, [isAudioTask, isReady]);
 
   const stopRecordingCleanup = () => {
     if (sampleIntervalRef.current) {
