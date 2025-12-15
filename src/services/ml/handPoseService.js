@@ -10,7 +10,7 @@ export async function ensureHandDetector() {
   if (handLandmarker) return handLandmarker;
 
   try {
-    const vision = await import(MEDIAPIPE_VISION_BUNDLE_URL);
+    const vision = await import(/* @vite-ignore */ MEDIAPIPE_VISION_BUNDLE_URL);
     const fileset = await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_VISION_WASM_URL);
     handLandmarker = await vision.HandLandmarker.createFromOptions(fileset, {
       baseOptions: {

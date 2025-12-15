@@ -25,7 +25,7 @@
   - Updated classifier initialization to dynamically adjust `inputShape` based on the chosen feature extractor.
 - **UI/UX Enhancement**:
   - Improved visibility of the "Session verwerfen" button on the Inference page by applying `primary danger` styling, highlighting its destructive nature.
-- **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts.
+- **Cleanup**: Removed all Alpine.js dependencies and legacy setup scripts. Resolved dynamic import warnings in `handPoseService.js` for Vite compatibility.
 
 ## Current State Snapshot (Dec 2025)
 
