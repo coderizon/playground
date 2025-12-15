@@ -332,7 +332,8 @@ session
  │   └─ recording { isOpen, isRecording, source }
  ├─ training { status, progress, params, error }
  ├─ inference { status, source, lastPrediction, streamToEdge }
- └─ edge { status, deviceInfo, error }
+ ├─ edge { status, deviceInfo, error }
+ └─ media { cameraDeviceId, microphoneDeviceId }
 ```
 
 ### Status enums
@@ -368,6 +369,7 @@ session
 
 * Permissions requested only when needed
 * Clear permission failure states
+* **Media input device selection**: Users must be able to switch between available cameras (e.g., front/back, external webcams) and microphones (e.g., integrated, external mics) for camera-based and audio-based tasks respectively. The selected device ID is stored globally in the session state.
 * No silent background recording
 * Always provide a safe exit path
 
