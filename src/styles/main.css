@@ -166,7 +166,19 @@
   }
 
   .task-card {
-    @apply relative w-full text-left rounded-2xl border border-slate-200 bg-white/80 p-5 text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply flex flex-col justify-start relative w-full text-left rounded-2xl border border-slate-200 bg-white/80 text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .task-card__hero {
+    @apply aspect-[3/2] w-full overflow-hidden rounded-t-2xl bg-slate-100;
+  }
+
+  .task-card__hero img {
+    @apply h-full w-full object-cover;
+  }
+
+  .task-card__content {
+    @apply p-5;
   }
 
   .task-card__meta {

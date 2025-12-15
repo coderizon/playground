@@ -121,30 +121,35 @@ export function Home({ state }) {
                   aria-labelledby={titleId}
                   aria-describedby={`${descId} ${metaId}`}
                 >
-                  <div className="task-card__meta" id={metaId}>
-                    <span className="task-modality" aria-label={`Modality ${task.inputModality}`}>{task.inputModality}</span>
-                    <span className="task-effort" aria-label={`Aufwand ${task.effortLevel}`}>{task.effortLevel} effort</span>
+                  <div className="task-card__hero">
+                    <img src={task.image} alt="" aria-hidden="true" style={task.imageStyle} />
                   </div>
-                  <div className="task-card__body">
-                    <h3 id={titleId}>{task.name}</h3>
-                    <p id={descId}>{task.description}</p>
-                  </div>
-                  <dl className="task-summary">
-                    <div>
-                      <dt>Training</dt>
-                      <dd>{task.requiresTraining ? 'Erforderlich' : 'Nicht nötig'}</dd>
+                  <div className="task-card__content">
+                    <div className="task-card__meta" id={metaId}>
+                      <span className="task-modality" aria-label={`Modality ${task.inputModality}`}>{task.inputModality}</span>
+                      <span className="task-effort" aria-label={`Aufwand ${task.effortLevel}`}>{task.effortLevel} effort</span>
                     </div>
-                    <div>
-                      <dt>Interaktion</dt>
-                      <dd>{task.interactionType}</dd>
+                    <div className="task-card__body">
+                      <h3 id={titleId}>{task.name}</h3>
+                      <p id={descId}>{task.description}</p>
                     </div>
-                    <div>
-                      <dt>BLE</dt>
-                      <dd>{task.bleCapable ? 'Ja' : 'Optional'}</dd>
+                    <dl className="task-summary">
+                      <div>
+                        <dt>Training</dt>
+                        <dd>{task.requiresTraining ? 'Erforderlich' : 'Nicht nötig'}</dd>
+                      </div>
+                      <div>
+                        <dt>Interaktion</dt>
+                        <dd>{task.interactionType}</dd>
+                      </div>
+                      <div>
+                        <dt>BLE</dt>
+                        <dd>{task.bleCapable ? 'Ja' : 'Optional'}</dd>
+                      </div>
+                    </dl>
+                    <div className="task-card__tags">
+                      {task.badges.map((tag) => <span key={tag} className="task-tag">{tag}</span>)}
                     </div>
-                  </dl>
-                  <div className="task-card__tags">
-                    {task.badges.map((tag) => <span key={tag} className="task-tag">{tag}</span>)}
                   </div>
                   {disabled && (
                     <div className="task-card__status" role="status" aria-live="polite">
