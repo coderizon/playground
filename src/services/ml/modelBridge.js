@@ -131,7 +131,6 @@ export async function trainWithRecordedSamples() {
   } finally {
     xs.dispose();
     ys.dispose();
-    resetSamples();
     trainingAbortRequested = false;
   }
 }
