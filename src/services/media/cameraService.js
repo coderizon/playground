@@ -10,10 +10,30 @@ let activeStream = null;
 let activeUsers = 0;
 let activeStreamPromise = null;
 
-export async function requestCameraStream(constraints = DEFAULT_CONSTRAINTS) {
+export async function getVideoDevices() {
+  if (!navigator.mediaDevices?.enumerateDevices) return [];
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  return devices.filter((d) => d.kind === 'videoinput');
+}
+
+export async function requestCameraStream(constraints = DEFAULT_CONSTRAINTS, deviceId = null) {
   if (activeStream) {
     activeUsers += 1;
     return activeStream;
+  }
+
+  let finalConstraints = constraints;
+  if (deviceId) {
+    finalConstraints = {
+      ...constraints,
+      video: {
+        ...(constraints.video || {}),
+        deviceId: { exact: deviceId },
+      },
+    };
+    if (finalConstraints.video.facingMode) {
+      delete finalConstraints.video.facingMode;
+    }
   }
 
   if (!activeStreamPromise) {
@@ -21,7 +41,7 @@ export async function requestCameraStream(constraints = DEFAULT_CONSTRAINTS) {
       throw new Error('getUserMedia wird nicht unterstützt.');
     }
     activeStreamPromise = navigator.mediaDevices
-      .getUserMedia(constraints)
+      .getUserMedia(finalConstraints)
       .then((stream) => {
         activeStream = stream;
         return stream;

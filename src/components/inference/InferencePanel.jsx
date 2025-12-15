@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSession } from '../../hooks/useSession.js';
 import { sessionStore, INFERENCE_STATUS } from '../../app/store/sessionStore.js';
 import { getInferencePredictions } from '../../app/store/selectors.js';
 import { startLiveInference, stopLiveInference } from '../../services/ml/liveInference.js';
-import { requestCameraStream, stopCameraStream } from '../../services/media/cameraService.js';
+import { requestCameraStream, stopCameraStream, getVideoDevices } from '../../services/media/cameraService.js';
 import { EdgePanel } from '../edge/EdgePanel.jsx';
 import { FacePreview } from './FacePreview.jsx';
 import { BLENDSHAPE_LABELS_DE, BLENDSHAPE_WHITELIST } from '../../services/ml/faceLandmarkService.js';
@@ -18,93 +19,246 @@ export function InferencePanel({ state }) {
   return <TrainableInferencePanel state={state} />;
 }
 
-function TrainableInferencePanel({ state }) {
+function TrainableInferencePanel ({ state }) {
+
+  const session = useSession();
+
   const videoRef = useRef(null);
+
   const [error, setError] = useState(null);
-  
+
+  const [devices, setDevices] = useState([]);
+
+
+
   const inference = state.inference;
+
   const running = inference.status === INFERENCE_STATUS.RUNNING;
+
   const predictions = getInferencePredictions(state);
+
   const lastUpdatedAt = inference.lastPrediction?.updatedAt;
 
+  const currentDeviceId = session.media.cameraDeviceId;
+
+
+
   useEffect(() => {
-    let activeStream = null;
-    const initCamera = async () => {
+
+    (async () => {
+
       try {
-        activeStream = await requestCameraStream();
-        if (videoRef.current) {
-          videoRef.current.srcObject = activeStream;
-        }
-      } catch (err) {
-        console.error(err);
-        setError('Kamera konnte nicht gestartet werden: ' + err.message);
+
+        setDevices(await getVideoDevices());
+
+      } catch (e) {
+
+        console.error(e);
+
       }
+
+    })();
+
+  }, []);
+
+
+
+  const cycleDevice = () => {
+
+    if (devices.length < 2) return;
+
+    const current = devices.find((d) => d.deviceId === currentDeviceId);
+
+    const currentIndex = current ? devices.indexOf(current) : 0;
+
+    const nextIndex = (currentIndex + 1) % devices.length;
+
+    const nextId = devices[nextIndex].deviceId;
+
+    sessionStore.setMediaDevice('camera', nextId);
+
+    stopCameraStream(true);
+
+  };
+
+
+
+  useEffect(() => {
+
+    let activeStream = null;
+
+    const initCamera = async () => {
+
+      try {
+
+        activeStream = await requestCameraStream(undefined, currentDeviceId);
+
+        if (videoRef.current) {
+
+          videoRef.current.srcObject = activeStream;
+
+        }
+
+      } catch (err) {
+
+        console.error(err);
+
+        setError('Kamera konnte nicht gestartet werden: ' + err.message);
+
+      }
+
     };
+
     
+
     initCamera();
 
+
+
     return () => {
+
       if (running) {
+
         stopLiveInference();
+
       }
+
       stopCameraStream();
+
     };
-  }, []); // Run once on mount
+
+  }, [currentDeviceId]); // Run when device changes
+
+
 
   const handleStart = async () => {
+
     if (running) return;
+
     try {
+
       setError(null);
+
       await startLiveInference(videoRef.current);
+
     } catch (err) {
+
       console.error(err);
+
       setError(err.message || 'Inference konnte nicht gestartet werden.');
+
     }
+
   };
+
+
 
   const handleStop = () => {
+
     if (!running) return;
+
     stopLiveInference();
+
   };
+
+
 
   useEffect(() => {
+
     const handleKeyDown = (e) => {
+
       const tag = e.target.tagName.toLowerCase();
+
       if (['input', 'textarea'].includes(tag)) return;
+
       if (e.key.toLowerCase() === 'p' && !running) handleStart();
+
       if (e.key.toLowerCase() === 'o' && running) handleStop();
+
     };
+
     window.addEventListener('keydown', handleKeyDown);
+
     return () => window.removeEventListener('keydown', handleKeyDown);
+
   }, [running]);
 
+
+
   const statusCopy = () => {
+
     if (running) return 'Live Vorhersage aktiv';
+
     if (error) return `Fehler: ${error}`;
+
     return 'Bereit zum Testen';
+
   };
 
+
+
   const formatPercent = (val) => `${(val * 100).toFixed(1)}%`;
+
   const readableTimestamp = () => lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '';
 
+
+
   const bestPrediction = predictions.reduce(
+
     (best, current) => (current.value > best.value ? current : best),
+
     { value: -1 }
+
   );
 
+
+
   return (
+
     <article className="inference-panel">
+
       <h2>Inference</h2>
+
       <p className="inference-status" role="status" aria-live="polite">{statusCopy()}</p>
+
       
+
       <div className="inference-video">
+
         <video
+
           autoPlay
+
           muted
+
           playsInline
+
           className={running ? 'is-active' : ''}
+
           ref={videoRef}
+
         />
+
+        {devices.length > 1 && (
+
+          <button
+
+            type="button"
+
+            className="device-switch-btn"
+
+            onClick={cycleDevice}
+
+            title="Kamera wechseln"
+
+          >
+
+            ↻
+
+          </button>
+
+        )}
+
       </div>
 
       <div className="inference-actions">
@@ -144,17 +298,40 @@ function TrainableInferencePanel({ state }) {
 }
 
 function FacePreviewInferencePanel({ state }) {
+  const session = useSession();
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
   const [blendshapes, setBlendshapes] = useState([]);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
+  const [devices, setDevices] = useState([]);
   const running = state.inference.status === INFERENCE_STATUS.RUNNING;
+  const currentDeviceId = session.media.cameraDeviceId;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setDevices(await getVideoDevices());
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, []);
+
+  const cycleDevice = () => {
+    if (devices.length < 2) return;
+    const current = devices.find((d) => d.deviceId === currentDeviceId);
+    const currentIndex = current ? devices.indexOf(current) : 0;
+    const nextIndex = (currentIndex + 1) % devices.length;
+    const nextId = devices[nextIndex].deviceId;
+    sessionStore.setMediaDevice('camera', nextId);
+    stopCameraStream(true);
+  };
 
   useEffect(() => {
     let activeStream = null;
     const initCamera = async () => {
       try {
-        activeStream = await requestCameraStream();
+        activeStream = await requestCameraStream(undefined, currentDeviceId);
         if (videoRef.current) {
           videoRef.current.srcObject = activeStream;
         }
@@ -170,7 +347,7 @@ function FacePreviewInferencePanel({ state }) {
       sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
       stopCameraStream();
     };
-  }, []);
+  }, [currentDeviceId]);
 
   const handleStart = () => {
     if (running) return;
@@ -233,6 +410,16 @@ function FacePreviewInferencePanel({ state }) {
           className={running ? 'is-active' : ''}
           ref={videoRef}
         />
+        {devices.length > 1 && (
+          <button
+            type="button"
+            className="device-switch-btn"
+            onClick={cycleDevice}
+            title="Kamera wechseln"
+          >
+            ↻
+          </button>
+        )}
         <FacePreview videoRef={videoRef} isActive={running} onBlendshapes={handleBlendshapeUpdate} />
       </div>
 

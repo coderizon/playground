@@ -991,3 +991,7 @@
     white-space: nowrap;
     border: 0;
   }
+
+  .device-switch-btn {
+    @apply absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50;
+  }

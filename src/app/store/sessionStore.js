@@ -85,6 +85,7 @@ export function createInitialSessionState(overrides = {}) {
       selectedDevice: null,
     },
     permissions: createPermissionState(),
+    media: { cameraDeviceId: null, microphoneDeviceId: null },
   };
 
   return {
@@ -438,6 +439,17 @@ export function createSessionStore(initial = createInitialSessionState()) {
     });
   };
 
+  const setMediaDevice = (type, deviceId) => {
+    if (type !== 'camera' && type !== 'microphone') return;
+    setState((current) => ({
+      ...current,
+      media: {
+        ...current.media,
+        [`${type}DeviceId`]: deviceId,
+      },
+    }));
+  };
+
   const setStep = (step) => {
     if (!Object.values(STEP).includes(step)) return;
     setState((current) => ({
@@ -468,6 +480,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
     setInferenceStatus,
     setEdgeStatus,
     setPermissionState,
+    setMediaDevice,
     setInferenceStreaming,
     setStep,
     removeClass: (classId) => {

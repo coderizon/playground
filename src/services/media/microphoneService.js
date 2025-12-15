@@ -8,12 +8,30 @@ const DEFAULT_AUDIO_CONSTRAINTS = {
 
 let microphoneStream = null;
 
-export async function requestMicrophoneStream(constraints = DEFAULT_AUDIO_CONSTRAINTS) {
+export async function getAudioDevices() {
+  if (!navigator.mediaDevices?.enumerateDevices) return [];
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  return devices.filter((d) => d.kind === 'audioinput');
+}
+
+export async function requestMicrophoneStream(constraints = DEFAULT_AUDIO_CONSTRAINTS, deviceId = null) {
   if (microphoneStream) return microphoneStream;
   if (!navigator.mediaDevices?.getUserMedia) {
     throw new Error('Mikrofonzugriff wird nicht unterstützt.');
   }
-  microphoneStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+  let finalConstraints = constraints;
+  if (deviceId) {
+    finalConstraints = {
+      ...constraints,
+      audio: {
+        ...(constraints.audio || {}),
+        deviceId: { exact: deviceId },
+      },
+    };
+  }
+
+  microphoneStream = await navigator.mediaDevices.getUserMedia(finalConstraints);
   return microphoneStream;
 }
 
