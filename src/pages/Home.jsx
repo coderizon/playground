@@ -58,45 +58,6 @@ export function Home({ state }) {
 
   return (
     <section className="new-app-home">
-      <header className="new-app-home__header">
-        <div className="home-hero">
-          <p className="eyebrow">Playground Journey</p>
-          <h1>Starte dein Experiment</h1>
-          <p className="subline">
-            Playground ist eine geführte SPA: Jede Session folgt exakt Home → Collect → Train → Infer.
-            Diese Seite ist der einzige Eintrittspunkt – hier entscheidest du über Modalität, Aufwand und ob BLE-Streaming nötig ist.
-          </p>
-          <ul className="home-journey" role="list">
-            {JOURNEY_STEPS.map((item, index) => (
-              <li key={item.step} className="home-journey__item">
-                <div className="home-journey__index" aria-hidden="true">{index + 1}</div>
-                <div>
-                  <p className="home-journey__step">{item.step}</p>
-                  <p className="home-journey__title">{item.title}</p>
-                  <p className="home-journey__description">{item.description}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="home-guardrails" aria-live="polite">
-          <p className="eyebrow">Session Guardrails</p>
-          <p className="home-guardrails__copy">
-            Alle Sessions sind deterministisch: Guards blockieren destruktive Aktionen während Training oder aktiver Inferenz.
-            Bevor du eine Karte startest, lies dir die Regeln erneut durch.
-          </p>
-          <ul className="home-guardrails__list">
-            {SESSION_RULES.map((rule, index) => (
-              <li key={index}>
-                <span className="home-guardrails__bullet" aria-hidden="true"></span>
-                <p>{rule}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </header>
-
       <div className="home-main">
         <div className="home-grid-panel">
           <p className="task-grid-instructions" id="taskGridHint">
