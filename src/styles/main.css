@@ -995,3 +995,51 @@
   .device-switch-btn {
     @apply absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50;
   }
+
+  /* Notification Tray */
+  .notification-tray {
+    @apply fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4;
+  }
+
+  .notification-stack {
+    @apply flex flex-col gap-3 transition-all duration-300 origin-bottom;
+    @apply opacity-0 translate-y-4 pointer-events-none scale-95;
+    max-height: 0;
+  }
+
+  .notification-stack.is-open {
+    @apply opacity-100 translate-y-0 pointer-events-auto scale-100;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-bottom: 4px;
+  }
+
+  .notification-item {
+    @apply relative flex w-80 flex-col gap-1 rounded-xl border bg-white p-4 shadow-lg transition;
+  }
+
+  .notification-item.tone-error {
+    @apply border-red-200 bg-red-50 text-red-900;
+  }
+  .notification-item.tone-warning {
+    @apply border-amber-200 bg-amber-50 text-amber-900;
+  }
+  .notification-item.tone-info {
+    @apply border-sky-200 bg-sky-50 text-sky-900;
+  }
+
+  .notification-close {
+    @apply absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full text-lg leading-none opacity-60 hover:bg-black/5 hover:opacity-100;
+  }
+
+  .notification-toggle {
+    @apply relative flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-xl font-bold text-white shadow-xl transition hover:bg-slate-800 active:scale-95;
+  }
+
+  .notification-toggle.is-active {
+    @apply bg-slate-700;
+  }
+
+  .notification-badge {
+    @apply absolute -top-1 -right-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-sm ring-2 ring-white;
+  }

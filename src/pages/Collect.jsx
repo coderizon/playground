@@ -126,23 +126,6 @@ export function Collect({ state }) {
     }
   };
 
-  const [showHints, setShowHints] = useState(false);
-  const floatingHints = [];
-  if (trainingHint) {
-    floatingHints.push(trainingHint);
-  }
-
-  if (trainingLocked) {
-    floatingHints.push('Training läuft – Daten- und Klassenänderungen sind vorübergehend gesperrt.');
-  } else {
-    if (hasEmptyClass) {
-      floatingHints.push('Fülle zuerst die vorhandenen Klassen mit Daten, bevor du neue hinzufügst.');
-    }
-    if (isAnyClassRecording) {
-      floatingHints.push('Beende zuerst alle laufenden Aufnahmen, bevor du neue Klassen hinzufügst.');
-    }
-  }
-
   return (
     <section className="collect-page">
       <div className="collect-context">
@@ -221,28 +204,6 @@ export function Collect({ state }) {
           </div>
         </div>
       </section>
-
-      <div className="collect-floating-toolbar">
-        {showHints && floatingHints.length > 0 && (
-          <div className="collect-floating-hints" aria-live="polite">
-            {floatingHints.map((message) => (
-              <p key={message} className="collect-lock-hint" role="status">
-                {message}
-              </p>
-            ))}
-          </div>
-        )}
-        <button
-          type="button"
-          className={`collect-floating-toggle ${showHints ? 'is-active' : ''} ${!showHints && floatingHints.length > 0 ? 'animate-pulse' : ''}`}
-          onClick={() => setShowHints((prev) => !prev)}
-          disabled={floatingHints.length === 0}
-          aria-label="Hinweise anzeigen oder ausblenden"
-          aria-pressed={showHints}
-        >
-          {showHints ? '×' : 'i'}
-        </button>
-      </div>
     </section>
   );
 }
