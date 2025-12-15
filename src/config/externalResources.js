@@ -1,5 +1,5 @@
 const TFJS_VERSION = '3.11.0';
-const MEDIAPIPE_VISION_VERSION = '0.10.3';
+const MEDIAPIPE_VISION_VERSION = '0.10.8';
 
 export const TFJS_SCRIPT_URL = `https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@${TFJS_VERSION}/dist/tf.min.js`;
 

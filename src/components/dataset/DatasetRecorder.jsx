@@ -445,7 +445,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     <section className="dataset-recorder" aria-label={`Recorder für ${classState.name || 'Unbenannt'}`}>
       <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''}`}>
         {!isAudioTask && (
-          <div className="camera-guidance">
+          <>
             <video
               autoPlay
               muted
@@ -464,9 +464,11 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
                 ↻
               </button>
             )}
-            {isGestureTask && recording && <GesturePreview videoRef={videoRef} />}
-            {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
-          </div>
+            {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} />}
+            <div className="camera-guidance">
+              {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
+            </div>
+          </>
         )}
         {isAudioTask && (
           <div className="audio-preview">
