@@ -532,6 +532,10 @@
     @apply relative flex min-h-[180px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 text-white;
   }
 
+  .dataset-preview:not(.is-audio) {
+    @apply aspect-[4/3];
+  }
+
   .dataset-preview .preview-video {
     @apply h-full w-full object-cover opacity-0 transition-opacity duration-300;
   }
@@ -837,11 +841,11 @@
   }
 
   .inference-video {
-    @apply relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900;
+    @apply relative aspect-[4/3] w-full max-w-3xl mx-auto overflow-hidden rounded-3xl border border-slate-200 bg-slate-900;
   }
 
   .inference-video video {
-    @apply block h-[320px] w-full object-cover opacity-70 transition;
+    @apply block h-full w-full object-cover opacity-70 transition;
   }
 
   .inference-video video.is-active {
