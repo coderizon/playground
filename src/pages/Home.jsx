@@ -123,34 +123,7 @@ export function Home({ state }) {
           </div>
         </div>
 
-        <aside className="session-state" aria-live="polite">
-          <h2>Session Status</h2>
-          <p>{sessionStatusCopy}</p>
-          <div className="session-controls">
-            <button
-              type="button"
-              className="ghost"
-              disabled={!sessionActive}
-              onClick={discardSessionWithConfirm}
-            >
-              Session verwerfen
-            </button>
-            <button
-              type="button"
-              className="secondary"
-              disabled={!sessionActive || state.step === STEP.HOME}
-              onClick={goHome}
-            >
-              Zu Home zurück
-            </button>
-          </div>
-          <p className="session-shortcuts" role="note" aria-live="polite">
-            Tastatur:
-            <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> Session verwerfen</span>
-            ·
-            <span><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> Zurück nach Home</span>
-          </p>
-        </aside>
+
       </div>
     </section>
   );
