@@ -399,7 +399,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   };
 
   const handleRecordStop = (e) => {
-    if (e.type === 'touchend') {
+    if (e.type === 'touchend' && e.cancelable) {
        e.preventDefault(); // prevent click
     }
     
