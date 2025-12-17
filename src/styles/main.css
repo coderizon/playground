@@ -580,10 +580,6 @@
     @apply relative h-full w-full overflow-hidden rounded-2xl;
   }
 
-  .snapshot-container--mirrored .preview-thumbnail {
-    transform: scaleX(-1);
-  }
-
   .preview-thumbnail {
     @apply h-full w-full rounded-2xl object-cover;
   }

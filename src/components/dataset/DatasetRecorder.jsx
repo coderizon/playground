@@ -309,7 +309,6 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
             source: 'camera',
             thumbnail: capture.thumbnail,
             previewFrames: capture.frames || [],
-            isMirrored: capture.mirrored,
           });
 
           if (navigator.vibrate) navigator.vibrate(5);
@@ -505,7 +504,6 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
   const sampleSummaryLabel = 'Beispiele aufgenommen';
   const datasetManageLabel = hasSamples ? 'Beispiele verwalten' : 'Beispiele aufnehmen';
   const sampleCountDisplay = sampleSummaryCount || (hasSamples ? `${recordedCount}` : 'Noch keine Daten');
-  const snapshotMirrorClass = previewSample?.isMirrored ? ' snapshot-container--mirrored' : '';
   const showCameraSnapshot = !isAudioTask && !recording && countdown === null && !!previewSample?.thumbnail;
   const modalTitleId = `sampleModalTitle-${classId}`;
 
@@ -529,7 +527,7 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
                 className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
               />
               {showCameraSnapshot ? (
-                <div className={`snapshot-container${snapshotMirrorClass}`}>
+                <div className="snapshot-container">
                   <img
                     src={previewSample.thumbnail}
                     alt={`Vorschau der letzten Aufnahme für ${classState.name || 'Klasse'}`}
