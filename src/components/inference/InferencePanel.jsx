@@ -20,10 +20,25 @@ export function InferencePanel({ state, onBack, onDiscard, requiresTraining }) {
   return <TrainableInferencePanel {...commonProps} />;
 }
 
-function InferFooter({ running, onStart, onStop, onBack, onDiscard, requiresTraining }) {
+function InferenceControls({ running, onStart, onStop, labelStart = 'Inference starten' }) {
   return (
-    <section className="infer-footer mt-8 space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+    <div className="flex flex-col gap-3 md:flex-row w-full md:w-auto mt-6">
+        {running ? (
+            <button type="button" className="ghost w-full md:w-auto" onClick={onStop}>
+                Stoppen
+            </button>
+        ) : (
+            <button type="button" className="primary w-full md:w-auto" onClick={onStart}>
+                {labelStart}
+            </button>
+        )}
+    </div>
+  );
+}
+
+function InferenceNavigation({ onBack, onDiscard, requiresTraining }) {
+  return (
+    <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mt-8 pt-6 border-t border-slate-100">
         {requiresTraining ? (
             <button type="button" className="ghost order-last md:order-first w-full md:w-auto" onClick={onBack}>
             Zurück zu Training
@@ -32,23 +47,10 @@ function InferFooter({ running, onStart, onStop, onBack, onDiscard, requiresTrai
             <div className="hidden md:block"></div> 
         )}
         
-        <div className="flex flex-col gap-3 md:flex-row w-full md:w-auto">
-            {running ? (
-                <button type="button" className="ghost w-full md:w-auto" onClick={onStop}>
-                    Stoppen
-                </button>
-            ) : (
-                <button type="button" className="primary w-full md:w-auto" onClick={onStart}>
-                    Inference starten
-                </button>
-            )}
-            
-            <button type="button" className="ghost danger w-full md:w-auto" onClick={onDiscard}>
-                Session verwerfen
-            </button>
-        </div>
-      </div>
-    </section>
+        <button type="button" className="ghost danger w-full md:w-auto" onClick={onDiscard}>
+            Session verwerfen
+        </button>
+    </div>
   );
 }
 
@@ -154,6 +156,8 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
       <h2>Inference</h2>
       <p className="inference-status" role="status" aria-live="polite">{statusCopy()}</p>
       
+      <EdgePanel state={state} />
+
       <div className="inference-video">
         <video
           autoPlay
@@ -173,11 +177,13 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
           </button>
         )}
       </div>
-
-      <div className="inference-hotkeys" aria-hidden="true">
-        <span><kbd>P</kbd> Start</span>
-        <span><kbd>O</kbd> Stop</span>
-      </div>
+      
+      <InferenceControls 
+        running={running} 
+        onStart={handleStart} 
+        onStop={handleStop} 
+        labelStart="Inference starten" 
+      />
 
       <div className="prediction-output">
         <h3>Vorhersage</h3>
@@ -196,12 +202,7 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
         )}
       </div>
 
-      <EdgePanel state={state} />
-
-      <InferFooter 
-        running={running}
-        onStart={handleStart}
-        onStop={handleStop}
+      <InferenceNavigation 
         onBack={onBack}
         onDiscard={onDiscard}
         requiresTraining={requiresTraining}
@@ -336,10 +337,12 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
         <FacePreview videoRef={videoRef} isActive={running} onBlendshapes={handleBlendshapeUpdate} />
       </div>
 
-      <div className="inference-hotkeys" aria-hidden="true">
-        <span><kbd>P</kbd> Start</span>
-        <span><kbd>O</kbd> Stop</span>
-      </div>
+      <InferenceControls 
+        running={running} 
+        onStart={handleStart} 
+        onStop={handleStop} 
+        labelStart="Vorschau starten" 
+      />
 
       <div className="prediction-output">
         <h3>Blendshape-Pegel</h3>
@@ -363,10 +366,7 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
         )}
       </div>
 
-      <InferFooter 
-        running={running}
-        onStart={handleStart}
-        onStop={handleStop}
+      <InferenceNavigation 
         onBack={onBack}
         onDiscard={onDiscard}
         requiresTraining={requiresTraining}
