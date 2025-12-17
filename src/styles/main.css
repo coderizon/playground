@@ -546,6 +546,7 @@
 
   .dataset-preview {
     @apply relative flex min-h-[180px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 text-white;
+    transition: background-color 0.25s ease;
   }
 
   .dataset-preview:not(.is-audio) {
@@ -577,7 +578,12 @@
   }
 
   .snapshot-container {
-    @apply relative h-full w-full overflow-hidden rounded-2xl;
+    @apply absolute inset-0 h-full w-full overflow-hidden rounded-2xl transition-opacity duration-300 ease-in-out;
+    opacity: 0;
+  }
+
+  .snapshot-container.is-visible {
+    opacity: 1;
   }
 
   .preview-thumbnail {

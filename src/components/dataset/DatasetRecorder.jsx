@@ -541,7 +541,7 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
                 className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
               />
               {showCameraSnapshot ? (
-                <div className="snapshot-container">
+                <div className="snapshot-container is-visible">
                   <img
                     src={previewSample.thumbnail}
                     alt={`Vorschau der letzten Aufnahme für ${classState.name || 'Klasse'}`}
