@@ -555,7 +555,7 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
                       ↻
                     </button>
                   )}
-                  {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
+                  {isGestureTask && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
                   <div className="camera-guidance">
                     {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
                   </div>
