@@ -185,7 +185,7 @@ function TrainingInfo({ state, retryContext }) {
     return () => clearInterval(handle);
   }, [training?.status, training?.startedAt]);
 
-  const formatDurationLabel = (milliseconds = 0) => {
+  const formatDurationShort = (milliseconds = 0) => {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -202,9 +202,9 @@ function TrainingInfo({ state, retryContext }) {
     : null;
   const lastDurationMs = info?.durationMs ?? null;
   const durationLabel = runningDurationMs
-    ? `Das Training läuft seit ${formatDurationLabel(runningDurationMs)}.`
+    ? `Läuft · ${formatDurationShort(runningDurationMs)}`
     : lastDurationMs
-      ? `Das Training hat ${formatDurationLabel(lastDurationMs)} gedauert.`
+      ? formatDurationShort(lastDurationMs)
       : 'Noch keine Trainingszeit';
 
   return (
@@ -216,7 +216,7 @@ function TrainingInfo({ state, retryContext }) {
       </div>
 
       <div className="training-meta">
-        <p className="eyebrow">Dauer</p>
+        <p className="eyebrow">Dauer des Trainings</p>
         <p className="text-sm text-slate-600 mt-1">{durationLabel}</p>
       </div>
 
