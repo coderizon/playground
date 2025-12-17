@@ -64,7 +64,6 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
   const inference = state.inference;
   const running = inference.status === INFERENCE_STATUS.RUNNING;
   const predictions = getInferencePredictions(state);
-  const lastUpdatedAt = inference.lastPrediction?.updatedAt;
   const currentDeviceId = session.media.cameraDeviceId;
 
   useEffect(() => {
@@ -151,8 +150,6 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
   };
 
   const formatPercent = (val) => `${(val * 100).toFixed(1)}%`;
-  const readableTimestamp = () => lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '';
-
   const bestPrediction = predictions.reduce(
     (best, current) => (current.value > best.value ? current : best),
     { value: -1 }
@@ -202,11 +199,9 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
             </li>
           ))}
         </ul>
-        {lastUpdatedAt && (
-          <p className="prediction-updated" role="status" aria-live="polite">
-            Aktualisiert um <span>{readableTimestamp()}</span>
-          </p>
-        )}
+        <p className="prediction-updated" role="status" aria-live="polite">
+          {statusCopy()}
+        </p>
       </div>
 
       <InferenceNavigation 
@@ -223,7 +218,6 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
   const [blendshapes, setBlendshapes] = useState([]);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
   const [devices, setDevices] = useState([]);
   const [facingMode, setFacingMode] = useState('user');
   const running = state.inference.status === INFERENCE_STATUS.RUNNING;
@@ -312,9 +306,6 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
       }))
       .sort((a, b) => b.value - a.value);
     setBlendshapes(filtered);
-    if (filtered.length) {
-      setLastUpdatedAt(Date.now());
-    }
   }, [running]);
 
   const statusCopy = () => {
@@ -324,7 +315,6 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
   };
 
   const formatPercent = (val) => `${(val * 100).toFixed(1)}%`;
-  const readableTimestamp = () => lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '';
   const bestShape = blendshapes[0];
 
   return (
@@ -380,11 +370,9 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
             </li>
           )}
         </ul>
-        {lastUpdatedAt && (
-          <p className="prediction-updated" role="status" aria-live="polite">
-            Aktualisiert um <span>{readableTimestamp()}</span>
-          </p>
-        )}
+        <p className="prediction-updated" role="status" aria-live="polite">
+            {statusCopy()}
+        </p>
       </div>
 
       <InferenceNavigation 
