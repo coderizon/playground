@@ -536,8 +536,8 @@
     @apply flex flex-col gap-3 outline-none;
   }
 
-  .recorder-controls {
-    @apply flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4;
+  .dataset-preview-shell {
+    @apply flex flex-col gap-3;
   }
 
   .dataset-recorder:focus-visible {
@@ -570,6 +570,42 @@
 
   .camera-guidance {
     @apply flex h-full w-full flex-col items-center justify-center gap-3 px-3 text-center text-sm text-white/80;
+  }
+
+  .snapshot-container {
+    @apply relative h-full w-full overflow-hidden rounded-2xl;
+  }
+
+  .preview-thumbnail {
+    @apply h-full w-full rounded-2xl object-cover;
+  }
+
+  .snapshot-tag {
+    @apply absolute bottom-2 right-2 rounded-full bg-slate-900/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white;
+  }
+
+  .dataset-preview-meta {
+    @apply flex flex-col gap-1 px-1;
+  }
+
+  .dataset-preview-meta__count {
+    @apply flex flex-wrap items-baseline gap-2;
+  }
+
+  .dataset-preview-meta__count strong {
+    @apply text-2xl font-semibold text-slate-900;
+  }
+
+  .dataset-preview-meta__count span {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-slate-500;
+  }
+
+  .dataset-manage-btn {
+    @apply self-start rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .dataset-preview-meta__status {
+    @apply text-xs text-slate-500;
   }
 
   .recording-hint {
@@ -646,46 +682,6 @@
 
   .dataset-hint {
     @apply text-sm text-slate-600;
-  }
-
-  .sample-album {
-    @apply flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm;
-  }
-
-  .sample-album-header {
-    @apply flex items-center justify-between gap-3;
-  }
-
-  .sample-album-trigger {
-    @apply flex w-full items-center gap-4 text-left;
-  }
-
-  .sample-album-stack {
-    @apply relative h-20 w-28 md:h-24 md:w-32;
-  }
-
-  .sample-album-card {
-    @apply absolute inset-0 rounded-2xl border border-white bg-slate-100 shadow-lg shadow-slate-900/20;
-  }
-
-  .sample-album-card img {
-    @apply h-full w-full rounded-2xl object-cover;
-  }
-
-  .sample-album-card-latest {
-    @apply z-10;
-  }
-
-  .sample-album-placeholder {
-    @apply flex h-full w-full items-center justify-start rounded-xl bg-slate-100 px-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400;
-  }
-
-  .sample-album-summary {
-    @apply flex flex-col text-left text-xs text-slate-500;
-  }
-
-  .sample-album-summary strong {
-    @apply text-lg font-semibold text-slate-900;
   }
 
   .sample-modal-backdrop {
@@ -792,8 +788,8 @@
     @apply ml-3 inline-flex items-center rounded-full bg-amber-100 px-3 py-0.5 text-xs font-semibold text-amber-900;
   }
 
-  .class-card-actions {
-    @apply flex flex-wrap gap-3;
+  .recorder-actions {
+    @apply flex flex-col gap-3;
   }
 
   .record-btn {

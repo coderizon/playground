@@ -315,7 +315,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
           return;
         }
 
-        const capture = captureFrameSnapshot(videoRef.current);
+        const capture = captureFrameSnapshot(videoRef.current, facingMode !== 'environment');
         if (capture) {
           recordSampleFrame(videoRef.current, classId, clsIndex, state.classes.length || 1).catch((fnErr) => {
             console.error('recordSampleFrame error', fnErr);
@@ -324,6 +324,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             source: 'camera',
             thumbnail: capture.thumbnail,
             previewFrames: capture.frames || [],
+            isMirrored: capture.mirrored,
           });
           
           if (navigator.vibrate) navigator.vibrate(5);
@@ -347,27 +348,40 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     scheduleNext();
   };
 
-  const captureFrameSnapshot = (video) => {
+  const captureFrameSnapshot = (video, mirror = false) => {
     try {
       if (!video || video.readyState < 2) {
         return null;
       }
-      const aspect = video.videoWidth / video.videoHeight;
-      const targetHeight = 120;
-      const targetWidth = Math.floor(targetHeight * aspect);
+      const MAX_HEIGHT = 240;
+      const safeVideoHeight = video.videoHeight || MAX_HEIGHT;
+      const safeVideoWidth = video.videoWidth || Math.round(safeVideoHeight * (4 / 3));
+      const aspect = safeVideoHeight ? safeVideoWidth / safeVideoHeight : 4 / 3;
+      const targetHeight = Math.min(MAX_HEIGHT, safeVideoHeight);
+      const targetWidth = Math.max(1, Math.floor(targetHeight * aspect));
 
       const canvas = document.createElement('canvas');
       canvas.width = targetWidth;
       canvas.height = targetHeight;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const frames = [canvas.toDataURL('image/jpeg', 0.7)];
-      
-      // Optional: Second frame for strip effect
-      ctx.drawImage(video, 2, 0, canvas.width, canvas.height);
-      frames.push(canvas.toDataURL('image/jpeg', 0.7));
-      
-      return { thumbnail: frames[0], frames };
+      const capture = (offset = 0) => {
+        ctx.save();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (offset) {
+          ctx.translate(offset, 0);
+        }
+        if (mirror) {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const snapshot = canvas.toDataURL('image/jpeg', 0.9);
+        ctx.restore();
+        return snapshot;
+      };
+
+      const frames = [capture(), capture(2)];
+      return { thumbnail: frames[0], frames, mirrored: mirror };
     } catch {
       return null;
     }
@@ -496,16 +510,23 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const allSelected = dataset.samples?.length && selectedCount === dataset.samples.length;
 
   // Render helpers
-  const previewLabel = isReady ? 'Datensatz bereit' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Beispiele` : 'Recorder bereit');
   const previewSample = samples.length ? samples[samples.length - 1] : null;
+  const hasSamples = recordedCount > 0;
+  const previewLabel = isReady
+    ? 'Datensatz bereit'
+    : (hasSamples && expectedCount > 0 ? `${recordedCount}/${expectedCount} Beispiele` : 'Recorder bereit');
   const showRecordedFraction = expectedCount > 0 && recordedCount < expectedCount;
-  const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (recordedCount > 0 ? recordedCount : '');
-  const sampleSummaryLabel = recordedCount > 0
-    ? (isReady || recordedCount >= expectedCount ? 'Beispiele verwalten' : 'Beispiele aufgenommen')
-        : 'Beispiele aufgenommen';
-      const modalTitleId = `sampleModalTitle-${classId}`;
-    
-      const getDatasetSummary = () => {
+  const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (hasSamples ? recordedCount : '');
+  const sampleSummaryLabel = hasSamples
+    ? (isReady ? 'Beispiele verwalten' : 'Beispiele aufgenommen')
+    : 'Noch keine Beispiele';
+  const datasetManageLabel = hasSamples ? 'Beispiele verwalten' : 'Noch keine Beispiele';
+  const sampleCountDisplay = sampleSummaryCount || (hasSamples ? `${recordedCount}` : 'Noch keine Daten');
+  const snapshotMirrorClass = previewSample?.isMirrored ? ' snapshot-container--mirrored' : '';
+  const showCameraSnapshot = !isAudioTask && !recording && countdown === null && !!previewSample?.thumbnail;
+  const modalTitleId = `sampleModalTitle-${classId}`;
+
+  const getDatasetSummary = () => {
     if (recordedCount >= expectedCount && expectedCount > 0) return 'Datensatz vollständig';
     if (recordedCount === 0) return 'Noch keine Daten';
     return 'Datensammlung läuft';
@@ -513,85 +534,49 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
   return (
     <section className="dataset-recorder" aria-label={`Recorder für ${classState.name || 'Unbenannt'}`}>
-      <div className="sample-album">
-        <div className="sample-album-header">
-          <p className="eyebrow">Beispiele</p>
-          <button
-            type="button"
-            className="ghost warning"
-            onClick={discardDataset}
-            disabled={!canDiscard}
-          >
-            Datensatz verwerfen
-          </button>
-        </div>
-        <button type="button" className="sample-album-trigger" onClick={toggleAlbum}>
-          <div className="sample-album-stack" aria-hidden="true">
-            {previewSample ? (
-              <span className="sample-album-card sample-album-card-latest">
-                {previewSample.thumbnail ? (
-                  <img src={previewSample.thumbnail} alt="" />
-                ) : (
-                  <span className="sample-album-placeholder"></span>
-                )}
-              </span>
-            ) : (
-              <span className="sample-album-card sample-album-card-empty">
-                <span className="sample-album-placeholder">Keine Beispiele</span>
-              </span>
-            )}
-          </div>
-          <div className="sample-album-summary">
-            <strong>{sampleSummaryCount}</strong>
-            <span>{sampleSummaryLabel}</span>
-          </div>
-        </button>
-      </div>
-
-      <p className="dataset-summary">
-        {getDatasetSummary()}
-      </p>
-
-      {error && <p className="field-error">{error}</p>}
-      {lastPermissionError && (
-        <div className="permission-retry">
-          <p>{lastPermissionError}</p>
-          <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Erneut versuchen</button>
-        </div>
-      )}
-
-      <div className="recorder-controls">
+      <div className="dataset-preview-shell">
         <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''}`}>
           {!isAudioTask && (
-            <>
-              <video
-                autoPlay
-                muted
-                playsInline
-                ref={videoRef}
-                className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
-              />
-              {countdown !== null && (
-                <div className="countdown-overlay">
-                  {countdown}
-                </div>
-              )}
-              {devices.length > 1 && (
-                <button
-                  type="button"
-                  className="device-switch-btn"
-                  onClick={cycleDevice}
-                  disabled={recording}
-                  title="Kamera wechseln"
-                >
-                  ↻
-                </button>
-              )}
-              {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
-              <div className="camera-guidance">
-                {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
+            showCameraSnapshot ? (
+              <div className={`snapshot-container${snapshotMirrorClass}`}>
+                <img
+                  src={previewSample.thumbnail}
+                  alt={`Vorschau der letzten Aufnahme für ${classState.name || 'Klasse'}`}
+                  className="preview-thumbnail"
+                />
+                <span className="snapshot-tag">Letzter Frame</span>
               </div>
-            </>
+            ) : (
+              <>
+                <video
+                  autoPlay
+                  muted
+                  playsInline
+                  ref={videoRef}
+                  className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
+                />
+                {countdown !== null && (
+                  <div className="countdown-overlay">
+                    {countdown}
+                  </div>
+                )}
+                {devices.length > 1 && (
+                  <button
+                    type="button"
+                    className="device-switch-btn"
+                    onClick={cycleDevice}
+                    disabled={recording}
+                    title="Kamera wechseln"
+                  >
+                    ↻
+                  </button>
+                )}
+                {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
+                <div className="camera-guidance">
+                  {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
+                </div>
+              </>
+            )
           )}
           {isAudioTask && (
             <div className="audio-preview">
@@ -617,32 +602,55 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             </div>
           )}
         </div>
-
-        <div className="class-card-actions">
-          {isAudioTask && (
-            <div className="audio-actions">
-              <button type="button" className="ghost" onClick={() => startRecording({ preset: 'clip' })} disabled={!canStart}>Kurzclip (2s)</button>
-              <button type="button" className="ghost" onClick={() => startRecording({ preset: 'background' })} disabled={!canStart}>Hintergrund (20s)</button>
-              <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
-            </div>
-          )}
-          {!isAudioTask && (
-            <button
-              type="button"
-              className={`record-btn ${recording ? 'is-recording' : ''}`}
-              onMouseDown={handleRecordStart}
-              onMouseUp={handleRecordStop}
-              onMouseLeave={handleRecordStop}
-              onTouchStart={handleRecordStart}
-              onTouchEnd={handleRecordStop}
-              onTouchCancel={handleRecordStop}
-              onContextMenu={(e) => e.preventDefault()}
-              disabled={!canStart && !recording}
-            >
-              <span>{recording ? 'Aufnahme...' : 'Halten für Aufnahme'}</span>
-            </button>
-          )}
+        <div className="dataset-preview-meta">
+          <div className="dataset-preview-meta__count">
+            <strong>{sampleCountDisplay}</strong>
+            <span>{sampleSummaryLabel}</span>
+          </div>
+          <button
+            type="button"
+            className="ghost ghost--tiny dataset-manage-btn"
+            onClick={toggleAlbum}
+            disabled={!hasSamples}
+          >
+            {datasetManageLabel}
+          </button>
+          <p className="dataset-preview-meta__status">{getDatasetSummary()}</p>
         </div>
+      </div>
+
+      {error && <p className="field-error">{error}</p>}
+      {lastPermissionError && (
+        <div className="permission-retry">
+          <p>{lastPermissionError}</p>
+          <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Erneut versuchen</button>
+        </div>
+      )}
+
+      <div className="recorder-actions">
+        {isAudioTask && (
+          <div className="audio-actions">
+            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'clip' })} disabled={!canStart}>Kurzclip (2s)</button>
+            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'background' })} disabled={!canStart}>Hintergrund (20s)</button>
+            <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
+          </div>
+        )}
+        {!isAudioTask && (
+          <button
+            type="button"
+            className={`record-btn ${recording ? 'is-recording' : ''}`}
+            onMouseDown={handleRecordStart}
+            onMouseUp={handleRecordStop}
+            onMouseLeave={handleRecordStop}
+            onTouchStart={handleRecordStart}
+            onTouchEnd={handleRecordStop}
+            onTouchCancel={handleRecordStop}
+            onContextMenu={(e) => e.preventDefault()}
+            disabled={!canStart && !recording}
+          >
+            <span>{recording ? 'Aufnahme...' : 'Halten für Aufnahme'}</span>
+          </button>
+        )}
       </div>
 
       {albumOpen && (
