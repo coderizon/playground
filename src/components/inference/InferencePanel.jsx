@@ -7,6 +7,7 @@ import { requestCameraStream, stopCameraStream, getVideoDevices } from '../../se
 import { EdgePanel } from '../edge/EdgePanel.jsx';
 import { FacePreview } from './FacePreview.jsx';
 import { BLENDSHAPE_LABELS_DE, BLENDSHAPE_WHITELIST } from '../../services/ml/faceLandmarkService.js';
+import { translateMediaErrorMessage } from '../../utils/mediaError.js';
 
 const FACE_PREVIEW_TASK_ID = 'face-preview';
 const BLENDSHAPE_WHITELIST_SET = new Set(BLENDSHAPE_WHITELIST);
@@ -97,9 +98,14 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
         const track = activeStream.getVideoTracks()[0];
         const settings = track?.getSettings() || {};
         setFacingMode(settings.facingMode || 'user');
-      } catch (err) {
+    } catch (err) {
         console.error(err);
-        setError('Kamera konnte nicht gestartet werden: ' + err.message);
+        const detail = translateMediaErrorMessage(err?.message) || err?.message;
+        setError(
+          detail
+            ? `Kamera konnte nicht gestartet werden: ${detail}`
+            : 'Kamera konnte nicht gestartet werden.'
+        );
       }
     };
     
@@ -254,10 +260,15 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
         const track = activeStream.getVideoTracks()[0];
         const settings = track?.getSettings() || {};
         setFacingMode(settings.facingMode || 'user');
-      } catch (err) {
-        console.error(err);
-        setError('Kamera konnte nicht gestartet werden: ' + err.message);
-      }
+        } catch (err) {
+          console.error(err);
+          const detail = translateMediaErrorMessage(err?.message) || err?.message;
+          setError(
+            detail
+              ? `Kamera konnte nicht gestartet werden: ${detail}`
+              : 'Kamera konnte nicht gestartet werden.'
+          );
+        }
     };
     
     initCamera();

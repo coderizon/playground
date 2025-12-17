@@ -9,6 +9,7 @@ import { recordSampleFrame, clearSamplesForClass } from '../../services/ml/model
 import { showToast } from '../common/toast.js';
 import { SamplePreview } from './SamplePreview.jsx';
 import { GesturePreview } from './GesturePreview.jsx';
+import { translateMediaErrorMessage } from '../../utils/mediaError.js';
 
 const AUDIO_PRESETS = {
   clip: { label: 'Kurzclip', duration: 2000, hint: 'Nimm 2s Clips mit klaren Geräuschen oder Wörtern auf.' },
@@ -72,6 +73,13 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
       })();
     }
   }, [previewReady, isAudioTask]);
+
+  const describeMediaError = (message, fallback) => {
+    const translated = translateMediaErrorMessage(message);
+    if (translated) return translated;
+    if (message) return message;
+    return fallback || '';
+  };
 
   const cycleDevice = () => {
     if (devices.length < 2) return;
@@ -142,8 +150,9 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
       } catch (err) {
         console.error(err);
         setError('Kamera konnte nicht gestartet werden.');
-        setLastPermissionError(err?.message || 'Bitte erlaube den Zugriff.');
-        sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.BLOCKED, message: err?.message });
+        const cameraMessage = describeMediaError(err?.message, 'Bitte erlaube den Zugriff.');
+        setLastPermissionError(cameraMessage);
+        sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.BLOCKED, message: cameraMessage });
         setPreviewReady(false);
       }
     };
@@ -207,9 +216,10 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
     } catch (err) {
       console.error(err);
       setError('Kamera konnte nicht gestartet werden.');
-      setLastPermissionError(err?.message || 'Bitte erlaube den Zugriff.');
-      sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.BLOCKED, message: err?.message });
-      showToast({ title: 'Kamera blockiert', message: err?.message, tone: 'warning' });
+      const cameraMessage = describeMediaError(err?.message, 'Bitte erlaube den Zugriff.');
+      setLastPermissionError(cameraMessage);
+      sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.BLOCKED, message: cameraMessage });
+      showToast({ title: 'Kamera blockiert', message: cameraMessage, tone: 'warning' });
       if (recordingHandleRef.current) {
         stopCameraStream();
         recordingHandleRef.current = false;
@@ -236,13 +246,14 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
       sessionStore.updateDatasetStatus(classId, DATASET_STATUS.RECORDING, { error: null });
       animateAudioProgress(durationMs);
       captureAudioSample(durationMs);
-    } catch (err) {
-      console.error(err);
-      setError(err?.message || 'Mikrofon Fehler');
-      setLastPermissionError(err?.message);
-      sessionStore.setPermissionState('microphone', { status: PERMISSION_STATUS.BLOCKED, message: err?.message });
-      showToast({ title: 'Mikrofon blockiert', message: err?.message, tone: 'warning' });
-    }
+      } catch (err) {
+        console.error(err);
+        const micMessage = describeMediaError(err?.message, 'Mikrofon Fehler');
+        setError(micMessage);
+        setLastPermissionError(micMessage);
+        sessionStore.setPermissionState('microphone', { status: PERMISSION_STATUS.BLOCKED, message: micMessage });
+        showToast({ title: 'Mikrofon blockiert', message: micMessage, tone: 'warning' });
+      }
   };
 
   const captureAudioSample = async (durationMs) => {
