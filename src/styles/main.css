@@ -537,7 +537,13 @@
   }
 
   .dataset-preview-shell {
-    @apply flex flex-col gap-3;
+    @apply flex flex-col gap-4;
+    transition: gap 0.25s ease;
+  }
+  @media (min-width: 1024px) {
+    .dataset-preview-shell {
+      gap: 1.5rem;
+    }
   }
 
   .dataset-recorder:focus-visible {
@@ -580,10 +586,13 @@
   .snapshot-container {
     @apply absolute inset-0 h-full w-full overflow-hidden rounded-2xl transition-opacity duration-300 ease-in-out;
     opacity: 0;
+    transition-property: opacity, transform;
+    transform: translateY(6px);
   }
 
   .snapshot-container.is-visible {
     opacity: 1;
+    transform: translateY(0);
   }
 
   .preview-thumbnail {
@@ -818,7 +827,7 @@
   }
 
   .train-body {
-    @apply grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)];
+    @apply grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)];
   }
 
   .training-panel,

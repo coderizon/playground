@@ -172,10 +172,11 @@ function TrainingInfo({ state, retryContext }) {
   };
 
   useEffect(() => {
+    setNow(Date.now());
     if (training?.status !== TRAINING_STATUS.RUNNING) return undefined;
     const handle = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(handle);
-  }, [training?.status]);
+  }, [training?.status, training?.startedAt]);
 
   const formatDuration = (milliseconds = 0) => {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
