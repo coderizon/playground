@@ -20,7 +20,7 @@ const SAMPLE_CAPTURE_INTERVAL_MS = 100;
 // Shared active recorder ID to prevent multiple open streams
 let activeRecorderId = null;
 
-export function DatasetRecorder({ classId, classState, trainingStatus, modality, taskModelId }) {
+export function DatasetRecorder ({ classId, classState, trainingStatus, modality, taskModelId }) {
   const session = useSession();
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const [devices, setDevices] = useState([]);
   const [countdown, setCountdown] = useState(null);
   const [facingMode, setFacingMode] = useState('user');
-  
+
   const videoRef = useRef(null);
   const sampleIntervalRef = useRef(null);
   const audioProgressHandleRef = useRef(null);
@@ -52,7 +52,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const isAudioTask = modality === 'microphone';
   const isGestureTask = taskModelId === 'gesture-recognition';
   const currentDeviceId = isAudioTask ? session.media.microphoneDeviceId : session.media.cameraDeviceId;
-  
+
   const canStart = !trainingLocked && !recording && classState;
   const canStop = recording;
   const canDiscard = !recording && dataset.recordedCount > 0;
@@ -78,9 +78,9 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     const currentIndex = current ? devices.indexOf(current) : 0;
     const nextIndex = (currentIndex + 1) % devices.length;
     const nextId = devices[nextIndex].deviceId;
-    
+
     sessionStore.setMediaDevice(isAudioTask ? 'microphone' : 'camera', nextId);
-    
+
     // Force stop streams to ensure the new constraint is applied globally
     if (isAudioTask) stopMicrophoneStream();
     else stopCameraStream(true);
@@ -188,7 +188,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       setError(null);
       setLastPermissionError('');
       sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.GRANTED, message: null });
-      
+
       activeRecorderId = classId;
       setRecording(true);
       recordingHandleRef.current = true;
@@ -220,18 +220,18 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     try {
       const config = AUDIO_PRESETS[preset] || AUDIO_PRESETS.clip;
       const durationMs = config.duration;
-      
+
       await requestMicrophoneStream(undefined, currentDeviceId);
       setError(null);
       setLastPermissionError('');
       sessionStore.setPermissionState('microphone', { status: PERMISSION_STATUS.GRANTED, message: null });
-      
+
       activeRecorderId = classId;
       setRecording(true);
       setActivePreset(preset);
       stopRequestedRef.current = false;
       setAudioProgress(0);
-      
+
       sessionStore.updateDatasetStatus(classId, DATASET_STATUS.RECORDING, { error: null });
       animateAudioProgress(durationMs);
       captureAudioSample(durationMs);
@@ -252,7 +252,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     try {
       const result = await recordAudioSample(durationMs);
       sessionStore.addDatasetSample(classId, { source: 'microphone', durationMs: result?.durationMs || durationMs });
-      
+
       if (!stopRequestedRef.current && activeRecorderId === classId) {
         animateAudioProgress(durationMs);
         captureAudioSample(durationMs);
@@ -311,7 +311,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             previewFrames: capture.frames || [],
             isMirrored: capture.mirrored,
           });
-          
+
           if (navigator.vibrate) navigator.vibrate(5);
         }
       } catch (err) {
@@ -394,42 +394,42 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       // prevent mouse emulation
     }
     if (canStart && !recording && countdown === null) {
-       if (activeRecorderId && activeRecorderId !== classId) {
-         showToast({ title: 'Aufnahme läuft bereits', message: 'Bitte beende erst die andere Aufnahme.', tone: 'warning' });
-         return;
-       }
+      if (activeRecorderId && activeRecorderId !== classId) {
+        showToast({ title: 'Aufnahme läuft bereits', message: 'Bitte beende erst die andere Aufnahme.', tone: 'warning' });
+        return;
+      }
 
-       // Start Countdown
-       let count = 3;
-       setCountdown(count);
-       if (navigator.vibrate) navigator.vibrate(20);
-       sessionStore.updateDatasetStatus(classId, DATASET_STATUS.COUNTDOWN);
-       
-       countdownIntervalRef.current = setInterval(() => {
-         count -= 1;
-         setCountdown(count);
-         if (count <= 0) {
-           clearInterval(countdownIntervalRef.current);
-           setCountdown(null);
-           startRecording();
-           if (navigator.vibrate) navigator.vibrate(50);
-         }
-       }, 1000);
+      // Start Countdown
+      let count = 3;
+      setCountdown(count);
+      if (navigator.vibrate) navigator.vibrate(20);
+      sessionStore.updateDatasetStatus(classId, DATASET_STATUS.COUNTDOWN);
+
+      countdownIntervalRef.current = setInterval(() => {
+        count -= 1;
+        setCountdown(count);
+        if (count <= 0) {
+          clearInterval(countdownIntervalRef.current);
+          setCountdown(null);
+          startRecording();
+          if (navigator.vibrate) navigator.vibrate(50);
+        }
+      }, 1000);
     }
   };
 
   const handleRecordStop = (e) => {
     if (e.type === 'touchend' && e.cancelable) {
-       e.preventDefault(); // prevent click
+      e.preventDefault(); // prevent click
     }
-    
+
     if (countdown !== null) {
-       // Cancel countdown
-       clearInterval(countdownIntervalRef.current);
-       setCountdown(null);
-       updateStatusAfterStop(); // Update status after cancelling countdown
+      // Cancel countdown
+      clearInterval(countdownIntervalRef.current);
+      setCountdown(null);
+      updateStatusAfterStop(); // Update status after cancelling countdown
     }
-    
+
     if (recording) {
       stopRecording();
       if (navigator.vibrate) navigator.vibrate(20);
@@ -502,9 +502,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     : (hasSamples && expectedCount > 0 ? `${recordedCount}/${expectedCount} Beispiele` : 'Recorder bereit');
   const showRecordedFraction = expectedCount > 0 && recordedCount < expectedCount;
   const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (hasSamples ? recordedCount : '');
-  const sampleSummaryLabel = hasSamples
-    ? (isReady ? '' : 'Beispiele aufgenommen')
-    : '';
+  const sampleSummaryLabel = 'Beispiele aufgenommen';
   const datasetManageLabel = hasSamples ? 'Beispiele verwalten' : 'Beispiele aufnehmen';
   const sampleCountDisplay = sampleSummaryCount || (hasSamples ? `${recordedCount}` : 'Noch keine Daten');
   const snapshotMirrorClass = previewSample?.isMirrored ? ' snapshot-container--mirrored' : '';
@@ -567,25 +565,25 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
           )}
           {isAudioTask && (
             <div className="audio-preview">
-               <div className={`audio-meter ${recording ? 'is-active' : ''}`}></div>
-               <div className="audio-guidance">
-                 <p>{recording ? 'Audioaufnahme läuft' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Clips` : 'Recorder bereit')}</p>
-                 {devices.length > 1 && (
-                   <button
-                     type="button"
-                     className="ghost ghost--tiny"
-                     onClick={cycleDevice}
-                     disabled={recording}
-                     style={{ marginTop: '0.5rem' }}
-                   >
-                     Mikrofon wechseln
-                   </button>
-                 )}
-                 <small>{AUDIO_PRESETS[activePreset].hint}</small>
-                 <div className="audio-progress-bar">
-                   <div className="audio-progress-fill" style={{ width: `${audioProgress}%` }}></div>
-                 </div>
-               </div>
+              <div className={`audio-meter ${recording ? 'is-active' : ''}`}></div>
+              <div className="audio-guidance">
+                <p>{recording ? 'Audioaufnahme läuft' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Clips` : 'Recorder bereit')}</p>
+                {devices.length > 1 && (
+                  <button
+                    type="button"
+                    className="ghost ghost--tiny"
+                    onClick={cycleDevice}
+                    disabled={recording}
+                    style={{ marginTop: '0.5rem' }}
+                  >
+                    Mikrofon wechseln
+                  </button>
+                )}
+                <small>{AUDIO_PRESETS[activePreset].hint}</small>
+                <div className="audio-progress-bar">
+                  <div className="audio-progress-fill" style={{ width: `${audioProgress}%` }}></div>
+                </div>
+              </div>
             </div>
           )}
         </div>
