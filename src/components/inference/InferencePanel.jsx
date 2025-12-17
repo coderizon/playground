@@ -107,12 +107,15 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
     initCamera();
 
     return () => {
-      if (running) {
-        stopLiveInference();
-      }
       stopCameraStream();
     };
   }, [currentDeviceId]); 
+
+  useEffect(() => {
+    return () => {
+      stopLiveInference();
+    };
+  }, []); 
 
   const handleStart = async () => {
     if (running) return;
@@ -266,10 +269,15 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
     initCamera();
 
     return () => {
-      sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
       stopCameraStream();
     };
   }, [currentDeviceId]);
+
+  useEffect(() => {
+    return () => {
+      sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
+    };
+  }, []);
 
   const handleStart = () => {
     if (running) return;

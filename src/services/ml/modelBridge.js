@@ -198,6 +198,9 @@ export async function runInference(videoEl) {
   if (!videoEl) {
     throw new Error('Keine Videoquelle für Inferenz vorhanden.');
   }
+  if (videoEl.readyState < 2) {
+    return null;
+  }
   const extractor = await ensureFeatureExtractor();
   const embedding = tf.tidy(() => {
     const frame = tf.browser.fromPixels(videoEl);
