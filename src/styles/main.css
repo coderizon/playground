@@ -1037,7 +1037,15 @@
   }
 
   .device-switch-btn {
-    @apply absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50;
+    @apply absolute bottom-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50;
+  }
+
+  .device-switch-icon {
+    @apply flex items-center justify-center gap-1;
+  }
+
+  .device-switch-icon svg {
+    @apply h-4 w-4 stroke-white;
   }
 
   /* Notification Tray */
