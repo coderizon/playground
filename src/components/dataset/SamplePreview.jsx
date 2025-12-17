@@ -5,14 +5,13 @@ const sampleController = createSampleController();
 
 export function SamplePreview({ sample, classId, disabled, selectable = false, selected = false, onSelectToggle }) {
   const [index, setIndex] = useState(0);
-  const [scrubbing, setScrubbing] = useState(false);
   const timerRef = useRef(null);
 
   const frames = sample.previewFrames?.length ? sample.previewFrames : (sample.thumbnail ? [sample.thumbnail] : []);
   const currentFrame = frames[index] || sample.thumbnail || null;
 
   const start = () => {
-    if (!frames.length || scrubbing) return;
+    if (!frames.length) return;
     stop();
     timerRef.current = window.setInterval(() => {
       setIndex((prev) => (prev + 1) % frames.length);
@@ -24,27 +23,12 @@ export function SamplePreview({ sample, classId, disabled, selectable = false, s
       window.clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    if (!scrubbing) {
-      setIndex(0);
-    }
+    setIndex(0);
   };
 
   useEffect(() => {
     return () => stop();
   }, []);
-
-  const handleScrub = (e) => {
-    if (!frames.length) return;
-    setScrubbing(true);
-    stop();
-    const val = parseInt(e.target.value, 10);
-    const next = Math.min(Math.max(val || 0, 0), frames.length - 1);
-    setIndex(next);
-  };
-
-  const releaseScrub = () => {
-    setScrubbing(false);
-  };
 
   const handleDelete = () => {
     if (disabled) return;
@@ -98,25 +82,6 @@ export function SamplePreview({ sample, classId, disabled, selectable = false, s
               onFocus={start}
               onBlur={stop}
             />
-          )}
-          {frames.length > 1 && (
-            <div className="sample-scrub">
-              <input
-                type="range"
-                min="0"
-                max={frames.length - 1}
-                value={index}
-                className="sample-scrub-slider"
-                onInput={handleScrub}
-                onChange={releaseScrub}
-                onMouseUp={releaseScrub}
-                onTouchEnd={releaseScrub}
-                aria-label={`Frame ${index + 1} von ${frames.length}`}
-              />
-              <p className="sample-scrub-label">
-                Frame <span>{index + 1}</span> / <span>{frames.length}</span>
-              </p>
-            </div>
           )}
         </div>
         <div className="sample-details">
