@@ -41,7 +41,6 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const albumModalRef = useRef(null);
   const previewHandleRef = useRef(false);
   const recordingHandleRef = useRef(false);
-  const borrowedPreviewRef = useRef(false);
   const countdownIntervalRef = useRef(null);
 
   const dataset = classState?.dataset || { recordedCount: 0, expectedCount: 0, status: DATASET_STATUS.EMPTY };
@@ -114,7 +113,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     }
   }, [trainingLocked, recording, activeRecorderId]);
 
-  const needsStream = !isAudioTask && (dataset.recordedCount === 0 || recording || countdown !== null);
+  const needsStream = !isAudioTask;
 
   useEffect(() => {
     if (isAudioTask || !needsStream) return undefined;
@@ -127,11 +126,9 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         setFacingMode(settings.facingMode || 'user');
 
         previewHandleRef.current = true;
-        borrowedPreviewRef.current = false;
         if (cancelled) {
           stopCameraStream();
           previewHandleRef.current = false;
-          borrowedPreviewRef.current = false;
           return;
         }
         if (videoRef.current) {
@@ -155,16 +152,9 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       if (previewHandleRef.current) {
         stopCameraStream();
         previewHandleRef.current = false;
-        borrowedPreviewRef.current = false;
       }
     };
   }, [isAudioTask, needsStream, currentDeviceId]);
-
-  useEffect(() => {
-    if (!needsStream) {
-      setPreviewReady(false);
-    }
-  }, [needsStream]);
 
   const stopRecordingCleanup = () => {
     if (sampleIntervalRef.current) {
@@ -187,7 +177,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     }
 
     try {
-      const stream = await requestCameraStream(undefined, currentDeviceId);
+      let stream = videoRef.current?.srcObject;
+      if (!stream) {
+        stream = await requestCameraStream(undefined, currentDeviceId);
+      }
       const track = stream.getVideoTracks()[0];
       const settings = track?.getSettings() || {};
       setFacingMode(settings.facingMode || 'user');
@@ -201,12 +194,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       recordingHandleRef.current = true;
       if (!previewHandleRef.current) {
         previewHandleRef.current = true;
-        borrowedPreviewRef.current = true;
       }
       setPreviewReady(true);
-      
-      // React refs are stable, so we can attach immediately (or in useEffect, but stream is here)
-      if (videoRef.current) {
+
+      if (videoRef.current && videoRef.current.srcObject !== stream) {
         videoRef.current.srcObject = stream;
       }
 
@@ -279,13 +270,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     if (isAudioTask) {
       stopMicrophoneStream();
     } else if (recordingHandleRef.current) {
-      if (!borrowedPreviewRef.current) {
-        stopCameraStream();
-      }
       recordingHandleRef.current = false;
-      if (!previewHandleRef.current && videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
     }
     setRecording(false);
     stopRecordingCleanup();
@@ -519,8 +504,8 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (hasSamples ? recordedCount : '');
   const sampleSummaryLabel = hasSamples
     ? (isReady ? 'Beispiele verwalten' : 'Beispiele aufgenommen')
-    : 'Noch keine Beispiele';
-  const datasetManageLabel = hasSamples ? 'Beispiele verwalten' : 'Noch keine Beispiele';
+    : '';
+  const datasetManageLabel = hasSamples ? 'Beispiele verwalten' : 'Beispiele aufnehmen';
   const sampleCountDisplay = sampleSummaryCount || (hasSamples ? `${recordedCount}` : 'Noch keine Daten');
   const snapshotMirrorClass = previewSample?.isMirrored ? ' snapshot-container--mirrored' : '';
   const showCameraSnapshot = !isAudioTask && !recording && countdown === null && !!previewSample?.thumbnail;
@@ -535,48 +520,50 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   return (
     <section className="dataset-recorder" aria-label={`Recorder für ${classState.name || 'Unbenannt'}`}>
       <div className="dataset-preview-shell">
-        <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''}`}>
+        <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''} ${showCameraSnapshot ? 'has-snapshot' : ''}`}>
           {!isAudioTask && (
-            showCameraSnapshot ? (
-              <div className={`snapshot-container${snapshotMirrorClass}`}>
-                <img
-                  src={previewSample.thumbnail}
-                  alt={`Vorschau der letzten Aufnahme für ${classState.name || 'Klasse'}`}
-                  className="preview-thumbnail"
-                />
-                <span className="snapshot-tag">Letzter Frame</span>
-              </div>
-            ) : (
-              <>
-                <video
-                  autoPlay
-                  muted
-                  playsInline
-                  ref={videoRef}
-                  className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
-                />
-                {countdown !== null && (
-                  <div className="countdown-overlay">
-                    {countdown}
-                  </div>
-                )}
-                {devices.length > 1 && (
-                  <button
-                    type="button"
-                    className="device-switch-btn"
-                    onClick={cycleDevice}
-                    disabled={recording}
-                    title="Kamera wechseln"
-                  >
-                    ↻
-                  </button>
-                )}
-                {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
-                <div className="camera-guidance">
-                  {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
+            <>
+              <video
+                autoPlay
+                muted
+                playsInline
+                ref={videoRef}
+                className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
+              />
+              {showCameraSnapshot ? (
+                <div className={`snapshot-container${snapshotMirrorClass}`}>
+                  <img
+                    src={previewSample.thumbnail}
+                    alt={`Vorschau der letzten Aufnahme für ${classState.name || 'Klasse'}`}
+                    className="preview-thumbnail"
+                  />
+                  <span className="snapshot-tag">Letzter Frame</span>
                 </div>
-              </>
-            )
+              ) : (
+                <>
+                  {countdown !== null && (
+                    <div className="countdown-overlay">
+                      {countdown}
+                    </div>
+                  )}
+                  {devices.length > 1 && (
+                    <button
+                      type="button"
+                      className="device-switch-btn"
+                      onClick={cycleDevice}
+                      disabled={recording}
+                      title="Kamera wechseln"
+                    >
+                      ↻
+                    </button>
+                  )}
+                  {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
+                  <div className="camera-guidance">
+                    {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
+                  </div>
+                </>
+              )}
+            </>
           )}
           {isAudioTask && (
             <div className="audio-preview">
