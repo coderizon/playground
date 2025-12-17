@@ -180,11 +180,16 @@ function TrainingInfo({ state, retryContext }) {
     return () => clearInterval(handle);
   }, [training?.status, training?.startedAt]);
 
-  const formatDuration = (milliseconds = 0) => {
+  const formatDurationLabel = (milliseconds = 0) => {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
-    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    if (hours > 0) {
+      return `${hours} Std. ${minutes.toString().padStart(2, '0')} Min.`;
+    }
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} Min.`;
   };
 
   const runningDurationMs = training?.status === TRAINING_STATUS.RUNNING && training.startedAt
@@ -192,9 +197,9 @@ function TrainingInfo({ state, retryContext }) {
     : null;
   const lastDurationMs = info?.durationMs ?? null;
   const durationLabel = runningDurationMs
-    ? `Laufzeit: ${formatDuration(runningDurationMs)}`
+    ? `Das Training läuft seit ${formatDurationLabel(runningDurationMs)}.`
     : lastDurationMs
-      ? `Letzte Dauer: ${formatDuration(lastDurationMs)}`
+      ? `Das Training hat ${formatDurationLabel(lastDurationMs)} gedauert.`
       : 'Noch keine Trainingszeit';
 
   return (
