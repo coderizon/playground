@@ -42,6 +42,7 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
   const previewHandleRef = useRef(false);
   const recordingHandleRef = useRef(false);
   const countdownIntervalRef = useRef(null);
+  const holdTimeoutRef = useRef(null);
 
   const dataset = classState?.dataset || { recordedCount: 0, expectedCount: 0, status: DATASET_STATUS.EMPTY };
   const samples = dataset.samples || [];
@@ -388,38 +389,51 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
     audioProgressHandleRef.current = requestAnimationFrame(tick);
   };
 
+  const beginCountdown = () => {
+    if (!(canStart && !recording && countdown === null)) return;
+    if (activeRecorderId && activeRecorderId !== classId) {
+      showToast({ title: 'Aufnahme läuft bereits', message: 'Bitte beende erst die andere Aufnahme.', tone: 'warning' });
+      return;
+    }
+
+    let count = 3;
+    setCountdown(count);
+    if (navigator.vibrate) navigator.vibrate(20);
+    sessionStore.updateDatasetStatus(classId, DATASET_STATUS.COUNTDOWN);
+
+    countdownIntervalRef.current = setInterval(() => {
+      count -= 1;
+      setCountdown(count);
+      if (count <= 0) {
+        clearInterval(countdownIntervalRef.current);
+        setCountdown(null);
+        startRecording();
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
+    }, 1000);
+  };
+
   const handleRecordStart = (e) => {
     if (e.type === 'touchstart') {
-      // prevent mouse emulation
+      if (holdTimeoutRef.current) return;
+      holdTimeoutRef.current = window.setTimeout(() => {
+        holdTimeoutRef.current = null;
+        beginCountdown();
+      }, 250);
+      return;
     }
-    if (canStart && !recording && countdown === null) {
-      if (activeRecorderId && activeRecorderId !== classId) {
-        showToast({ title: 'Aufnahme läuft bereits', message: 'Bitte beende erst die andere Aufnahme.', tone: 'warning' });
-        return;
-      }
 
-      // Start Countdown
-      let count = 3;
-      setCountdown(count);
-      if (navigator.vibrate) navigator.vibrate(20);
-      sessionStore.updateDatasetStatus(classId, DATASET_STATUS.COUNTDOWN);
-
-      countdownIntervalRef.current = setInterval(() => {
-        count -= 1;
-        setCountdown(count);
-        if (count <= 0) {
-          clearInterval(countdownIntervalRef.current);
-          setCountdown(null);
-          startRecording();
-          if (navigator.vibrate) navigator.vibrate(50);
-        }
-      }, 1000);
-    }
+    beginCountdown();
   };
 
   const handleRecordStop = (e) => {
     if (e.type === 'touchend' && e.cancelable) {
       e.preventDefault(); // prevent click
+    }
+
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
     }
 
     if (countdown !== null) {
