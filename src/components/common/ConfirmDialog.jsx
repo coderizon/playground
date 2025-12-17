@@ -37,8 +37,8 @@ export function ConfirmDialog() {
   };
 
   const handleConfirm = () => {
-    state.onConfirm?.();
     close();
+    state.onConfirm?.();
   };
 
   // Focus trap could be added here similar to Alpine, for now basic focus management
