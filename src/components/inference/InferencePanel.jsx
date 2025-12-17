@@ -59,6 +59,7 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
   const [devices, setDevices] = useState([]);
+  const [facingMode, setFacingMode] = useState('user');
 
   const inference = state.inference;
   const running = inference.status === INFERENCE_STATUS.RUNNING;
@@ -94,6 +95,9 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
         if (videoRef.current) {
           videoRef.current.srcObject = activeStream;
         }
+        const track = activeStream.getVideoTracks()[0];
+        const settings = track?.getSettings() || {};
+        setFacingMode(settings.facingMode || 'user');
       } catch (err) {
         console.error(err);
         setError('Kamera konnte nicht gestartet werden: ' + err.message);
@@ -163,7 +167,7 @@ function TrainableInferencePanel ({ state, onBack, onDiscard, requiresTraining }
           autoPlay
           muted
           playsInline
-          className={running ? 'is-active' : ''}
+          className={`${running ? 'is-active' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
           ref={videoRef}
         />
         {devices.length > 1 && (
@@ -218,6 +222,7 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
   const [blendshapes, setBlendshapes] = useState([]);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
   const [devices, setDevices] = useState([]);
+  const [facingMode, setFacingMode] = useState('user');
   const running = state.inference.status === INFERENCE_STATUS.RUNNING;
   const currentDeviceId = session.media.cameraDeviceId;
 
@@ -249,6 +254,9 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
         if (videoRef.current) {
           videoRef.current.srcObject = activeStream;
         }
+        const track = activeStream.getVideoTracks()[0];
+        const settings = track?.getSettings() || {};
+        setFacingMode(settings.facingMode || 'user');
       } catch (err) {
         console.error(err);
         setError('Kamera konnte nicht gestartet werden: ' + err.message);
@@ -321,7 +329,7 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
           autoPlay
           muted
           playsInline
-          className={running ? 'is-active' : ''}
+          className={`${running ? 'is-active' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
           ref={videoRef}
         />
         {devices.length > 1 && (
@@ -334,7 +342,12 @@ function FacePreviewInferencePanel({ state, onBack, onDiscard, requiresTraining 
             ↻
           </button>
         )}
-        <FacePreview videoRef={videoRef} isActive={running} onBlendshapes={handleBlendshapeUpdate} />
+        <FacePreview 
+          videoRef={videoRef} 
+          isActive={running} 
+          onBlendshapes={handleBlendshapeUpdate} 
+          isMirrored={facingMode !== 'environment'} 
+        />
       </div>
 
       <InferenceControls 

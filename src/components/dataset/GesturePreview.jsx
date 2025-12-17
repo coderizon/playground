@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { detectHands } from '../../services/ml/handPoseService.js';
 
-export function GesturePreview({ videoRef }) {
+export function GesturePreview({ videoRef, isMirrored }) {
   const canvasRef = useRef(null);
   const loopRef = useRef(null);
 
@@ -46,7 +46,7 @@ export function GesturePreview({ videoRef }) {
   return (
     <canvas 
       ref={canvasRef} 
-      className="gesture-overlay"
+      className={`gesture-overlay ${isMirrored ? 'is-mirrored' : ''}`}
       style={{
         position: 'absolute',
         top: 0,

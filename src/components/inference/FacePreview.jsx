@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { detectFace, drawFaceLandmarks } from '../../services/ml/faceLandmarkService.js';
 
-export function FacePreview({ videoRef, isActive, onBlendshapes }) {
+export function FacePreview({ videoRef, isActive, onBlendshapes, isMirrored }) {
   const canvasRef = useRef(null);
   const loopRef = useRef(null);
 
@@ -70,7 +70,7 @@ export function FacePreview({ videoRef, isActive, onBlendshapes }) {
   return (
     <canvas 
       ref={canvasRef} 
-      className="face-overlay"
+      className={`face-overlay ${isMirrored ? 'is-mirrored' : ''}`}
       style={{
         position: 'absolute',
         top: 0,

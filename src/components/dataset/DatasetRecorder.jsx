@@ -32,6 +32,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const [previewReady, setPreviewReady] = useState(false);
   const [devices, setDevices] = useState([]);
   const [countdown, setCountdown] = useState(null);
+  const [facingMode, setFacingMode] = useState('user');
   
   const videoRef = useRef(null);
   const sampleIntervalRef = useRef(null);
@@ -121,6 +122,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     const attachPreview = async () => {
       try {
         const stream = await requestCameraStream(undefined, currentDeviceId);
+        const track = stream.getVideoTracks()[0];
+        const settings = track?.getSettings() || {};
+        setFacingMode(settings.facingMode || 'user');
+
         previewHandleRef.current = true;
         borrowedPreviewRef.current = false;
         if (cancelled) {
@@ -178,6 +183,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
     try {
       const stream = await requestCameraStream(undefined, currentDeviceId);
+      const track = stream.getVideoTracks()[0];
+      const settings = track?.getSettings() || {};
+      setFacingMode(settings.facingMode || 'user');
+
       setError(null);
       setLastPermissionError('');
       sessionStore.setPermissionState('camera', { status: PERMISSION_STATUS.GRANTED, message: null });
@@ -501,7 +510,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
               muted
               playsInline
               ref={videoRef}
-              className={`preview-video ${previewReady ? 'is-visible' : ''}`}
+              className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
             />
             {countdown !== null && (
               <div className="countdown-overlay">
@@ -519,7 +528,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
                 ↻
               </button>
             )}
-            {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} />}
+            {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
             <div className="camera-guidance">
               {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
             </div>

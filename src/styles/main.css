@@ -550,6 +550,9 @@
 
   .dataset-preview .preview-video {
     @apply absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300;
+  }
+
+  .dataset-preview .preview-video.is-mirrored {
     transform: scaleX(-1);
   }
 
@@ -874,6 +877,9 @@
 
   .inference-video video {
     @apply block h-full w-full object-cover opacity-70 transition;
+  }
+
+  .inference-video video.is-mirrored {
     transform: scaleX(-1);
   }
 
@@ -881,8 +887,8 @@
     @apply opacity-100;
   }
 
-  .gesture-overlay,
-  .face-overlay {
+  .gesture-overlay.is-mirrored,
+  .face-overlay.is-mirrored {
     transform: scaleX(-1);
   }
 
