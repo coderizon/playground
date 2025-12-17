@@ -1048,6 +1048,14 @@
     @apply h-4 w-4 stroke-white;
   }
 
+  .device-switch-icon__arrow {
+    @apply absolute inset-0 h-full w-full text-white opacity-0 transition-opacity duration-200 ease-out;
+  }
+
+  .device-switch-icon__arrow.is-active {
+    @apply opacity-100;
+  }
+
   /* Notification Tray */
   .notification-tray {
     @apply fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4;
