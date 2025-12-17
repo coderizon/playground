@@ -6,7 +6,7 @@
             "GEMINI.md"
         ],
         "fileFiltering": {
-            ".respectGeminiIgnore": false
+            "respectGeminiIgnore": false
         }
     }
 }
