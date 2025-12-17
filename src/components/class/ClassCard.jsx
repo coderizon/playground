@@ -106,6 +106,9 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
     <article className={cardToneClass()}>
       <header className="class-card-header">
         <div className="class-card-header-actions">
+          <span className={datasetChipClass()}>
+            <span>{datasetLabel()}</span>
+          </span>
           <button
             type="button"
             className="ghost danger class-delete-button"
@@ -127,9 +130,6 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
             onBlur={commitName}
             onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
           />
-          <span className={datasetChipClass()}>
-            <span>{datasetLabel()}</span>
-          </span>
         </div>
       </header>
       <p className="dataset-summary">

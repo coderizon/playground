@@ -497,7 +497,7 @@
   }
 
   .class-card-header-actions {
-    @apply flex justify-end;
+    @apply flex justify-end items-center gap-3;
   }
 
   .class-name-input {
