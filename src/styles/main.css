@@ -550,6 +550,7 @@
 
   .dataset-preview .preview-video {
     @apply absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300;
+    transform: scaleX(-1);
   }
 
   .preview-video.is-visible {
@@ -873,10 +874,16 @@
 
   .inference-video video {
     @apply block h-full w-full object-cover opacity-70 transition;
+    transform: scaleX(-1);
   }
 
   .inference-video video.is-active {
     @apply opacity-100;
+  }
+
+  .gesture-overlay,
+  .face-overlay {
+    transform: scaleX(-1);
   }
 
   .inference-actions {
