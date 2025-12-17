@@ -80,14 +80,6 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
     }
   };
 
-  const datasetSummary = () => {
-    const count = classItem.dataset?.recordedCount || 0;
-    const expected = classItem.dataset?.expectedCount || 0;
-    if (count >= expected && expected > 0) return 'Datensatz vollständig';
-    if (count === 0) return 'Noch keine Daten';
-    return 'Datensammlung läuft';
-  };
-
   const cardToneClass = () => {
     switch (classItem.dataset?.status) {
       case DATASET_STATUS.READY:
@@ -132,10 +124,7 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
           />
         </div>
       </header>
-      <p className="dataset-summary">
-        {datasetSummary()}
-        {error && <span className="dataset-summary-error"> ({error})</span>}
-      </p>
+      {error && <p className="dataset-summary"><span className="dataset-summary-error">({error})</span></p>}
       
       <DatasetRecorder 
         classId={classItem.id} 

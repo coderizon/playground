@@ -497,11 +497,64 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (recordedCount > 0 ? recordedCount : '');
   const sampleSummaryLabel = recordedCount > 0
     ? (isReady || recordedCount >= expectedCount ? 'Beispiele verwalten' : 'Beispiele aufgenommen')
-    : 'Beispiele aufgenommen';
-  const modalTitleId = `sampleModalTitle-${classId}`;
+        : 'Beispiele aufgenommen';
+      const modalTitleId = `sampleModalTitle-${classId}`;
+    
+      const getDatasetSummary = () => {
+    if (recordedCount >= expectedCount && expectedCount > 0) return 'Datensatz vollständig';
+    if (recordedCount === 0) return 'Noch keine Daten';
+    return 'Datensammlung läuft';
+  };
 
   return (
     <section className="dataset-recorder" aria-label={`Recorder für ${classState.name || 'Unbenannt'}`}>
+      <div className="sample-album">
+        <div className="sample-album-header">
+          <p className="eyebrow">Beispiele</p>
+          <button
+            type="button"
+            className="ghost warning"
+            onClick={discardDataset}
+            disabled={!canDiscard}
+          >
+            Datensatz verwerfen
+          </button>
+        </div>
+        <button type="button" className="sample-album-trigger" onClick={toggleAlbum}>
+          <div className="sample-album-stack" aria-hidden="true">
+            {previewSample ? (
+              <span className="sample-album-card sample-album-card-latest">
+                {previewSample.thumbnail ? (
+                  <img src={previewSample.thumbnail} alt="" />
+                ) : (
+                  <span className="sample-album-placeholder"></span>
+                )}
+              </span>
+            ) : (
+              <span className="sample-album-card sample-album-card-empty">
+                <span className="sample-album-placeholder">Keine Beispiele</span>
+              </span>
+            )}
+          </div>
+          <div className="sample-album-summary">
+            <strong>{sampleSummaryCount}</strong>
+            <span>{sampleSummaryLabel}</span>
+          </div>
+        </button>
+      </div>
+
+      <p className="dataset-summary">
+        {getDatasetSummary()}
+      </p>
+
+      {error && <p className="field-error">{error}</p>}
+      {lastPermissionError && (
+        <div className="permission-retry">
+          <p>{lastPermissionError}</p>
+          <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Erneut versuchen</button>
+        </div>
+      )}
+
       <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''}`}>
         {!isAudioTask && (
           <>
@@ -557,49 +610,6 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
              </div>
           </div>
         )}
-      </div>
-
-      {error && <p className="field-error">{error}</p>}
-      {lastPermissionError && (
-        <div className="permission-retry">
-          <p>{lastPermissionError}</p>
-          <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Erneut versuchen</button>
-        </div>
-      )}
-
-      <div className="sample-album">
-        <div className="sample-album-header">
-          <p className="eyebrow">Beispiele</p>
-          <button
-            type="button"
-            className="ghost warning"
-            onClick={discardDataset}
-            disabled={!canDiscard}
-          >
-            Datensatz verwerfen
-          </button>
-        </div>
-        <button type="button" className="sample-album-trigger" onClick={toggleAlbum}>
-          <div className="sample-album-stack" aria-hidden="true">
-            {previewSample ? (
-              <span className="sample-album-card sample-album-card-latest">
-                {previewSample.thumbnail ? (
-                  <img src={previewSample.thumbnail} alt="" />
-                ) : (
-                  <span className="sample-album-placeholder"></span>
-                )}
-              </span>
-            ) : (
-              <span className="sample-album-card sample-album-card-empty">
-                <span className="sample-album-placeholder">Keine Beispiele</span>
-              </span>
-            )}
-          </div>
-          <div className="sample-album-summary">
-            <strong>{sampleSummaryCount}</strong>
-            <span>{sampleSummaryLabel}</span>
-          </div>
-        </button>
       </div>
 
       <div className="class-card-actions">
