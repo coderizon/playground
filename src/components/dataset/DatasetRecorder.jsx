@@ -152,7 +152,6 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     attachPreview();
     return () => {
       cancelled = true;
-      setPreviewReady(false);
       if (previewHandleRef.current) {
         stopCameraStream();
         previewHandleRef.current = false;
@@ -160,6 +159,12 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       }
     };
   }, [isAudioTask, needsStream, currentDeviceId]);
+
+  useEffect(() => {
+    if (!needsStream) {
+      setPreviewReady(false);
+    }
+  }, [needsStream]);
 
   const stopRecordingCleanup = () => {
     if (sampleIntervalRef.current) {
