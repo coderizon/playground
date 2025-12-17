@@ -537,7 +537,7 @@
   }
 
   .recorder-controls {
-    @apply flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 md:gap-4;
+    @apply flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4;
   }
 
   .dataset-recorder:focus-visible {
