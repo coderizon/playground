@@ -164,7 +164,12 @@ function TrainingInfo({ state, retryContext }) {
 
   const getLastRunLabel = () => {
     if (!info) return 'Noch kein Training durchgeführt.';
-    const time = info.completedAt ? new Date(info.completedAt).toLocaleTimeString() : '';
+    const time = info.completedAt
+      ? new Date(info.completedAt).toLocaleTimeString('de-DE', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '';
     switch (info.status) {
       case TRAINING_STATUS.DONE: return `Zuletzt erfolgreich trainiert (${time}).`;
       case TRAINING_STATUS.ABORTED: return `Letzter Durchlauf abgebrochen (${time}).`;

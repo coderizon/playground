@@ -89,7 +89,14 @@ export function SamplePreview({ sample, classId, disabled, selectable = false, s
           <span>{sample.durationMs ? `${(sample.durationMs / 1000).toFixed(1)}s` : (sample.source || '')}</span>
           <p className="sample-meta-info">
             <span>{sample.source === 'microphone' ? 'Audioaufnahme' : (sample.source === 'camera' ? 'Kamera' : 'Sample')}</span>
-            {sample.capturedAt && <span>{new Date(sample.capturedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+            {sample.capturedAt && (
+              <span>
+                {new Date(sample.capturedAt).toLocaleTimeString('de-DE', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            )}
           </p>
           {sample.audioUrl && (
             <audio
