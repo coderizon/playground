@@ -3,6 +3,7 @@ import { sessionStore, STEP } from '../app/store/sessionStore.js';
 import { getAvailableTaskModels } from '../app/data/taskModels.js';
 import { goHome } from '../app/routes/navigationController.js';
 import { discardSessionWithConfirm } from '../app/routes/sessionController.js';
+import crLogo from '../assets/images/cr.png';
 
 const JOURNEY_STEPS = [
   {
@@ -59,6 +60,12 @@ export function Home({ state }) {
   return (
     <section className="new-app-home">
       <div className="home-main">
+        <div className="flex items-center justify-center gap-3 text-4xl font-semibold text-slate-900 mb-8" aria-label="AI Playground">
+          <span>AI</span>
+          <img src={crLogo} alt="Code Rizon Logo" className="h-16 w-16 object-contain identity-logo-spin" />
+          <span className="text-indigo-600">Playground</span>
+        </div>
+
         <div className="home-grid-panel">
           <p className="task-grid-instructions" id="taskGridHint">
     

@@ -991,7 +991,7 @@
   .toast-close {
     @apply ml-auto text-lg text-slate-500 transition hover:text-slate-800;
   }
-}
+
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -1055,3 +1055,24 @@
   .notification-badge {
     @apply absolute -top-1 -right-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-sm ring-2 ring-white;
   }
+}
+
+/* Animations from Prototype */
+@keyframes logo-spin-in {
+  0% { opacity: 0; transform: scale(0.6) rotate(-180deg); }
+  60% { opacity: 1; transform: scale(1.06) rotate(400deg); }
+  100% { opacity: 1; transform: scale(1) rotate(360deg); }
+}
+
+.identity-logo-spin {
+  animation: logo-spin-in 0.5s ease-out 0.05s forwards;
+  opacity: 0; /* Start hidden for animation */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identity-logo-spin {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
