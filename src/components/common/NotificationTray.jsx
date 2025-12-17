@@ -9,39 +9,28 @@ export function NotificationTray() {
   const [isOpen, setIsOpen] = useState(false);
   const [lastCount, setLastCount] = useState(0);
 
-  useEffect(() => {
-    return subscribeToToasts((toast) => {
-      const newToast = { ...toast, id: toast.id || `toast-${Date.now()}`, isToast: true };
-      setToasts((prev) => [newToast, ...prev]); 
-      setIsOpen(true);
+        useEffect(() => {
+          return subscribeToToasts((toast) => {
+            const newToast = { ...toast, id: toast.id || `toast-${Date.now()}`, isToast: true };
+            setToasts((prev) => [newToast, ...prev]); 
+            
+            if (toast.duration !== Infinity) {
+              setTimeout(() => {
+                setToasts((prev) => prev.filter((t) => t.id !== newToast.id));
+              }, toast.duration || 5000);
+            }
+          });
+        }, []);
       
-      if (toast.duration !== Infinity) {
-        setTimeout(() => {
-          setToasts((prev) => prev.filter((t) => t.id !== newToast.id));
-        }, toast.duration || 5000);
-      }
-    });
-  }, []);
-
-  const hints = useMemo(() => getSystemHints(session), [session]);
-  
-  // Combine toasts and hints. Toasts on top? Or mixed?
-  // Let's put toasts on top as they are "new/urgent".
-  const allNotifications = [...toasts, ...hints];
-
-  useEffect(() => {
-    // If count increases (new hint or toast), auto-open
-    // Note: Toasts already auto-open in their effect.
-    // This catches new hints.
-    if (allNotifications.length > lastCount) {
-        // Only open if we actually have something new. 
-        // Logic might be tricky if one removed and one added same tick.
-        // But hints are stable ids.
-        setIsOpen(true);
-    }
-    setLastCount(allNotifications.length);
-  }, [allNotifications.length]); // ESLint might want lastCount, but logic relies on prev.
-
+        const hints = useMemo(() => getSystemHints(session), [session]);
+        
+        // Combine toasts and hints. Toasts on top? Or mixed?
+        // Let's put toasts on top as they are "new/urgent".
+        const allNotifications = [...toasts, ...hints];
+      
+        useEffect(() => {
+          setLastCount(allNotifications.length);
+        }, [allNotifications.length]); // ESLint might want lastCount, but logic relies on prev.
   const dismissToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };

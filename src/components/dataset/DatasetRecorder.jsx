@@ -31,6 +31,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const [selectedSampleIds, setSelectedSampleIds] = useState([]);
   const [previewReady, setPreviewReady] = useState(false);
   const [devices, setDevices] = useState([]);
+  const [countdown, setCountdown] = useState(null);
   
   const videoRef = useRef(null);
   const sampleIntervalRef = useRef(null);
@@ -40,6 +41,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const previewHandleRef = useRef(false);
   const recordingHandleRef = useRef(false);
   const borrowedPreviewRef = useRef(false);
+  const countdownIntervalRef = useRef(null);
 
   const dataset = classState?.dataset || { recordedCount: 0, expectedCount: 0, status: DATASET_STATUS.EMPTY };
   const samples = dataset.samples || [];
@@ -51,7 +53,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const isGestureTask = taskModelId === 'gesture-recognition';
   const currentDeviceId = isAudioTask ? session.media.microphoneDeviceId : session.media.cameraDeviceId;
   
-  const canStart = !trainingLocked && !recording && classState && !isReady && (!activeRecorderId || activeRecorderId === classId);
+  const canStart = !trainingLocked && !recording && classState;
   const canStop = recording;
   const canDiscard = !recording && dataset.recordedCount > 0;
 
@@ -88,6 +90,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     // Cleanup on unmount
     return () => {
       stopRecordingCleanup();
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
       if (activeRecorderId === classId) {
         if (isAudioTask) stopMicrophoneStream();
         else if (recordingHandleRef.current) {
@@ -110,8 +113,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
     }
   }, [trainingLocked, recording, activeRecorderId]);
 
+  const needsStream = !isAudioTask && (dataset.recordedCount === 0 || recording || countdown !== null);
+
   useEffect(() => {
-    if (isAudioTask || isReady) return undefined;
+    if (isAudioTask || !needsStream) return undefined;
     let cancelled = false;
     const attachPreview = async () => {
       try {
@@ -149,7 +154,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         borrowedPreviewRef.current = false;
       }
     };
-  }, [isAudioTask, isReady, currentDeviceId]);
+  }, [isAudioTask, needsStream, currentDeviceId]);
 
   const stopRecordingCleanup = () => {
     if (sampleIntervalRef.current) {
@@ -164,7 +169,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   };
 
   const startRecording = async ({ preset = 'clip' } = {}) => {
-    if (!canStart) return;
+    if (!canStart && !countdown) return; // Allow start if coming from countdown
 
     if (isAudioTask) {
       await startAudioRecording({ preset });
@@ -243,12 +248,6 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       const result = await recordAudioSample(durationMs);
       sessionStore.addDatasetSample(classId, { source: 'microphone', durationMs: result?.durationMs || durationMs });
       
-      const updated = sessionStore.getState().classes.find((c) => c.id === classId);
-      if (updated?.dataset?.recordedCount >= (updated?.dataset?.expectedCount || 0)) {
-        stopRecording();
-        return;
-      }
-      
       if (!stopRequestedRef.current && activeRecorderId === classId) {
         animateAudioProgress(durationMs);
         captureAudioSample(durationMs);
@@ -312,11 +311,8 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             thumbnail: capture.thumbnail,
             previewFrames: capture.frames || [],
           });
-        }
-
-        const updated = sessionStore.getState().classes.find((c) => c.id === classId);
-        if (updated?.dataset?.recordedCount >= (updated?.dataset?.expectedCount || 0)) {
-          stopRecording();
+          
+          if (navigator.vibrate) navigator.vibrate(5);
         }
       } catch (err) {
         console.error(err);
@@ -371,6 +367,53 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       }
     };
     audioProgressHandleRef.current = requestAnimationFrame(tick);
+  };
+
+  const handleRecordStart = (e) => {
+    if (e.type === 'touchstart') {
+      // prevent mouse emulation
+    }
+    if (canStart && !recording && countdown === null) {
+       if (activeRecorderId && activeRecorderId !== classId) {
+         showToast({ title: 'Aufnahme läuft bereits', message: 'Bitte beende erst die andere Aufnahme.', tone: 'warning' });
+         return;
+       }
+
+       // Start Countdown
+       let count = 5;
+       setCountdown(count);
+       if (navigator.vibrate) navigator.vibrate(20);
+       sessionStore.updateDatasetStatus(classId, DATASET_STATUS.COUNTDOWN);
+       
+       countdownIntervalRef.current = setInterval(() => {
+         count -= 1;
+         setCountdown(count);
+         if (count <= 0) {
+           clearInterval(countdownIntervalRef.current);
+           setCountdown(null);
+           startRecording();
+           if (navigator.vibrate) navigator.vibrate(50);
+         }
+       }, 1000);
+    }
+  };
+
+  const handleRecordStop = (e) => {
+    if (e.type === 'touchend') {
+       e.preventDefault(); // prevent click
+    }
+    
+    if (countdown !== null) {
+       // Cancel countdown
+       clearInterval(countdownIntervalRef.current);
+       setCountdown(null);
+       updateStatusAfterStop(); // Update status after cancelling countdown
+    }
+    
+    if (recording) {
+      stopRecording();
+      if (navigator.vibrate) navigator.vibrate(20);
+    }
   };
 
   const discardDataset = () => {
@@ -434,10 +477,10 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   // Render helpers
   const previewLabel = isReady ? 'Datensatz bereit' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Beispiele` : 'Recorder bereit');
   const previewSample = samples.length ? samples[samples.length - 1] : null;
-  const showRecordedFraction = !isReady && expectedCount > 0;
-  const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : '';
-  const sampleSummaryLabel = isReady && samples.length > 0
-    ? `${samples.length} Samples verwalten`
+  const showRecordedFraction = expectedCount > 0 && recordedCount < expectedCount;
+  const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (recordedCount > 0 ? recordedCount : '');
+  const sampleSummaryLabel = recordedCount > 0
+    ? (isReady || recordedCount >= expectedCount ? 'Samples verwalten' : 'Samples aufgenommen')
     : 'Samples aufgenommen';
   const modalTitleId = `sampleModalTitle-${classId}`;
 
@@ -453,6 +496,11 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
               ref={videoRef}
               className={`preview-video ${previewReady ? 'is-visible' : ''}`}
             />
+            {countdown !== null && (
+              <div className="countdown-overlay">
+                {countdown}
+              </div>
+            )}
             {devices.length > 1 && (
               <button
                 type="button"
@@ -503,10 +551,6 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         </div>
       )}
 
-      {!isAudioTask && recording && (
-        <p className="recording-hint">Halte dein Objekt im Fokus · wir sammeln automatisch Frames</p>
-      )}
-
       <div className="sample-album">
         <div className="sample-album-header">
           <p className="eyebrow">Samples</p>
@@ -547,12 +591,24 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
           <div className="audio-actions">
             <button type="button" className="ghost" onClick={() => startRecording({ preset: 'clip' })} disabled={!canStart}>Kurzclip (2s)</button>
             <button type="button" className="ghost" onClick={() => startRecording({ preset: 'background' })} disabled={!canStart}>Hintergrund (20s)</button>
+            <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
           </div>
         )}
         {!isAudioTask && (
-          <button type="button" className="ghost" onClick={() => startRecording()} disabled={!canStart}>Aufnahme starten</button>
+          <button
+            type="button"
+            className={`record-btn ${recording ? 'is-recording' : ''}`}
+            onMouseDown={handleRecordStart}
+            onMouseUp={handleRecordStop}
+            onMouseLeave={handleRecordStop}
+            onTouchStart={handleRecordStart}
+            onTouchEnd={handleRecordStop}
+            onContextMenu={(e) => e.preventDefault()}
+            disabled={!canStart && !recording}
+          >
+            <span>{recording ? 'Aufnahme...' : 'Halten für Aufnahme'}</span>
+          </button>
         )}
-        <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
       </div>
 
       {albumOpen && (

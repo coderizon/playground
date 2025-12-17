@@ -7,6 +7,7 @@ const STEP = Object.freeze({
 
 const DATASET_STATUS = Object.freeze({
   EMPTY: 'empty',
+  COUNTDOWN: 'countdown',
   RECORDING: 'recording',
   READY: 'ready',
   ERROR: 'error',
@@ -522,8 +523,7 @@ function createClassState(options = {}) {
       typeof options.dataset?.recordedCount === 'number'
         ? options.dataset.recordedCount
         : samples.length,
-    expectedCount: options.dataset?.expectedCount ?? 20,
-    error: options.dataset?.error ?? null,
+          expectedCount: options.dataset?.expectedCount ?? 1,    error: options.dataset?.error ?? null,
     source: options.dataset?.source ?? null,
     lastUpdatedAt: options.dataset?.lastUpdatedAt ?? null,
   };

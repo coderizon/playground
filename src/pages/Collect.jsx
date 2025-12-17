@@ -103,7 +103,10 @@ export function Collect({ state }) {
   
   // Disable adding new classes if any existing class has 0 samples or is actively recording
   const hasEmptyClass = classes.some(c => (c.dataset?.recordedCount || 0) === 0);
-  const isAnyClassRecording = classes.some(c => c.dataset?.status === DATASET_STATUS.RECORDING);
+  const isAnyClassRecording = classes.some(c => 
+    c.dataset?.status === DATASET_STATUS.RECORDING || 
+    c.dataset?.status === DATASET_STATUS.COUNTDOWN
+  );
   const addClassDisabled = trainingLocked || hasEmptyClass || isAnyClassRecording;
   
   // Training Gate Hint

@@ -673,11 +673,11 @@
   }
 
   .sample-album-summary {
-    @apply flex flex-col text-left text-slate-700;
+    @apply flex flex-col text-left text-xs text-slate-500;
   }
 
   .sample-album-summary strong {
-    @apply text-2xl text-slate-900;
+    @apply text-lg font-semibold text-slate-900;
   }
 
   .sample-modal-backdrop {
@@ -786,6 +786,21 @@
 
   .class-card-actions {
     @apply flex flex-wrap gap-3;
+  }
+
+  .record-btn {
+    @apply relative flex w-full items-center justify-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 py-3 text-base font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .record-btn.is-recording {
+    @apply border-transparent bg-red-500 text-white hover:bg-red-600;
+    animation: pulse-ring 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   }
 
   .train-body {
@@ -1054,6 +1069,10 @@
 
   .notification-badge {
     @apply absolute -top-1 -right-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-sm ring-2 ring-white;
+  }
+
+  .countdown-overlay {
+    @apply absolute inset-0 z-10 flex items-center justify-center bg-black/40 text-6xl font-bold text-white backdrop-blur-sm;
   }
 }
 
