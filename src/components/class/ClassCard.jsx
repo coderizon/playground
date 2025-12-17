@@ -18,8 +18,19 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
     setName(e.target.value);
   };
 
+  const handleFocus = () => {
+    setName('');
+  };
+
   const commitName = () => {
     const trimmed = name.trim();
+    
+    if (!trimmed) {
+      setError('');
+      setName(classItem.name || ''); // Revert silently
+      return;
+    }
+
     if (trimmed === classItem.name) {
       setError('');
       setName(trimmed);
@@ -34,12 +45,6 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
     // Check for duplicates
     const classes = sessionStore.getState().classes;
     const isDuplicate = classes.some(c => c.id !== classItem.id && c.name.toLowerCase() === trimmed.toLowerCase());
-    
-    if (!trimmed) {
-      setError('Name darf nicht leer sein.');
-      setName(classItem.name || ''); // Revert
-      return;
-    }
     
     if (isDuplicate) {
       setError('Name existiert bereits.');
@@ -118,6 +123,7 @@ export function ClassCard({ classItem, trainingStatus, modality, taskModelId }) 
             maxLength={60}
             aria-label="Klassenname eingeben"
             onChange={handleNameChange}
+            onFocus={handleFocus}
             onBlur={commitName}
             onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
           />
