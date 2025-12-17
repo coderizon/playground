@@ -1052,19 +1052,19 @@
   }
 
   .device-switch-btn {
-    @apply absolute bottom-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50;
+    @apply absolute bottom-3 right-3 z-20 h-8 w-8 rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/50;
   }
 
   .device-switch-icon {
-    @apply flex items-center justify-center gap-1;
+    @apply relative flex h-full w-full items-center justify-center;
   }
 
   .device-switch-icon svg {
-    @apply h-4 w-4 stroke-white;
+    @apply h-[18px] w-[18px] stroke-white;
   }
 
   .device-switch-icon__arrow {
-    @apply absolute inset-0 h-full w-full text-white opacity-0 transition-opacity duration-200 ease-out;
+    @apply absolute inset-0 flex items-center justify-center text-white opacity-0 transition-opacity duration-200 ease-out;
   }
 
   .device-switch-icon__arrow.is-active {
