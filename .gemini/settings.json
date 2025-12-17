@@ -4,6 +4,9 @@
             "AGENTS.md",
             "CONTEXT.md",
             "GEMINI.md"
-        ]
+        ],
+        "fileFiltering": {
+            ".respectGeminiIgnore": false
+        }
     }
 }

@@ -8,7 +8,63 @@ import {
   getTrainingRetryContext, 
   getAudioBackgroundIssues 
 } from '../app/store/selectors.js';
-import { startTrainingWithController, abortTrainingWithController } from '../app/routes/trainingController.js';
+import { startTrainingWithController, abortTrainingWithController, updateTrainingParams } from '../app/routes/trainingController.js';
+
+function TrainingSettings({ state }) {
+  const { params } = state.training;
+  const isRunning = state.training.status === TRAINING_STATUS.RUNNING;
+
+  const handleChange = (key, value) => {
+    updateTrainingParams({ [key]: value });
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mt-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">Einstellungen</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Epochen</label>
+          <input 
+            type="number" 
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-medium text-slate-900 shadow-inner focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:opacity-50"
+            value={params.epochs} 
+            min="1" 
+            step="1"
+            disabled={isRunning}
+            onChange={(e) => handleChange('epochs', e.target.value)}
+          />
+          <p className="mt-1 text-xs text-slate-500">Anzahl der Durchläufe</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Batchgröße</label>
+          <input 
+            type="number" 
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-medium text-slate-900 shadow-inner focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:opacity-50"
+            value={params.batchSize} 
+            min="1" 
+            step="1"
+            disabled={isRunning}
+            onChange={(e) => handleChange('batchSize', e.target.value)}
+          />
+          <p className="mt-1 text-xs text-slate-500">Samples pro Schritt</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Lernrate</label>
+          <input 
+            type="number" 
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base font-medium text-slate-900 shadow-inner focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100 disabled:opacity-50"
+            value={params.learningRate} 
+            min="0.0001" 
+            step="0.0001"
+            disabled={isRunning}
+            onChange={(e) => handleChange('learningRate', e.target.value)}
+          />
+          <p className="mt-1 text-xs text-slate-500">Schrittweite beim Lernen</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function TrainFooter({ state, retryContext, onStart, onAbort, onBack, onNext, canStart, canAbort, canInfer }) {
   const summary = getTrainingSummary(state);
@@ -201,6 +257,8 @@ export function Train({ state }) {
       <section className="train-body block">
         <TrainingInfo state={state} retryContext={retryContext} />
         
+        <TrainingSettings state={state} />
+
         <TrainFooter 
           state={state}
           retryContext={retryContext}

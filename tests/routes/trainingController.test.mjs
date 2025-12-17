@@ -2,10 +2,15 @@ import assert from 'node:assert/strict';
 import { createTrainingController } from '../../src/app/routes/trainingController.js';
 import { TRAINING_STATUS } from '../../src/app/store/sessionStore.js';
 
-function createStore(status = TRAINING_STATUS.IDLE) {
-  const state = { training: { status } };
+function createStore(status = TRAINING_STATUS.IDLE, params = {}) {
+  const state = { training: { status, params } };
+  let lastUpdate = null;
   return {
     getState: () => state,
+    setTrainingStatus: (s, p) => {
+      lastUpdate = { status: s, patch: p };
+    },
+    getLastUpdate: () => lastUpdate,
   };
 }
 
@@ -56,6 +61,54 @@ test('abort does nothing when idle', () => {
   const triggered = controller.abort();
   assert.equal(triggered, false);
   assert.equal(called, false);
+});
+
+test('updateParams updates valid params', () => {
+  const store = createStore(TRAINING_STATUS.IDLE, { epochs: 10, batchSize: 5, learningRate: 0.001 });
+  const controller = createTrainingController({
+    store,
+    confirm: () => {},
+    abortTraining: () => {},
+    trainWithRecordedSamples: () => {},
+  });
+  
+  controller.updateParams({ epochs: 20, batchSize: 16 });
+  const update = store.getLastUpdate();
+  
+  assert.equal(update.status, TRAINING_STATUS.IDLE);
+  assert.equal(update.patch.params.epochs, 20);
+  assert.equal(update.patch.params.batchSize, 16);
+  assert.equal(update.patch.params.learningRate, 0.001); // unchanged
+});
+
+test('updateParams validates inputs', () => {
+  const store = createStore(TRAINING_STATUS.IDLE, { epochs: 10 });
+  const controller = createTrainingController({
+    store,
+    confirm: () => {},
+    abortTraining: () => {},
+    trainWithRecordedSamples: () => {},
+  });
+  
+  controller.updateParams({ epochs: -5, batchSize: 'invalid' });
+  const update = store.getLastUpdate();
+  
+  assert.equal(update.patch.params.epochs, 1); // min 1
+  assert.equal(update.patch.params.batchSize, 1); // fallback
+});
+
+test('updateParams does nothing when running', () => {
+  const store = createStore(TRAINING_STATUS.RUNNING);
+  const controller = createTrainingController({
+    store,
+    confirm: () => {},
+    abortTraining: () => {},
+    trainWithRecordedSamples: () => {},
+  });
+  
+  const result = controller.updateParams({ epochs: 20 });
+  assert.equal(result, false);
+  assert.equal(store.getLastUpdate(), null);
 });
 
 function test(name, fn) {
