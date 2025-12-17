@@ -503,7 +503,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const showRecordedFraction = expectedCount > 0 && recordedCount < expectedCount;
   const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (hasSamples ? recordedCount : '');
   const sampleSummaryLabel = hasSamples
-    ? (isReady ? 'Beispiele verwalten' : 'Beispiele aufgenommen')
+    ? (isReady ? '' : 'Beispiele aufgenommen')
     : '';
   const datasetManageLabel = hasSamples ? 'Beispiele verwalten' : 'Beispiele aufnehmen';
   const sampleCountDisplay = sampleSummaryCount || (hasSamples ? `${recordedCount}` : 'Noch keine Daten');
