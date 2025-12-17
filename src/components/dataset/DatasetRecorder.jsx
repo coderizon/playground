@@ -380,7 +380,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
        }
 
        // Start Countdown
-       let count = 5;
+       let count = 3;
        setCountdown(count);
        if (navigator.vibrate) navigator.vibrate(20);
        sessionStore.updateDatasetStatus(classId, DATASET_STATUS.COUNTDOWN);
