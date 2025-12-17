@@ -514,7 +514,7 @@ function createPermissionState(overrides = {}) {
 
 function createClassState(options = {}) {
   const id = options.id || createId();
-  const defaultName = options.name?.trim() || `Class ${id.slice(-4)}`;
+  const defaultName = options.name?.trim() || `Klasse ${id.slice(-4)}`;
   const samples = options.dataset?.samples ? [...options.dataset.samples] : [];
   const dataset = {
     status: validateDatasetStatus(options.dataset?.status) || DATASET_STATUS.EMPTY,

@@ -480,8 +480,8 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
   const showRecordedFraction = expectedCount > 0 && recordedCount < expectedCount;
   const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (recordedCount > 0 ? recordedCount : '');
   const sampleSummaryLabel = recordedCount > 0
-    ? (isReady || recordedCount >= expectedCount ? 'Samples verwalten' : 'Samples aufgenommen')
-    : 'Samples aufgenommen';
+    ? (isReady || recordedCount >= expectedCount ? 'Beispiele verwalten' : 'Beispiele aufgenommen')
+    : 'Beispiele aufgenommen';
   const modalTitleId = `sampleModalTitle-${classId}`;
 
   return (
@@ -553,7 +553,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
 
       <div className="sample-album">
         <div className="sample-album-header">
-          <p className="eyebrow">Samples</p>
+          <p className="eyebrow">Beispiele</p>
           <button
             type="button"
             className="ghost warning"
@@ -575,7 +575,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
               </span>
             ) : (
               <span className="sample-album-card sample-album-card-empty">
-                <span className="sample-album-placeholder">Keine Samples</span>
+                <span className="sample-album-placeholder">Keine Beispiele</span>
               </span>
             )}
           </div>
@@ -625,11 +625,11 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             <div className="sample-modal-shell">
               <div className="sample-modal-header">
                 <div>
-                  <p className="eyebrow">Samples</p>
+                  <p className="eyebrow">Beispiele</p>
                   <h3 id={modalTitleId}>{classState.name || 'Unbenannte Klasse'}</h3>
-                  <p className="sample-modal-subline">Wähle Samples aus, um Details zu prüfen oder mehrere auf einmal zu löschen.</p>
+                  <p className="sample-modal-subline">Wähle Beispiele aus, um Details zu prüfen oder mehrere auf einmal zu löschen.</p>
                 </div>
-                <button type="button" className="icon-close" aria-label="Samples schließen" onClick={closeAlbum}>
+                <button type="button" className="icon-close" aria-label="Beispiele schließen" onClick={closeAlbum}>
                   ×
                 </button>
               </div>
@@ -646,7 +646,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
               </div>
               {samples.length === 0 ? (
                 <div className="sample-modal-empty">
-                  <p className="sample-modal-empty-title">Noch keine Samples</p>
+                  <p className="sample-modal-empty-title">Noch keine Beispiele</p>
                   <p className="sample-modal-empty-copy">Klicke auf „Aufnahme starten“, um Beispiele für diese Klasse zu sammeln.</p>
                 </div>
               ) : (
@@ -654,7 +654,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
                   {samples.map((sample, idx) => (
                     <SamplePreview
                       key={sample.id}
-                      sample={{ ...sample, label: sample.label || `Sample ${idx + 1}` }}
+                      sample={{ ...sample, label: sample.label || `Beispiel ${idx + 1}` }}
                       classId={classId}
                       disabled={recording || trainingLocked}
                       selectable

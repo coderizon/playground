@@ -21,7 +21,7 @@ export function Infer({ state }) {
     return (
       <section className="infer-page">
         <p className="eyebrow">Noch nicht bereit</p>
-        <h1>Inference benötigt ein abgeschlossenes Training</h1>
+        <h1>Inferenz benötigt ein abgeschlossenes Training</h1>
         <p>Trainiere zuerst dein Modell, um die Vorschau zu aktivieren.</p>
         <button type="button" className="primary" onClick={goTrain}>Zurück zu Training</button>
       </section>
@@ -57,7 +57,7 @@ export function Infer({ state }) {
     <section className="infer-page">
       <header className="infer-header">
         <div>
-          <p className="eyebrow">Schritt 4 · Inference</p>
+          <p className="eyebrow">Schritt 4 · Inferenz</p>
           <h1>Teste dein Modell</h1>
           <p className="subline">Starte die Vorschau, beobachte Wahrscheinlichkeiten und verbinde ein Edge-Gerät.</p>
         </div>

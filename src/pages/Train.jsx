@@ -89,7 +89,7 @@ function TrainFooter({ state, retryContext, onStart, onAbort, onBack, onNext, ca
           <strong className="text-xl font-semibold text-slate-900">{summary.readyClasses}/{summary.totalClasses}</strong>
         </div>
         <div>
-          <p className="eyebrow">Samples</p>
+          <p className="eyebrow">Beispiele</p>
           <strong className="text-xl font-semibold text-slate-900">{summary.totalSamples}</strong>
         </div>
       </div>
@@ -202,7 +202,7 @@ export function Train({ state }) {
         <p className="eyebrow">Noch nicht bereit</p>
         <h1>Training erst nach vollständiger Datensammlung</h1>
         <p>Stelle sicher, dass mindestens zwei Klassen vorhanden sind und Datensätze bereit sind.</p>
-        <button type="button" className="primary" onClick={goCollect}>Zurück zu Collect</button>
+        <button type="button" className="primary" onClick={goCollect}>Zurück zur Sammlung</button>
       </section>
     );
   }

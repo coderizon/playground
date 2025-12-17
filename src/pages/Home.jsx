@@ -45,9 +45,9 @@ export function Home({ state }) {
 
   const getStepDescription = (step) => {
     switch (step) {
-      case STEP.COLLECT: return 'Classes & Data Collection';
+      case STEP.COLLECT: return 'Klassen & Datensammlung';
       case STEP.TRAIN: return 'Training';
-      case STEP.INFER: return 'Inference';
+      case STEP.INFER: return 'Inferenz';
       default: return 'Home';
     }
   };
@@ -95,7 +95,7 @@ export function Home({ state }) {
                   <div className="task-card__content">
                     <div className="task-card__meta" id={metaId}>
                       <span className="task-modality" aria-label={`Modality ${task.inputModality}`}>{task.inputModality}</span>
-                      <span className="task-effort" aria-label={`Aufwand ${task.effortLevel}`}>{task.effortLevel} effort</span>
+                      <span className="task-effort" aria-label={`Aufwand ${task.effortLevel}`}>{task.effortLevel} Aufwand</span>
                     </div>
                     <div className="task-card__body">
                       <h3 id={titleId}>{task.name}</h3>

@@ -40,7 +40,7 @@ export function getInferencePredictions(state) {
     ? prediction.values
     : classes.map(() => 0);
   return classes.map((cls, index) => ({
-    name: cls.name || `Class ${index + 1}`,
+    name: cls.name || `Klasse ${index + 1}`,
     value: values[index] ?? 0,
     isBest: index === prediction?.bestIndex,
   }));
@@ -52,7 +52,7 @@ export function getDatasetReadinessIssues(state) {
     .filter((cls) => cls.dataset?.status !== DATASET_STATUS.READY)
     .map((cls, index) => ({
       id: cls.id,
-      name: cls.name || `Class ${index + 1}`,
+      name: cls.name || `Klasse ${index + 1}`,
       reason: cls.dataset?.readinessReason || 'Datensatz unvollständig.',
       status: cls.dataset?.status || DATASET_STATUS.EMPTY,
     }));
@@ -73,7 +73,7 @@ export function getClassesUpdatedSince(state, sinceTimestamp) {
   return classes
     .map((cls, index) => ({
       id: cls.id,
-      name: cls.name || `Class ${index + 1}`,
+      name: cls.name || `Klasse ${index + 1}`,
       updatedAt: Number(cls.dataset?.lastUpdatedAt) || null,
     }))
     .filter((cls) => cls.updatedAt && cls.updatedAt > baseline);
@@ -129,7 +129,7 @@ export function getAudioBackgroundIssues(state) {
   return classes
     .map((cls, index) => ({
       id: cls.id,
-      name: cls.name || `Class ${index + 1}`,
+      name: cls.name || `Klasse ${index + 1}`,
       hasBackground: hasBackgroundSample(cls.dataset),
     }))
     .filter((cls) => !cls.hasBackground)
