@@ -5,7 +5,7 @@ import { createClassController } from '../../app/routes/classController.js';
 import { removeSamplesWithConfirm } from '../../app/routes/sampleController.js';
 import { requestCameraStream, stopCameraStream, getVideoDevices } from '../../services/media/cameraService.js';
 import { requestMicrophoneStream, stopMicrophoneStream, recordAudioSample, getAudioDevices } from '../../services/media/microphoneService.js';
-import { recordSampleFrame, clearSamplesForClass } from '../../services/ml/modelBridge.js';
+import { recordSampleFrame, clearSamplesForClass, prewarmFeatureExtractor } from '../../services/ml/modelBridge.js';
 import { showToast } from '../common/toast.js';
 import { SamplePreview } from './SamplePreview.jsx';
 import { GesturePreview } from './GesturePreview.jsx';
@@ -60,6 +60,10 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
   const canDiscard = !recording && dataset.recordedCount > 0;
 
   const datasetController = createClassController({ clearDataset: clearSamplesForClass });
+
+  useEffect(() => {
+    prewarmFeatureExtractor().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (previewReady) {

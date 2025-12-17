@@ -261,6 +261,13 @@ async function ensureFeatureExtractor() {
   return featureExtractor;
 }
 
+export function prewarmFeatureExtractor() {
+  return ensureFeatureExtractor().catch((error) => {
+    console.warn('[modelBridge] failed to prewarm feature extractor', error);
+    throw error;
+  });
+}
+
 function validateLearningRate(value) {
   const lr = Number(value);
   if (!Number.isFinite(lr) || lr <= 0) return 0.001;
