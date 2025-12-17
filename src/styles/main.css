@@ -793,7 +793,7 @@
   }
 
   .record-btn {
-    @apply relative flex w-full items-center justify-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 py-3 text-base font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply relative flex w-full items-center justify-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 py-3 text-base font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 select-none touch-none;
   }
 
   .record-btn.is-recording {

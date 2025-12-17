@@ -619,6 +619,7 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
             onMouseLeave={handleRecordStop}
             onTouchStart={handleRecordStart}
             onTouchEnd={handleRecordStop}
+            onTouchCancel={handleRecordStop}
             onContextMenu={(e) => e.preventDefault()}
             disabled={!canStart && !recording}
           >
