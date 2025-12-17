@@ -5,7 +5,6 @@ import { Home } from './pages/Home.jsx';
 import { Collect } from './pages/Collect.jsx';
 import { Train } from './pages/Train.jsx';
 import { Infer } from './pages/Infer.jsx';
-import { NotificationTray } from './components/common/NotificationTray.jsx';
 import { ConfirmDialog } from './components/common/ConfirmDialog.jsx';
 
 function useSession() {
@@ -23,7 +22,6 @@ export default function App() {
         {state.step === STEP.TRAIN && <Train state={state} />}
         {state.step === STEP.INFER && <Infer state={state} />}
       </main>
-      <NotificationTray />
       <ConfirmDialog />
     </>
   );
