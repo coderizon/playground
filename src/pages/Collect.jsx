@@ -8,7 +8,7 @@ import { NoticeBanner } from '../components/common/NoticeBanner.jsx';
 
 const classController = createClassController();
 
-function CollectToolbar({ classCount, onAddClass, trainingLocked, classes, totalSamples }) {
+function CollectFooter({ classCount, onAddClass, trainingLocked, classes, totalSamples, onGoHome, onGoTrain, trainingReady }) {
   const readyClasses = classes.filter(c => c.dataset?.status === DATASET_STATUS.READY).length;
   
   // Background audio check
@@ -21,26 +21,22 @@ function CollectToolbar({ classCount, onAddClass, trainingLocked, classes, total
     : [];
 
   return (
-    <section className="collect-toolbar">
-      <div className="collect-toolbar-grid">
-        <div className="collect-metric-grid">
-          <div className="collect-metric">
-            <p className="eyebrow">Klassen</p>
-            <strong>{classCount}</strong>
-          </div>
-          <div className="collect-metric">
-            <p className="eyebrow">Klassen bereit</p>
-            <strong>{readyClasses}/{classes.length}</strong>
-          </div>
-          <div className="collect-metric">
-            <p className="eyebrow">Samples</p>
-            <strong>{totalSamples}</strong>
-          </div>
+    <section className="collect-footer mt-8 space-y-6">
+      <div className="grid grid-cols-3 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
+        <div>
+          <p className="eyebrow">Klassen</p>
+          <strong className="text-xl font-semibold text-slate-900">{classCount}</strong>
         </div>
-        <button type="button" className="primary" onClick={onAddClass} disabled={trainingLocked}>
-          Klasse hinzufügen
-        </button>
+        <div>
+          <p className="eyebrow">Bereit</p>
+          <strong className="text-xl font-semibold text-slate-900">{readyClasses}/{classes.length}</strong>
+        </div>
+        <div>
+          <p className="eyebrow">Samples</p>
+          <strong className="text-xl font-semibold text-slate-900">{totalSamples}</strong>
+        </div>
       </div>
+
       {backgroundIssues.length > 0 && (
         <div className="summary-background" role="status" aria-live="polite">
           <p className="eyebrow">Audio-Check</p>
@@ -54,6 +50,20 @@ function CollectToolbar({ classCount, onAddClass, trainingLocked, classes, total
           </ul>
         </div>
       )}
+
+      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+        <button type="button" className="ghost order-last md:order-first w-full md:w-auto" onClick={onGoHome}>
+          Zurück zur Auswahl
+        </button>
+        <div className="flex flex-col gap-3 md:flex-row w-full md:w-auto">
+          <button type="button" className="primary w-full md:w-auto" onClick={onAddClass} disabled={trainingLocked}>
+            Klasse hinzufügen
+          </button>
+          <button type="button" className="secondary w-full md:w-auto" onClick={onGoTrain} disabled={!trainingReady}>
+            Weiter zu Training
+          </button>
+        </div>
+      </div>
     </section>
   );
 }
@@ -117,19 +127,7 @@ export function Collect({ state }) {
               Erstelle Klassen, sammle Beispiele und mache den Trainingsschritt bereit.
             </p>
           </div>
-          <div className="collect-header__actions">
-            <button type="button" className="ghost" onClick={goHome}>Zurück zur Auswahl</button>
-            <button type="button" className="secondary" onClick={handleGoTrain} disabled={!trainingReady}>Weiter zu Training</button>
-          </div>
         </header>
-
-        <CollectToolbar 
-          classCount={classes.length} 
-          onAddClass={handleAddClass} 
-          trainingLocked={addClassDisabled} 
-          classes={classes}
-          totalSamples={totalSamples}
-        />
       </div>
 
       <section className="collect-body">
@@ -147,40 +145,16 @@ export function Collect({ state }) {
           )}
         </div>
 
-        <div className="collect-mobile-toolbar" aria-live="polite">
-          <div className="collect-mobile-stats">
-            <div>
-              <p className="eyebrow">Klassen</p>
-              <strong>{classes.length}</strong>
-            </div>
-            <div>
-              <p className="eyebrow">Bereit</p>
-              <strong>{classes.filter(c => c.dataset?.status === DATASET_STATUS.READY).length}/{classes.length}</strong>
-            </div>
-            <div>
-              <p className="eyebrow">Samples</p>
-              <strong>{totalSamples}</strong>
-            </div>
-          </div>
-          <div className="collect-mobile-actions">
-            <button
-              type="button"
-              className="primary"
-              onClick={handleAddClass}
-              disabled={addClassDisabled}
-            >
-              Klasse hinzufügen
-            </button>
-            <button
-              type="button"
-              className="secondary"
-              onClick={handleGoTrain}
-              disabled={!trainingReady}
-            >
-              Zu Training
-            </button>
-          </div>
-        </div>
+        <CollectFooter 
+          classCount={classes.length} 
+          onAddClass={handleAddClass} 
+          trainingLocked={addClassDisabled} 
+          classes={classes}
+          totalSamples={totalSamples}
+          onGoHome={goHome}
+          onGoTrain={handleGoTrain}
+          trainingReady={trainingReady}
+        />
       </section>
     </section>
   );

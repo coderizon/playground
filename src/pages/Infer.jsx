@@ -61,12 +61,6 @@ export function Infer({ state }) {
           <h1>Teste dein Modell</h1>
           <p className="subline">Starte die Vorschau, beobachte Wahrscheinlichkeiten und verbinde ein Edge-Gerät.</p>
         </div>
-        <div className="infer-header__actions">
-          {requiresTraining && (
-            <button type="button" className="ghost" onClick={handleBackToTrain}>Zurück zu Training</button>
-          )}
-          <button type="button" className="primary danger" onClick={handleDiscard}>Session verwerfen</button>
-        </div>
       </header>
       
       <section className="infer-body">
@@ -79,7 +73,12 @@ export function Infer({ state }) {
         
         {/* Permission alerts could be added here if needed, but handled by toast/store mostly */}
         
-        <InferencePanel state={state} />
+        <InferencePanel 
+          state={state} 
+          onBack={handleBackToTrain}
+          onDiscard={handleDiscard}
+          requiresTraining={requiresTraining}
+        />
       </section>
     </section>
   );

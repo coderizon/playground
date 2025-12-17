@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { sessionStore, TRAINING_STATUS } from '../app/store/sessionStore.js';
+import React, { useEffect } from 'react';
+import { TRAINING_STATUS } from '../app/store/sessionStore.js';
 import { canAccessTraining, canAccessInference } from '../app/guards/navigation.js';
 import { goCollect, goInfer } from '../app/routes/navigationController.js';
 import { 
@@ -10,18 +10,89 @@ import {
 } from '../app/store/selectors.js';
 import { startTrainingWithController, abortTrainingWithController } from '../app/routes/trainingController.js';
 
-function TrainingPanel({ state, retryContext }) {
+function TrainFooter({ state, retryContext, onStart, onAbort, onBack, onNext, canStart, canAbort, canInfer }) {
+  const summary = getTrainingSummary(state);
   const training = state.training;
   const isRunning = training?.status === TRAINING_STATUS.RUNNING;
-  const ready = getDatasetReadinessIssues(state).length === 0; // Using issues check for simplicity, or isTrainingReady selector
-  // Actually reusing issues logic from CollectSummary for consistency
-  const issues = getDatasetReadinessIssues(state);
   const backgroundIssues = getAudioBackgroundIssues(state);
-  
-  const canStart = ready && !isRunning;
-  const canAbort = isRunning;
+  const issues = getDatasetReadinessIssues(state);
 
-  // Compute derived labels
+  const getStartCtaLabel = () => {
+    if (isRunning) return 'Training läuft …';
+    if (!retryContext?.lastRun) return 'Training starten';
+    if (retryContext.datasetChangedSinceLastRun) return 'Erneut trainieren (neue Daten)';
+    return 'Erneut trainieren';
+  };
+
+  return (
+    <section className="train-footer mt-8 space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
+        <div>
+          <p className="eyebrow">Klassen bereit</p>
+          <strong className="text-xl font-semibold text-slate-900">{summary.readyClasses}/{summary.totalClasses}</strong>
+        </div>
+        <div>
+          <p className="eyebrow">Samples</p>
+          <strong className="text-xl font-semibold text-slate-900">{summary.totalSamples}</strong>
+        </div>
+      </div>
+
+      {/* Issues / Hints */}
+      {(backgroundIssues.length > 0 || issues.length > 0) && (
+        <div className="summary-background" role="status" aria-live="polite">
+          <p className="eyebrow">Checks</p>
+          <ul className="space-y-1">
+            {backgroundIssues.map(c => (
+              <li key={`bg-${c.id}`}><strong>{c.name}</strong>: Hintergrund fehlt</li>
+            ))}
+            {issues.map(c => (
+              <li key={`issue-${c.id}`}><strong>{c.name || 'Unbenannt'}</strong>: {c.reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Progress */}
+      {isRunning && (
+        <div className="training-progress">
+            <div className="training-progress-bar">
+            <div className="training-progress-fill" style={{ width: `${training.progress || 0}%` }}></div>
+            </div>
+            <span>{training.progress || 0}%</span>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+        <button type="button" className="ghost order-last md:order-first w-full md:w-auto" onClick={onBack}>
+          Zurück zu Klassen
+        </button>
+        
+        <div className="flex flex-col gap-3 md:flex-row w-full md:w-auto">
+            {isRunning ? (
+                <button type="button" className="ghost danger w-full md:w-auto" onClick={onAbort}>
+                    Training abbrechen
+                </button>
+            ) : (
+                <button type="button" className="primary w-full md:w-auto" onClick={onStart} disabled={!canStart}>
+                    {getStartCtaLabel()}
+                </button>
+            )}
+            
+            <button type="button" className="secondary w-full md:w-auto" onClick={onNext} disabled={!canInfer}>
+                Weiter zur Inferenz
+            </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TrainingInfo({ state, retryContext }) {
+  const training = state.training;
+  const info = retryContext?.lastRun;
+
   const getStatusLabel = () => {
     switch (training?.status) {
       case TRAINING_STATUS.DONE: return 'Abgeschlossen';
@@ -32,54 +103,61 @@ function TrainingPanel({ state, retryContext }) {
     }
   };
 
-  const getLockHint = () => {
-    if (isRunning) return 'Während des Trainings sind Klassen gesperrt. Brich ab, um neue Daten zu sammeln.';
-    if (!ready) return 'Sammle je Klasse genügend Beispiele, bevor du startest.';
-    return 'Alles bereit – starte das Training.';
-  };
-
   const getLastRunLabel = () => {
-    const info = retryContext?.lastRun;
     if (!info) return 'Noch kein Training durchgeführt.';
     const time = info.completedAt ? new Date(info.completedAt).toLocaleTimeString() : '';
     switch (info.status) {
       case TRAINING_STATUS.DONE: return `Zuletzt erfolgreich trainiert (${time}).`;
-      case TRAINING_STATUS.ABORTED: return `Letzter Durchlauf abgebrochen (${time}). Passe deine Daten an und starte erneut.`;
-      case TRAINING_STATUS.ERROR: return `Letzter Durchlauf fehlgeschlagen (${time}): ${info.error || ''}`;
+      case TRAINING_STATUS.ABORTED: return `Letzter Durchlauf abgebrochen (${time}).`;
+      case TRAINING_STATUS.ERROR: return `Letzter Durchlauf fehlgeschlagen (${time}).`;
       default: return '';
     }
   };
 
-  const getDatasetChangeLabel = () => {
-    if (!retryContext?.lastRun) return '';
-    if (!retryContext?.datasetChangedSinceLastRun) return 'Seit dem letzten Training wurden keine neuen Samples aufgenommen.';
-    const staleCount = retryContext.staleClasses?.length || 0;
-    if (staleCount === 1) return '1 Klasse hat neue Samples seit dem letzten Training.';
-    return `${staleCount} Klassen haben neue Samples seit dem letzten Training.`;
-  };
+  return (
+    <article className="training-info space-y-6">
+      <div className="training-meta">
+        <p className="eyebrow">Status</p>
+        <p className="text-xl font-semibold text-slate-900">{getStatusLabel()}</p>
+        <p className="text-sm text-slate-600 mt-1">{getLastRunLabel()}</p>
+      </div>
 
-  const getStartCtaLabel = () => {
-    if (isRunning) return 'Training läuft …';
-    if (!retryContext?.lastRun) return 'Training starten';
-    if (retryContext.datasetChangedSinceLastRun) return 'Erneut trainieren (neue Daten)';
-    return 'Erneut trainieren';
-  };
+      {retryContext?.staleClasses?.length > 0 && (
+        <div className="training-meta">
+          <p className="eyebrow">Neue Daten verfügbar</p>
+          <ul className="mt-2 space-y-1 text-sm text-slate-600">
+            {retryContext.staleClasses.map(cls => (
+              <li key={cls.id}>
+                <strong>{cls.name}</strong>
+                <span className="opacity-60 ml-2">aktualisiert</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </article>
+  );
+}
 
-  const getStartCtaSubline = () => {
-    if (backgroundIssues.length) {
-      return backgroundIssues.length === 1
-        ? `Audio-Check: ${backgroundIssues[0].name} benötigt eine Hintergrundaufnahme.`
-        : 'Audio-Check: Mehrere Klassen benötigen eine Hintergrundaufnahme.';
-    }
-    if (!retryContext?.lastRun) return '';
-    if (retryContext.datasetChangedSinceLastRun) {
-       const staleCount = retryContext.staleClasses?.length || 0;
-       if (staleCount === 1) return `${retryContext.staleClasses[0].name} enthält neue Samples.`;
-       if (staleCount > 1) return `${staleCount} Klassen enthalten neue Samples.`;
-       return 'Neue Samples erkannt.';
-    }
-    return 'Es wurden keine neuen Samples seit dem letzten Training aufgenommen.';
-  };
+export function Train({ state }) {
+  if (!canAccessTraining(state)) {
+    return (
+      <section className="train-page">
+        <p className="eyebrow">Noch nicht bereit</p>
+        <h1>Training erst nach vollständiger Datensammlung</h1>
+        <p>Stelle sicher, dass mindestens zwei Klassen vorhanden sind und Datensätze bereit sind.</p>
+        <button type="button" className="primary" onClick={goCollect}>Zurück zu Collect</button>
+      </section>
+    );
+  }
+
+  const retryContext = getTrainingRetryContext(state);
+  const canInfer = canAccessInference(state);
+  const issues = getDatasetReadinessIssues(state);
+  const isRunning = state.training?.status === TRAINING_STATUS.RUNNING;
+  const ready = issues.length === 0;
+  const canStart = ready && !isRunning;
+  const canAbort = isRunning;
 
   const handleStart = () => {
     if (canStart) startTrainingWithController();
@@ -109,119 +187,6 @@ function TrainingPanel({ state, retryContext }) {
   }, [canStart, canAbort]);
 
   return (
-    <article className="training-panel">
-      <h2>Trainingsstatus</h2>
-      <p role="status" aria-live="polite">Status: <strong>{getStatusLabel()}</strong></p>
-      <p className="training-hint" role="status" aria-live="polite">{getLockHint()}</p>
-      
-      <div className="training-progress">
-        <div className="training-progress-bar">
-          <div className="training-progress-fill" style={{ width: `${training.progress || 0}%` }}></div>
-        </div>
-        <span>{training.progress || 0}%</span>
-      </div>
-
-      <div className="training-actions">
-        <button type="button" className="primary" onClick={handleStart} disabled={!canStart}>
-          {getStartCtaLabel()}
-        </button>
-        <button type="button" className="ghost" onClick={handleAbort} disabled={!canAbort}>
-          Training abbrechen
-        </button>
-      </div>
-
-      <div className="training-hotkeys" aria-hidden="true">
-        <span><kbd>T</kbd> Start</span>
-        <span><kbd>A</kbd>/<kbd>Esc</kbd> Abbrechen</span>
-      </div>
-      
-      {getStartCtaSubline() && <p className="training-hint">{getStartCtaSubline()}</p>}
-
-      <div className="training-meta">
-        <p className="eyebrow">Trainingshistorie</p>
-        <p role="status" aria-live="polite">{getLastRunLabel()}</p>
-        <p className="training-hint" role="status" aria-live="polite">{getDatasetChangeLabel()}</p>
-      </div>
-
-      {retryContext?.staleClasses?.length > 0 && (
-        <div className="training-meta">
-          <p className="eyebrow">Seit letztem Training aktualisiert</p>
-          <ul>
-            {retryContext.staleClasses.map(cls => (
-              <li key={cls.id}>
-                <strong>{cls.name}</strong>
-                <span className="hint">{cls.updatedAt ? new Date(cls.updatedAt).toLocaleString() : ''}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </article>
-  );
-}
-
-function TrainingSummaryPanel({ state }) {
-  const summary = getTrainingSummary(state);
-  const issues = getDatasetReadinessIssues(state);
-  const backgroundIssues = getAudioBackgroundIssues(state);
-
-  return (
-    <aside className="training-summary">
-      <h3>Datensatz-Übersicht</h3>
-      <p>
-        <strong>{summary.readyClasses}/{summary.totalClasses}</strong> Klassen bereit
-      </p>
-      <p>
-        <strong>{summary.totalSamples}</strong> Samples insgesamt
-      </p>
-      
-      {issues.length > 0 && (
-        <div className="training-issues">
-          <p className="eyebrow">Offene Aufgaben</p>
-          <ul>
-            {issues.map(issue => (
-              <li key={issue.id}>
-                <strong>{issue.name || 'Unbenannt'}</strong>
-                <span>{issue.reason}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {backgroundIssues.length > 0 && (
-        <div className="training-issues training-issues--background">
-          <p className="eyebrow">Audio-Check</p>
-          <ul>
-            {backgroundIssues.map(issue => (
-              <li key={issue.id}>
-                <strong>{issue.name}</strong>
-                <span>{issue.reason}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </aside>
-  );
-}
-
-export function Train({ state }) {
-  if (!canAccessTraining(state)) {
-    return (
-      <section className="train-page">
-        <p className="eyebrow">Noch nicht bereit</p>
-        <h1>Training erst nach vollständiger Datensammlung</h1>
-        <p>Stelle sicher, dass mindestens zwei Klassen vorhanden sind und Datensätze bereit sind.</p>
-        <button type="button" className="primary" onClick={goCollect}>Zurück zu Collect</button>
-      </section>
-    );
-  }
-
-  const retryContext = getTrainingRetryContext(state);
-  const canInfer = canAccessInference(state);
-
-  return (
     <section className="train-page">
       <header className="train-header">
         <div>
@@ -231,15 +196,22 @@ export function Train({ state }) {
             Überprüfe deine Klassen und starte das Training. Währenddessen bleiben Datensätze gesperrt.
           </p>
         </div>
-        <div className="train-header__actions">
-          <button type="button" className="ghost" onClick={goCollect}>Zurück zu Klassen</button>
-          <button type="button" className="secondary" onClick={goInfer} disabled={!canInfer}>Weiter zur Inferenz</button>
-        </div>
       </header>
 
-      <section className="train-body">
-        <TrainingPanel state={state} retryContext={retryContext} />
-        <TrainingSummaryPanel state={state} />
+      <section className="train-body block">
+        <TrainingInfo state={state} retryContext={retryContext} />
+        
+        <TrainFooter 
+          state={state}
+          retryContext={retryContext}
+          onStart={handleStart}
+          onAbort={handleAbort}
+          onBack={goCollect}
+          onNext={goInfer}
+          canStart={canStart}
+          canAbort={canAbort}
+          canInfer={canInfer}
+        />
       </section>
     </section>
   );
