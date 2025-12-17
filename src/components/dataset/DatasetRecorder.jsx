@@ -555,87 +555,89 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
         </div>
       )}
 
-      <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''}`}>
-        {!isAudioTask && (
-          <>
-            <video
-              autoPlay
-              muted
-              playsInline
-              ref={videoRef}
-              className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
-            />
-            {countdown !== null && (
-              <div className="countdown-overlay">
-                {countdown}
+      <div className="recorder-controls">
+        <div className={`dataset-preview ${isAudioTask ? 'is-audio' : ''}`}>
+          {!isAudioTask && (
+            <>
+              <video
+                autoPlay
+                muted
+                playsInline
+                ref={videoRef}
+                className={`preview-video ${previewReady ? 'is-visible' : ''} ${facingMode !== 'environment' ? 'is-mirrored' : ''}`}
+              />
+              {countdown !== null && (
+                <div className="countdown-overlay">
+                  {countdown}
+                </div>
+              )}
+              {devices.length > 1 && (
+                <button
+                  type="button"
+                  className="device-switch-btn"
+                  onClick={cycleDevice}
+                  disabled={recording}
+                  title="Kamera wechseln"
+                >
+                  ↻
+                </button>
+              )}
+              {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
+              <div className="camera-guidance">
+                {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
               </div>
-            )}
-            {devices.length > 1 && (
-              <button
-                type="button"
-                className="device-switch-btn"
-                onClick={cycleDevice}
-                disabled={recording}
-                title="Kamera wechseln"
-              >
-                ↻
-              </button>
-            )}
-            {isGestureTask && !isReady && <GesturePreview videoRef={videoRef} isMirrored={facingMode !== 'environment'} />}
-            <div className="camera-guidance">
-              {!previewReady && <div className="preview-placeholder">{previewLabel}</div>}
-            </div>
-          </>
-        )}
-        {isAudioTask && (
-          <div className="audio-preview">
-             <div className={`audio-meter ${recording ? 'is-active' : ''}`}></div>
-             <div className="audio-guidance">
-               <p>{recording ? 'Audioaufnahme läuft' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Clips` : 'Recorder bereit')}</p>
-               {devices.length > 1 && (
-                 <button
-                   type="button"
-                   className="ghost ghost--tiny"
-                   onClick={cycleDevice}
-                   disabled={recording}
-                   style={{ marginTop: '0.5rem' }}
-                 >
-                   Mikrofon wechseln
-                 </button>
-               )}
-               <small>{AUDIO_PRESETS[activePreset].hint}</small>
-               <div className="audio-progress-bar">
-                 <div className="audio-progress-fill" style={{ width: `${audioProgress}%` }}></div>
+            </>
+          )}
+          {isAudioTask && (
+            <div className="audio-preview">
+               <div className={`audio-meter ${recording ? 'is-active' : ''}`}></div>
+               <div className="audio-guidance">
+                 <p>{recording ? 'Audioaufnahme läuft' : (dataset.recordedCount > 0 ? `${dataset.recordedCount}/${dataset.expectedCount} Clips` : 'Recorder bereit')}</p>
+                 {devices.length > 1 && (
+                   <button
+                     type="button"
+                     className="ghost ghost--tiny"
+                     onClick={cycleDevice}
+                     disabled={recording}
+                     style={{ marginTop: '0.5rem' }}
+                   >
+                     Mikrofon wechseln
+                   </button>
+                 )}
+                 <small>{AUDIO_PRESETS[activePreset].hint}</small>
+                 <div className="audio-progress-bar">
+                   <div className="audio-progress-fill" style={{ width: `${audioProgress}%` }}></div>
+                 </div>
                </div>
-             </div>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
 
-      <div className="class-card-actions">
-        {isAudioTask && (
-          <div className="audio-actions">
-            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'clip' })} disabled={!canStart}>Kurzclip (2s)</button>
-            <button type="button" className="ghost" onClick={() => startRecording({ preset: 'background' })} disabled={!canStart}>Hintergrund (20s)</button>
-            <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
-          </div>
-        )}
-        {!isAudioTask && (
-          <button
-            type="button"
-            className={`record-btn ${recording ? 'is-recording' : ''}`}
-            onMouseDown={handleRecordStart}
-            onMouseUp={handleRecordStop}
-            onMouseLeave={handleRecordStop}
-            onTouchStart={handleRecordStart}
-            onTouchEnd={handleRecordStop}
-            onTouchCancel={handleRecordStop}
-            onContextMenu={(e) => e.preventDefault()}
-            disabled={!canStart && !recording}
-          >
-            <span>{recording ? 'Aufnahme...' : 'Halten für Aufnahme'}</span>
-          </button>
-        )}
+        <div className="class-card-actions">
+          {isAudioTask && (
+            <div className="audio-actions">
+              <button type="button" className="ghost" onClick={() => startRecording({ preset: 'clip' })} disabled={!canStart}>Kurzclip (2s)</button>
+              <button type="button" className="ghost" onClick={() => startRecording({ preset: 'background' })} disabled={!canStart}>Hintergrund (20s)</button>
+              <button type="button" className="ghost" onClick={stopRecording} disabled={!canStop}>Stoppen</button>
+            </div>
+          )}
+          {!isAudioTask && (
+            <button
+              type="button"
+              className={`record-btn ${recording ? 'is-recording' : ''}`}
+              onMouseDown={handleRecordStart}
+              onMouseUp={handleRecordStop}
+              onMouseLeave={handleRecordStop}
+              onTouchStart={handleRecordStart}
+              onTouchEnd={handleRecordStop}
+              onTouchCancel={handleRecordStop}
+              onContextMenu={(e) => e.preventDefault()}
+              disabled={!canStart && !recording}
+            >
+              <span>{recording ? 'Aufnahme...' : 'Halten für Aufnahme'}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {albumOpen && (
