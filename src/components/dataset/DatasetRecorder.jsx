@@ -338,14 +338,21 @@ export function DatasetRecorder({ classId, classState, trainingStatus, modality,
       if (!video || video.readyState < 2) {
         return null;
       }
+      const aspect = video.videoWidth / video.videoHeight;
+      const targetHeight = 120;
+      const targetWidth = Math.floor(targetHeight * aspect);
+
       const canvas = document.createElement('canvas');
-      canvas.width = 160;
-      canvas.height = 120;
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const frames = [canvas.toDataURL('image/jpeg', 0.7)];
+      
+      // Optional: Second frame for strip effect
       ctx.drawImage(video, 2, 0, canvas.width, canvas.height);
       frames.push(canvas.toDataURL('image/jpeg', 0.7));
+      
       return { thumbnail: frames[0], frames };
     } catch {
       return null;
