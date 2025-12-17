@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TRAINING_STATUS } from '../app/store/sessionStore.js';
 import { canAccessTraining, canAccessInference } from '../app/guards/navigation.js';
 import { goCollect, goInfer } from '../app/routes/navigationController.js';
@@ -148,6 +148,7 @@ function TrainFooter({ state, retryContext, onStart, onAbort, onBack, onNext, ca
 function TrainingInfo({ state, retryContext }) {
   const training = state.training;
   const info = retryContext?.lastRun;
+  const [now, setNow] = useState(Date.now());
 
   const getStatusLabel = () => {
     switch (training?.status) {
@@ -170,12 +171,40 @@ function TrainingInfo({ state, retryContext }) {
     }
   };
 
+  useEffect(() => {
+    if (training?.status !== TRAINING_STATUS.RUNNING) return undefined;
+    const handle = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(handle);
+  }, [training?.status]);
+
+  const formatDuration = (milliseconds = 0) => {
+    const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const runningDurationMs = training?.status === TRAINING_STATUS.RUNNING && training.startedAt
+    ? now - training.startedAt
+    : null;
+  const lastDurationMs = info?.durationMs ?? null;
+  const durationLabel = runningDurationMs
+    ? `Laufzeit: ${formatDuration(runningDurationMs)}`
+    : lastDurationMs
+      ? `Letzte Dauer: ${formatDuration(lastDurationMs)}`
+      : 'Noch keine Trainingszeit';
+
   return (
     <article className="training-info space-y-6">
       <div className="training-meta">
         <p className="eyebrow">Status</p>
         <p className="text-xl font-semibold text-slate-900">{getStatusLabel()}</p>
         <p className="text-sm text-slate-600 mt-1">{getLastRunLabel()}</p>
+      </div>
+
+      <div className="training-meta">
+        <p className="eyebrow">Dauer</p>
+        <p className="text-sm text-slate-600 mt-1">{durationLabel}</p>
       </div>
 
       {retryContext?.staleClasses?.length > 0 && (

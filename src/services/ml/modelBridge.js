@@ -45,19 +45,25 @@ export async function trainWithRecordedSamples() {
   if (!isTrainingReady(state)) {
     sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, {
       error: 'Nicht alle Klassen sind bereit.',
+      startedAt: null,
     });
     return;
   }
   if (!recordedSamples.length) {
     sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, {
       error: 'Keine Samples für Training vorhanden.',
+      startedAt: null,
     });
     return;
   }
 
   ensureClassifier(state.classes.length || 1, state.training.params.learningRate);
   trainingAbortRequested = false;
-  sessionStore.setTrainingStatus(TRAINING_STATUS.RUNNING, { progress: 0, error: null });
+  sessionStore.setTrainingStatus(TRAINING_STATUS.RUNNING, {
+    progress: 0,
+    error: null,
+    startedAt: Date.now(),
+  });
 
   // Filter valid samples and map to current class indices
   const validSamples = [];
@@ -73,6 +79,7 @@ export async function trainWithRecordedSamples() {
   if (!validSamples.length) {
     sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, {
       error: 'Keine gültigen Samples für aktuelle Klassen vorhanden.',
+      startedAt: null,
     });
     return;
   }
@@ -102,31 +109,42 @@ export async function trainWithRecordedSamples() {
         },
       },
     });
-    if (trainingAbortRequested || sessionStore.getState().training.status === TRAINING_STATUS.ABORTED) {
+    const successState = sessionStore.getState();
+    const startTime = successState.training.startedAt || Date.now();
+    const durationMs = Date.now() - startTime;
+    if (trainingAbortRequested || successState.training.status === TRAINING_STATUS.ABORTED) {
       sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
     } else {
       sessionStore.setTrainingStatus(TRAINING_STATUS.DONE, {
         progress: 100,
+        startedAt: null,
         lastRun: {
           status: TRAINING_STATUS.DONE,
           completedAt: Date.now(),
           error: null,
           datasetUpdatedAt,
+          durationMs,
         },
       });
       sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
     }
   } catch (error) {
     console.error(error);
+    const failureState = sessionStore.getState();
+    const startTime = failureState.training.startedAt || Date.now();
+    const durationMs = Date.now() - startTime;
     sessionStore.setTrainingStatus(TRAINING_STATUS.ERROR, {
       error: error.message,
+      startedAt: null,
       lastRun: {
         status: TRAINING_STATUS.ERROR,
         completedAt: Date.now(),
         error: error.message,
         datasetUpdatedAt,
+        durationMs,
       },
     });
+    sessionStore.setInferenceStatus(INFERENCE_STATUS.STOPPED, { lastPrediction: null });
   } finally {
     xs.dispose();
     ys.dispose();
@@ -254,14 +272,18 @@ export function abortTraining() {
   if (state.training.status !== TRAINING_STATUS.RUNNING) return;
   trainingAbortRequested = true;
   const datasetUpdatedAt = getLatestDatasetUpdatedAt(state) || Date.now();
+  const startTime = state.training.startedAt || Date.now();
+  const durationMs = Date.now() - startTime;
   sessionStore.setTrainingStatus(TRAINING_STATUS.ABORTED, {
     progress: state.training.progress || 0,
     error: null,
+    startedAt: null,
     lastRun: {
       status: TRAINING_STATUS.ABORTED,
       completedAt: Date.now(),
       error: null,
       datasetUpdatedAt,
+      durationMs,
     },
   });
   if (classifier) {

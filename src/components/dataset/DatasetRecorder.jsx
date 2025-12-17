@@ -517,14 +517,13 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
   const sampleSummaryCount = showRecordedFraction ? `${recordedCount}/${expectedCount}` : (hasSamples ? recordedCount : '');
   const sampleSummaryLabel = 'Beispiele aufgenommen';
   const datasetManageLabel = hasSamples ? 'Beispiele verwalten' : 'Beispiele aufnehmen';
-  const sampleCountDisplay = sampleSummaryCount || (hasSamples ? `${recordedCount}` : 'Noch keine Daten');
+  const sampleCountDisplay = sampleSummaryCount || (hasSamples ? `${recordedCount}` : '');
   const showCameraSnapshot = !isAudioTask && !recording && countdown === null && !!previewSample?.thumbnail;
   const modalTitleId = `sampleModalTitle-${classId}`;
 
   const getDatasetSummary = () => {
-    if (recordedCount >= expectedCount && expectedCount > 0) return 'Datensatz vollständig';
-    if (recordedCount === 0) return 'Noch keine Daten';
-    return 'Datensammlung läuft';
+    if (recordedCount > 0 && expectedCount > 0 && recordedCount < expectedCount) return 'Datensammlung läuft';
+    return '';
   };
 
   return (

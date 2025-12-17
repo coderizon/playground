@@ -71,6 +71,7 @@ export function createInitialSessionState(overrides = {}) {
       },
       error: null,
       lastRun: null,
+      startedAt: null,
     },
     inference: {
       status: INFERENCE_STATUS.IDLE,
@@ -139,6 +140,7 @@ export function createSessionStore(initial = createInitialSessionState()) {
         progress: 0,
         error: null,
         lastRun: null,
+        startedAt: null,
       },
       inference: {
         ...current.inference,
