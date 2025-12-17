@@ -58,30 +58,7 @@ function CollectToolbar({ classCount, onAddClass, trainingLocked, classes, total
   );
 }
 
-function CollectEmpty({ onAddFirst, trainingLocked }) {
-  return (
-    <div className="collect-empty">
-      <div>
-        <p className="eyebrow">Schritt 1</p>
-        <h3>Lege mindestens zwei Klassen an</h3>
-        <p>Benötigst du Inspiration? Überlege dir Gegensätze (z. B. „Katze vs. Hund“ oder „Applaus vs. Stille“), benenne die Klassen und sammle pro Klasse mehrere Beispiele.</p>
-      </div>
-      <ul>
-        <li>⚡️ Mindestens 10 Beispiele pro Klasse erfassen.</li>
-        <li>🎙️ Audio-Sessions: Vergiss die 20s Hintergrundaufnahme nicht.</li>
-        <li>🎯 Kamerasessions: Variiere Perspektive und Licht.</li>
-      </ul>
-      <button
-        type="button"
-        className="primary"
-        onClick={onAddFirst}
-        disabled={trainingLocked}
-      >
-        Erste Klasse hinzufügen
-      </button>
-    </div>
-  );
-}
+
 
 export function Collect({ state }) {
   // Navigation guard check
@@ -157,9 +134,7 @@ export function Collect({ state }) {
 
       <section className="collect-body">
         <div className="collect-class-list">
-          {classes.length === 0 ? (
-            <CollectEmpty onAddFirst={handleAddClass} trainingLocked={addClassDisabled} />
-          ) : (
+          {classes.length === 0 ? null : (
             classes.map(classItem => (
               <ClassCard 
                 key={classItem.id} 
