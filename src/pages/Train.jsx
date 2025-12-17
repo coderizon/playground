@@ -284,9 +284,9 @@ export function Train({ state }) {
       </header>
 
       <section className="train-body block">
-        <TrainingInfo state={state} retryContext={retryContext} />
-        
         <TrainingSettings state={state} />
+        
+        <TrainingInfo state={state} retryContext={retryContext} />
 
         <TrainFooter 
           state={state}
