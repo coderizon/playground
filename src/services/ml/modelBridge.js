@@ -26,7 +26,6 @@ sessionStore.subscribe((state) => {
 export async function recordSampleFrame(videoEl, classId, classIndex, classCount) {
   if (!videoEl) return;
   const extractor = await ensureFeatureExtractor();
-  ensureClassifier(classCount, sessionStore.getState().training.params.learningRate);
   const featureTensor = tf.tidy(() => {
     const videoFrameAsTensor = tf.browser.fromPixels(videoEl);
     const resized = tf.image.resizeBilinear(

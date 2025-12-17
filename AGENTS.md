@@ -22,7 +22,8 @@ Use this as a personal scratchpad so every task stays aligned with the contract 
    - We are rewriting the entire experience to the SPA described in `vision.md`. Do not try to sync or revive the legacy prototype; treat the SPA as the single source of truth.
 
 6. **Commit discipline**
-   - After each task: run tests, commit with a descriptive message, then pick the next backlog item. Never leave work uncommitted for the next step.
+   - After each task: run tests, commit with a descriptive message, then pick the next backlog item. Never leave work uncommitted for the next step. But never push unless explicitely asked by the user to do so.
+   
 7. **Self-directed slices**
    - When finishing a task, choose the next slice yourself from `refactoring-plans/progress.md` (Remaining Work) until the entire `vision.md` contract is satisfied. Do not wait for explicit instructions between slices.
 8. **Backlog hygiene**

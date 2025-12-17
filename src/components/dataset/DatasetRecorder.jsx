@@ -15,7 +15,7 @@ const AUDIO_PRESETS = {
   background: { label: 'Hintergrund', duration: 20000, hint: 'Halte 20s Umgebungsgeräusche fest, damit das Modell Stille erkennt.' },
 };
 const BACKGROUND_MIN_DURATION = 15000;
-const SAMPLE_CAPTURE_INTERVAL_MS = 450;
+const SAMPLE_CAPTURE_INTERVAL_MS = 100;
 
 // Shared active recorder ID to prevent multiple open streams
 let activeRecorderId = null;
