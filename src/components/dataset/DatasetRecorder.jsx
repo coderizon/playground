@@ -337,7 +337,7 @@ export function DatasetRecorder ({ classId, classState, trainingStatus, modality
       if (!video || video.readyState < 2) {
         return null;
       }
-      const MAX_HEIGHT = 240;
+      const MAX_HEIGHT = 360;
       const safeVideoHeight = video.videoHeight || MAX_HEIGHT;
       const safeVideoWidth = video.videoWidth || Math.round(safeVideoHeight * (4 / 3));
       const aspect = safeVideoHeight ? safeVideoWidth / safeVideoHeight : 4 / 3;
