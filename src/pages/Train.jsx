@@ -19,7 +19,7 @@ function TrainingSettings({ state }) {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mt-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mt-6 mb-6">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">Einstellungen</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
