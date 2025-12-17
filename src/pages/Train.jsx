@@ -66,8 +66,22 @@ function TrainingSettings({ state }) {
   );
 }
 
+function TrainingStats({ summary }) {
+  return (
+    <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center mb-6">
+      <div>
+        <p className="eyebrow">Klassen bereit</p>
+        <strong className="text-xl font-semibold text-slate-900">{summary.readyClasses}/{summary.totalClasses}</strong>
+      </div>
+      <div>
+        <p className="eyebrow">Beispiele</p>
+        <strong className="text-xl font-semibold text-slate-900">{summary.totalSamples}</strong>
+      </div>
+    </div>
+  );
+}
+
 function TrainFooter({ state, retryContext, onStart, onAbort, onBack, onNext, canStart, canAbort, canInfer }) {
-  const summary = getTrainingSummary(state);
   const training = state.training;
   const isRunning = training?.status === TRAINING_STATUS.RUNNING;
   const backgroundIssues = getAudioBackgroundIssues(state);
@@ -82,18 +96,6 @@ function TrainFooter({ state, retryContext, onStart, onAbort, onBack, onNext, ca
 
   return (
     <section className="train-footer mt-8 space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
-        <div>
-          <p className="eyebrow">Klassen bereit</p>
-          <strong className="text-xl font-semibold text-slate-900">{summary.readyClasses}/{summary.totalClasses}</strong>
-        </div>
-        <div>
-          <p className="eyebrow">Beispiele</p>
-          <strong className="text-xl font-semibold text-slate-900">{summary.totalSamples}</strong>
-        </div>
-      </div>
-
       {/* Issues / Hints */}
       {(backgroundIssues.length > 0 || issues.length > 0) && (
         <div className="summary-background" role="status" aria-live="polite">
@@ -237,6 +239,7 @@ export function Train({ state }) {
     );
   }
 
+  const summary = getTrainingSummary(state);
   const retryContext = getTrainingRetryContext(state);
   const canInfer = canAccessInference(state);
   const issues = getDatasetReadinessIssues(state);
@@ -285,6 +288,7 @@ export function Train({ state }) {
       </header>
 
       <section className="train-body block">
+        <TrainingStats summary={summary} />
         <TrainingSettings state={state} />
         
         <TrainingInfo state={state} retryContext={retryContext} />
