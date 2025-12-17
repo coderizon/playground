@@ -61,7 +61,7 @@ export function Home({ state }) {
       <div className="home-main">
         <div className="home-grid-panel">
           <p className="task-grid-instructions" id="taskGridHint">
-            Nutze Tab, um Karten zu fokussieren, und bestätige mit Enter oder Leertaste. Verfügbarkeit und Aufwand werden vorgelesen.
+    
           </p>
           <div className="task-grid" role="list" aria-describedby="taskGridHint">
             {taskModels.map((task) => {
